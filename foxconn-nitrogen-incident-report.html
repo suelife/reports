@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>資安事件報告：鴻海 × Nitrogen Ransomware（2026-05-12）</title>
+<style>
+  :root {
+    --navy: #1a2744;
+    --navy-light: #2c3e6b;
+    --red: #c0392b;
+    --amber: #d68910;
+    --green: #1e8449;
+    --gray-bg: #f4f6f9;
+    --border: #dce3ee;
+    --text: #222831;
+    --text-muted: #5a6578;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+    background: var(--gray-bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ── Header ─────────────────────────────── */
+  .report-header {
+    background: var(--navy);
+    color: #fff;
+    padding: 40px 48px 32px;
+  }
+  .report-header .label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8aa4d0;
+    margin-bottom: 8px;
+  }
+  .report-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .report-header .meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    font-size: 13px;
+    color: #9bb3d4;
+  }
+  .report-header .meta span strong { color: #fff; }
+
+  .severity-badge {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-bottom: 14px;
+  }
+
+  /* ── Layout ──────────────────────────────── */
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+  }
+
+  /* ── Sections ────────────────────────────── */
+  .section {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .section-header {
+    background: var(--navy);
+    color: #fff;
+    padding: 12px 24px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-header .icon { font-size: 15px; }
+  .section-body { padding: 24px; }
+
+  /* ── Executive Summary ───────────────────── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .kpi {
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .kpi .kpi-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .kpi .kpi-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .kpi.red .kpi-value { color: var(--red); }
+  .kpi.amber .kpi-value { color: var(--amber); }
+
+  /* ── Verification Table ──────────────────── */
+  .verify-table { width: 100%; border-collapse: collapse; }
+  .verify-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #f0f3f8;
+    border-bottom: 2px solid var(--border);
+    color: var(--navy);
+  }
+  .verify-table td {
+    padding: 11px 14px;
+    font-size: 14px;
+    border-bottom: 1px solid #edf0f5;
+    vertical-align: top;
+  }
+  .verify-table tr:last-child td { border-bottom: none; }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .badge-confirmed { background: #d4efdf; color: var(--green); }
+  .badge-claimed   { background: #fef9e7; color: var(--amber); border: 1px solid #f0c040; }
+  .badge-denied    { background: #fadbd8; color: var(--red); }
+
+  /* ── Timeline ────────────────────────────── */
+  .timeline { list-style: none; position: relative; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 18px; top: 0; bottom: 0;
+    width: 2px;
+    background: #dce3ee;
+  }
+  .timeline li {
+    display: flex;
+    gap: 18px;
+    padding: 0 0 24px 0;
+    position: relative;
+  }
+  .timeline li:last-child { padding-bottom: 0; }
+  .tl-dot {
+    width: 14px; height: 14px;
+    background: var(--navy);
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px var(--navy);
+    flex-shrink: 0;
+    margin-top: 4px;
+    position: relative;
+    z-index: 1;
+    margin-left: 12px;
+  }
+  .tl-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+  .tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
+  .tl-content { flex: 1; }
+  .tl-date {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .tl-title { font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+  .tl-detail { font-size: 13px; color: var(--text-muted); }
+
+  /* ── Tables ──────────────────────────────── */
+  table.data-table { width: 100%; border-collapse: collapse; }
+  table.data-table th {
+    text-align: left;
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: #f0f3f8;
+    border-bottom: 2px solid var(--border);
+    color: var(--navy);
+  }
+  table.data-table td {
+    padding: 10px 14px;
+    font-size: 14px;
+    border-bottom: 1px solid #edf0f5;
+    vertical-align: top;
+  }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table tr:hover td { background: #f9fbff; }
+
+  /* ── Infection Chain ─────────────────────── */
+  .chain {
+    display: flex;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .chain-step {
+    flex: 1;
+    min-width: 130px;
+    background: #f0f3f8;
+    border: 1px solid var(--border);
+    border-right: none;
+    padding: 14px 12px;
+    text-align: center;
+    position: relative;
+  }
+  .chain-step:last-child { border-right: 1px solid var(--border); border-radius: 0 5px 5px 0; }
+  .chain-step:first-child { border-radius: 5px 0 0 5px; }
+  .chain-step::after {
+    content: '›';
+    position: absolute;
+    right: -12px;
+    top: 50%; transform: translateY(-50%);
+    font-size: 20px;
+    color: var(--navy);
+    z-index: 1;
+    font-weight: 700;
+  }
+  .chain-step:last-child::after { display: none; }
+  .chain-step .step-num {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .chain-step .step-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .chain-step .step-detail {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  /* ── Alert Box ───────────────────────────── */
+  .alert {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 5px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .alert-red { background: #fdf2f0; border-left: 4px solid var(--red); }
+  .alert-amber { background: #fef9e7; border-left: 4px solid var(--amber); }
+  .alert-navy { background: #eef2fa; border-left: 4px solid var(--navy); }
+  .alert-icon { font-size: 18px; flex-shrink: 0; padding-top: 1px; }
+  .alert strong { display: block; margin-bottom: 2px; }
+
+  /* ── Code Block ──────────────────────────── */
+  .code-block {
+    background: #1a2744;
+    color: #a8d8ea;
+    padding: 16px 20px;
+    border-radius: 5px;
+    font-family: "Cascadia Code", "Consolas", "Monaco", monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+  .code-block .comment { color: #6b8cba; }
+  .code-block .highlight { color: #f0c040; }
+
+  /* ── History Table ───────────────────────── */
+  .history-row td:first-child { color: var(--text-muted); font-size: 13px; white-space: nowrap; }
+
+  /* ── Sources ─────────────────────────────── */
+  .sources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .source-card {
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 14px 16px;
+  }
+  .source-card .source-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .source-card a {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .source-card a:hover { color: #3b5bdb; text-decoration: underline; }
+  .source-card .source-meta { font-size: 12px; color: var(--text-muted); }
+
+  /* ── Footer ──────────────────────────────── */
+  .report-footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: #fff;
+    margin-top: 8px;
+  }
+
+  p { margin-bottom: 10px; }
+  p:last-child { margin-bottom: 0; }
+
+  @media (max-width: 600px) {
+    .report-header { padding: 28px 20px 24px; }
+    .section-body { padding: 16px; }
+    .chain { flex-direction: column; }
+    .chain-step { border-right: 1px solid var(--border) !important; border-bottom: none; border-radius: 0 !important; }
+    .chain-step:first-child { border-radius: 5px 5px 0 0 !important; }
+    .chain-step:last-child { border-bottom: 1px solid var(--border) !important; border-radius: 0 0 5px 5px !important; }
+    .chain-step::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -14px; transform: translateX(-50%); }
+  }
+
+  @media print {
+    body { background: #fff; }
+    .section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ═════════════════════════════════════════════ -->
+<div class="report-header">
+  <div class="label">資安事件調查報告</div>
+  <div class="severity-badge">嚴重等級：HIGH</div>
+  <h1>鴻海精密 × Nitrogen Ransomware<br>威斯康辛州廠資安事件</h1>
+  <div class="meta">
+    <span><strong>事件發生</strong>：2026 年 5 月 3 日</span>
+    <span><strong>攻擊者聲稱</strong>：2026 年 5 月 11 日</span>
+    <span><strong>報告日期</strong>：2026 年 5 月 12 日</span>
+    <span><strong>受害者</strong>：鴻海精密工業（Foxconn）</span>
+    <span><strong>攻擊組織</strong>：Nitrogen Ransomware</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ══ EXECUTIVE SUMMARY ═══════════════════════════════ -->
+  <div class="section">
+    <div class="section-header"><span class="icon">📋</span> 摘要</div>
+    <div class="section-body">
+      <div class="summary-grid">
+        <div class="kpi red">
+          <div class="kpi-value">8 TB</div>
+          <div class="kpi-label">聲稱外洩資料量</div>
+        </div>
+        <div class="kpi red">
+          <div class="kpi-value">1,100 萬+</div>
+          <div class="kpi-label">聲稱外洩文件數</div>
+        </div>
+        <div class="kpi amber">
+          <div class="kpi-value">8 天</div>
+          <div class="kpi-label">生產線停擺時間</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-value">719</div>
+          <div class="kpi-label">受影響用戶帳號</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-value">47</div>
+          <div class="kpi-label">Nitrogen 今年受害者</div>
+        </div>
+      </div>
+
+      <div class="alert alert-navy">
+        <div class="alert-icon">ℹ️</div>
+        <div>
+          <strong>事件概述</strong>
+          2026 年 5 月 3 日，鴻海威斯康辛州 Mount Pleasant 廠區爆發大規模 IT 系統中斷，涵蓋 Wi-Fi、打卡系統、生產線工作站，導致全廠停工約一週。5 月 11 日，Nitrogen Ransomware 組織在暗網宣稱對此事件負責，聲稱竊取 8TB 資料。鴻海官方僅承認「技術問題」，<strong>迄今未確認遭勒索或資料外洩</strong>。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FACT VERIFICATION ════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header"><span class="icon">✅</span> 事實核查矩陣</div>
+    <div class="section-body">
+      <div class="alert alert-amber">
+        <div class="alert-icon">⚠️</div>
+        <div>以下內容依可信度分級。<strong>已確認</strong>項目有多方獨立來源支持；<strong>聲稱未驗證</strong>項目僅來自 Nitrogen 單方；<strong>鴻海否認</strong>項目為鴻海未予承認之內容。</div>
+      </div>
+      <table class="verify-table">
+        <thead>
+          <tr>
+            <th style="width:140px">核查狀態</th>
+            <th>聲明內容</th>
+            <th style="width:180px">來源</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-confirmed">✅ 已確認</span></td>
+            <td>IT 系統中斷導致全廠停工（3/5 ~ 7/5）</td>
+            <td>鴻海官方聲明、TMJ4 現場報導</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-confirmed">✅ 已確認</span></td>
+            <td>Wi-Fi、打卡機、工作站全部失效，員工被遣返</td>
+            <td>TMJ4 員工採訪</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-confirmed">✅ 已確認</span></td>
+            <td>Nitrogen 於 5/11 在 NitroBlog 暗網公開宣稱攻擊</td>
+            <td>DysruptionHub、ransomware.live</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-claimed">⚠️ 聲稱未驗證</span></td>
+            <td>竊取 8TB 資料、逾 1,100 萬份文件，已貼出截圖</td>
+            <td>Nitrogen 暗網聲明（無第三方確認）</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-claimed">⚠️ 聲稱未驗證</span></td>
+            <td>外洩內容涉及 Apple、Intel、Google、NVIDIA、Dell 客戶資料</td>
+            <td>民視財經（中文原始報導，英文資安媒體未確認）</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-claimed">⚠️ 聲稱未驗證</span></td>
+            <td>取得 Active Directory 控制權並橫向移動</td>
+            <td>中文媒體報導（無獨立技術確認）</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-denied">❌ 鴻海未承認</span></td>
+            <td>遭勒索軟體攻擊、收到勒索要求</td>
+            <td>鴻海官方僅稱「技術問題」</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-denied">❌ 鴻海未承認</span></td>
+            <td>任何程度的資料外洩</td>
+            <td>鴻海無聲明</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ TIMELINE ══════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header"><span class="icon">🕐</span> 事件時間軸</div>
+    <div class="section-body">
+      <ul class="timeline">
+        <li>
+          <div class="tl-dot red"></div>
+          <div class="tl-content">
+            <div class="tl-date">2026/05/03 凌晨 3:30</div>
+            <div class="tl-title">三班制停工，工人被遣返</div>
+            <div class="tl-detail">大規模網路中斷，Mount Pleasant 廠區三班制夜班工人生產中止，被要求離開廠區</div>
+          </div>
+        </li>
+        <li>
+          <div class="tl-dot red"></div>
+          <div class="tl-content">
+            <div class="tl-date">2026/05/03 下午 1:00</div>
+            <div class="tl-title">鴻海宣布關廠至週六</div>
+            <div class="tl-detail">正式郵件通知：工廠今日及週六全線關閉，涵蓋「所有班次、所有產線、所有廠房」</div>
+          </div>
+        </li>
+        <li>
+          <div class="tl-dot amber"></div>
+          <div class="tl-content">
+            <div class="tl-date">2026/05/03 – 05</div>
+            <div class="tl-title">多日停擺持續</div>
+            <div class="tl-detail">週末期間無生產，員工每日接獲主管文字通知，辦公室員工被要求以個人手機熱點連線（有安全風險）</div>
+          </div>
+        </li>
+        <li>
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <div class="tl-date">2026/05/07</div>
+            <div class="tl-title">鴻海官方聲明</div>
+            <div class="tl-detail">「威州廠 IT 系統遭遇技術問題，部分功能陸續恢復，受影響員工將補發停工薪資」。仍未提及攻擊類型或原因</div>
+          </div>
+        </li>
+        <li>
+          <div class="tl-dot red"></div>
+          <div class="tl-content">
+            <div class="tl-date">2026/05/11 11:23 UTC</div>
+            <div class="tl-title">Nitrogen 暗網宣稱攻擊</div>
+            <div class="tl-detail">Nitrogen 在 NitroBlog leak site 貼文，宣稱竊取 8TB / 1,100 萬份文件，並附上截圖作為「證據」</div>
+          </div>
+        </li>
+        <li>
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <div class="tl-date">2026/05/12</div>
+            <div class="tl-title">本報告發布</div>
+            <div class="tl-detail">鴻海仍無後續聲明，事件持續調查中</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══ IMPACT ════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header"><span class="icon">💥</span> 實際影響</div>
+    <div class="section-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>影響類別</th>
+            <th>具體描述</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>生產線</strong></td>
+            <td>全廠停工約 8 天，所有班次、所有廠房均受波及</td>
+          </tr>
+          <tr>
+            <td><strong>網路基礎設施</strong></td>
+            <td>廠區 Wi-Fi 全斷、內網存取失效</td>
+          </tr>
+          <tr>
+            <td><strong>HR 系統</strong></td>
+            <td>打卡機停用，改用紙本打卡</td>
+          </tr>
+          <tr>
+            <td><strong>辦公室</strong></td>
+            <td>員工無法存取公司系統，被要求以個人手機熱點上網</td>
+          </tr>
+          <tr>
+            <td><strong>員工財務</strong></td>
+            <td>停工期間薪資由鴻海補發，部分員工曾考慮申請失業補助</td>
+          </tr>
+          <tr>
+            <td><strong>憑證外洩（聲稱）</strong></td>
+            <td>53 名員工憑證 / 719 個帳號 / 185 名第三方員工憑證 / Amazon SES、M365、Autodesk、Cisco 存取權</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ THREAT ACTOR ══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header"><span class="icon">🎯</span> 攻擊者側寫：Nitrogen Ransomware</div>
+    <div class="section-body">
+
+      <table class="data-table" style="margin-bottom:24px">
+        <thead><tr><th>屬性</th><th>內容</th></tr></thead>
+        <tbody>
+          <tr><td><strong>活躍時間</strong></td><td>2023 年起（loader 階段）；2024 年 9 月起獨立勒索組織</td></tr>
+          <tr><td><strong>程式基礎</strong></td><td>基於洩露的 Conti 2 原始碼構建加密器</td></tr>
+          <tr><td><strong>成員背景</strong></td><td>疑似前 BlackCat/ALPHV 成員，東歐背景</td></tr>
+          <tr><td><strong>C2 伺服器位置</strong></td><td>保加利亞、荷蘭</td></tr>
+          <tr><td><strong>勒索手法</strong></td><td>雙重勒索（先竊資料 → 再加密 → 暗網施壓）</td></tr>
+          <tr><td><strong>加密副檔名</strong></td><td><code>.nba</code></td></tr>
+          <tr><td><strong>勒索說明檔</strong></td><td><code>readme.txt</code></td></tr>
+          <tr><td><strong>主要目標行業</strong></td><td>製造業、金融服務、商業服務（美國為主）</td></tr>
+          <tr><td><strong>2026 受害者數</strong></td><td>47 個（33 在美國、6 在加拿大）</td></tr>
+        </tbody>
+      </table>
+
+      <h3 style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">感染鏈（四階段）</h3>
+      <div class="chain">
+        <div class="chain-step">
+          <div class="step-num">Stage 1</div>
+          <div class="step-name">惡意廣告</div>
+          <div class="step-detail">Google / Bing 投放假廣告，冒充 WinSCP、AnyDesk、Slack 等 IT 工具</div>
+        </div>
+        <div class="chain-step">
+          <div class="step-num">Stage 2</div>
+          <div class="step-name">木馬安裝包</div>
+          <div class="step-detail">使用者下載並執行帶有後門的「官方」安裝程式</div>
+        </div>
+        <div class="chain-step">
+          <div class="step-num">Stage 3</div>
+          <div class="step-name">DLL Sideloading</div>
+          <div class="step-detail">惡意 DLL 替換合法系統檔案，繞過防毒偵測</div>
+        </div>
+        <div class="chain-step">
+          <div class="step-num">Stage 4</div>
+          <div class="step-name">C2 植入</div>
+          <div class="step-detail">記憶體內載入 Cobalt Strike / Sliver → AD 橫向移動 → 資料外傳 → 加密</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TECHNICAL ═════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header"><span class="icon">🔬</span> 關鍵技術發現</div>
+    <div class="section-body">
+
+      <div class="alert alert-red">
+        <div class="alert-icon">🚨</div>
+        <div>
+          <strong>重要：ESXi 解密器存在致命 Bug，付贖金也無法還原檔案</strong>
+          Coveware 研究人員確認 Nitrogen 的 ESXi 加密模組有記憶體錯誤，導致加密金鑰損毀。即使受害者支付贖金，攻擊者本身也無法解密檔案。
+        </div>
+      </div>
+
+      <h3 style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">技術細節（Coveware 分析）</h3>
+      <div class="code-block">
+<span class="comment">// 問題所在：記憶體偏移衝突</span>
+rsp+0x1c  →  載入 8-byte 變數（QWORD variable）
+rsp+0x20  →  公鑰（Public Key）存放位置
+
+<span class="comment">// 結果：變數覆蓋公鑰前 4 bytes</span>
+<span class="highlight">corrupted_key = key_bytes[:4] → 被覆蓋 + key_bytes[4:]</span>
+
+<span class="comment">// 影響：生成的公鑰沒有對應的私鑰</span>
+<span class="comment">// 加密後，雙方（攻擊者 + 受害者）均無法解密</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted)">此 bug 僅影響 ESXi 版本；Windows 版解密器是否有相同問題尚未確認。</p>
+
+      <div style="height:16px"></div>
+
+      <div class="alert alert-amber">
+        <div class="alert-icon">🛡️</div>
+        <div>
+          <strong>新談判反制戰術（2026 年發現）</strong>
+          Nitrogen 會封鎖專業談判公司的 IP 位址，使受害者無法透過有經驗的中介降低贖金或爭取時間。應對方式：更換 VPN 出口節點或請 ISP 重新分配動態 IP。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FOXCONN HISTORY ════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header"><span class="icon">📅</span> 鴻海資安事件歷史</div>
+    <div class="section-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>時間</th>
+            <th>地點</th>
+            <th>攻擊組織</th>
+            <th>摘要</th>
+            <th>結果</th>
+          </tr>
+        </thead>
+        <tbody class="history-row">
+          <tr>
+            <td>2020/11</td>
+            <td>墨西哥 Ciudad Juárez 廠</td>
+            <td>DoppelPaymer</td>
+            <td>竊取 100GB 文件、刪除 20–30TB 備份、加密生產資料；要求 1,804 BTC（約 3,400 萬美元）</td>
+            <td>鴻海聲稱未支付贖金</td>
+          </tr>
+          <tr>
+            <td>2022</td>
+            <td>墨西哥 Baja California 廠</td>
+            <td>LockBit</td>
+            <td>再次遭勒索軟體攻擊，資料細節未完整揭露</td>
+            <td>鴻海確認事件，強調已提高資安防護</td>
+          </tr>
+          <tr>
+            <td>2026/05</td>
+            <td>威州 Mount Pleasant 廠</td>
+            <td><strong>Nitrogen</strong></td>
+            <td>本次事件（見上述各節）</td>
+            <td>調查中</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:12px">⚠️ 鴻海六年內三度遭重大勒索軟體攻擊，顯示其龐大製造業網路仍是持續性高價值目標。</p>
+    </div>
+  </div>
+
+  <!-- ══ INDICATORS ════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header"><span class="icon">🔍</span> 防禦建議（針對本次 TTPs）</div>
+    <div class="section-body">
+      <table class="data-table">
+        <thead><tr><th>攻擊向量</th><th>防禦措施</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>惡意廣告初始存取</strong></td>
+            <td>部署 DNS 過濾 / 廣告攔截；IT 採購軟體只允許從內部核可的軟體庫下載</td>
+          </tr>
+          <tr>
+            <td><strong>DLL Sideloading</strong></td>
+            <td>應用程式白名單（WDAC / AppLocker）；監控非預期 DLL 載入行為</td>
+          </tr>
+          <tr>
+            <td><strong>AD 橫向移動</strong></td>
+            <td>Defender for Identity（偵測 Pass-the-Hash / Pass-the-Ticket）；網段隔離；最小權限原則</td>
+          </tr>
+          <tr>
+            <td><strong>Cobalt Strike C2</strong></td>
+            <td>監控異常 Beacon 流量；封鎖已知 Nitrogen C2 IP（保加利亞 / 荷蘭 ASN）</td>
+          </tr>
+          <tr>
+            <td><strong>OT/IT 同網段</strong></td>
+            <td>製造業 OT 網路與企業 IT 網路物理/邏輯隔離；打卡機獨立 VLAN</td>
+          </tr>
+          <tr>
+            <td><strong>ESXi 特別注意</strong></td>
+            <td>備份 ESXi VM 於離線媒介；即使支付贖金 ESXi 檔案仍無法還原，<strong>勿付贖金</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ SOURCES ═══════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header"><span class="icon">📚</span> 資料來源</div>
+    <div class="section-body">
+      <div class="sources-grid">
+
+        <div class="source-card">
+          <div class="source-tag">事件報導 / 英文</div>
+          <a href="https://dysruptionhub.com/foxconn-wisconsin-cyber-outage/" target="_blank">
+            Nitrogen claims Foxconn after Wisconsin production outage
+          </a>
+          <div class="source-meta">DysruptionHub · 2026-05-11</div>
+        </div>
+
+        <div class="source-card">
+          <div class="source-tag">當地媒體 / 英文</div>
+          <a href="https://www.tmj4.com/news/local-news/in-your-community/racine-county/network-outage-halts-production-impacting-workers-at-foxconns-mount-pleasant-campus" target="_blank">
+            Network outage halts production at Foxconn's Mount Pleasant campus
+          </a>
+          <div class="source-meta">TMJ4（威斯康辛州地方新聞）· 2026-05</div>
+        </div>
+
+        <div class="source-card">
+          <div class="source-tag">事件原始報導 / 中文</div>
+          <a href="https://tw.stock.yahoo.com/news/%E7%8D%A8%E5%AE%B6-%E9%B4%BB%E6%B5%B7%E9%A9%9A%E7%88%86%E9%A7%AD%E5%AE%A2%E5%8B%92%E7%B4%A2-%E5%A8%81%E5%B7%9E%E5%BB%A0%E7%96%91%E9%81%AD%E7%AB%8A%E5%AF%868tb-%E9%83%A8%E5%88%86%E7%94%A2%E7%B7%9A%E5%81%9C%E6%93%BA-025525115.html" target="_blank">
+            獨家／鴻海驚爆駭客勒索 威州廠疑遭竊密 8TB
+          </a>
+          <div class="source-meta">民視財經 via Yahoo Finance 台灣 · 2026-05-12</div>
+        </div>
+
+        <div class="source-card">
+          <div class="source-tag">威脅情報 / 攻擊者追蹤</div>
+          <a href="https://www.ransomware.live/id/Rk9YQ09OTkBuaXRyb2dlbg" target="_blank">
+            Victim: FOXCONN – Nitrogen
+          </a>
+          <div class="source-meta">ransomware.live · 2026-05-11</div>
+        </div>
+
+        <div class="source-card">
+          <div class="source-tag">Nitrogen 深度分析</div>
+          <a href="https://blog.barracuda.com/2025/11/07/nitrogen-ransomware--from-staged-loader-to-full-scale-extortion" target="_blank">
+            Nitrogen ransomware: From staged loader to full-scale extortion
+          </a>
+          <div class="source-meta">Barracuda Networks · 2025-11-07</div>
+        </div>
+
+        <div class="source-card">
+          <div class="source-tag">ESXi Bug 分析</div>
+          <a href="https://www.theregister.com/2026/02/04/nitrogen_ransomware_broken_decryptor" target="_blank">
+            Nitrogen can't unlock its own ransomware after coding error
+          </a>
+          <div class="source-meta">The Register · 2026-02-04</div>
+        </div>
+
+        <div class="source-card">
+          <div class="source-tag">談判戰術分析</div>
+          <a href="https://www.dinsmore.com/publications/cyber-threat-actor-group-nitrogen-unveils-new-countermeasure-in-ransom-negotiations/" target="_blank">
+            Nitrogen Unveils New Countermeasure in Ransom Negotiations
+          </a>
+          <div class="source-meta">Dinsmore & Shohl · 2026</div>
+        </div>
+
+        <div class="source-card">
+          <div class="source-tag">Nitrogen 組織頁面</div>
+          <a href="https://www.ransomware.live/group/nitrogen" target="_blank">
+            Group: Nitrogen — ransomware.live
+          </a>
+          <div class="source-meta">ransomware.live（持續更新）</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════ -->
+<div class="report-footer">
+  本報告綜合多方公開來源編製，所有「聲稱未驗證」內容僅代表攻擊者單方聲明，不構成事實確認。
+  資料截止日期：2026 年 5 月 12 日 ·  内部傳閲用途
+</div>
+
+</body>
+</html>
