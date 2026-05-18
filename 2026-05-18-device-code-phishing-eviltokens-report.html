@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Device Code Phishing 新基礎架構 — EvilTokens / Tycoon PhaaS 與 M365 權杖竊取</title>
+<style>
+:root{--navy:#1a2744;--navy-light:#2c3e6b;--red:#c0392b;--amber:#d68910;--green:#1e8449;--gray-bg:#f4f6f9;--border:#dce3ee;--text:#222831;--text-muted:#5a6578;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--gray-bg);color:var(--text);line-height:1.7;font-size:15px;}
+.report-header{background:var(--navy);color:#fff;padding:40px 48px 32px;}
+.report-header .label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8aa4d0;margin-bottom:8px;}
+.report-header h1{font-size:26px;font-weight:700;margin-bottom:10px;line-height:1.3;}
+.report-header .meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:16px;font-size:13px;color:#9bb3d4;}
+.report-header .meta span strong{color:#fff;}
+.severity-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:3px;margin-bottom:14px;}
+.severity-badge.high{background:var(--red);color:#fff;}
+.severity-badge.medium{background:var(--amber);color:#fff;}
+.severity-badge.low{background:var(--green);color:#fff;}
+.severity-badge.info{background:var(--navy-light);color:#fff;}
+.container{max-width:1000px;margin:0 auto;padding:32px 24px 60px;}
+.section{background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:24px;overflow:hidden;}
+.section-header{background:var(--navy);color:#fff;padding:12px 24px;font-size:13px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.section-body{padding:24px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:20px;}
+.kpi{border:1px solid var(--border);border-radius:5px;padding:14px 16px;text-align:center;}
+.kpi .kpi-value{font-size:28px;font-weight:800;color:var(--navy);line-height:1;margin-bottom:4px;}
+.kpi .kpi-label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;}
+.kpi.red .kpi-value{color:var(--red);}
+.kpi.amber .kpi-value{color:var(--amber);}
+.kpi.green .kpi-value{color:var(--green);}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;white-space:nowrap;}
+.badge-confirmed{background:#d4efdf;color:var(--green);}
+.badge-claimed{background:#fef9e7;color:var(--amber);border:1px solid #f0c040;}
+.badge-denied{background:#fadbd8;color:var(--red);}
+.badge-info{background:#eef2fa;color:var(--navy);}
+table.data-table{width:100%;border-collapse:collapse;}
+table.data-table th{text-align:left;padding:9px 14px;font-size:12px;font-weight:700;text-transform:uppercase;background:#f0f3f8;border-bottom:2px solid var(--border);color:var(--navy);}
+table.data-table td{padding:10px 14px;font-size:14px;border-bottom:1px solid #edf0f5;vertical-align:top;}
+table.data-table tr:last-child td{border-bottom:none;}
+table.data-table tr:hover td{background:#f9fbff;}
+.timeline{list-style:none;position:relative;}
+.timeline::before{content:'';position:absolute;left:18px;top:0;bottom:0;width:2px;background:#dce3ee;}
+.timeline li{display:flex;gap:18px;padding:0 0 24px;position:relative;}
+.timeline li:last-child{padding-bottom:0;}
+.tl-dot{width:14px;height:14px;background:var(--navy);border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px var(--navy);flex-shrink:0;margin-top:4px;position:relative;z-index:1;margin-left:12px;}
+.tl-dot.red{background:var(--red);box-shadow:0 0 0 2px var(--red);}
+.tl-dot.amber{background:var(--amber);box-shadow:0 0 0 2px var(--amber);}
+.tl-dot.green{background:var(--green);box-shadow:0 0 0 2px var(--green);}
+.tl-content{flex:1;}
+.tl-date{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;}
+.tl-title{font-weight:600;color:var(--navy);margin-bottom:3px;}
+.tl-detail{font-size:13px;color:var(--text-muted);}
+.chain{display:flex;overflow-x:auto;}
+.chain-step{flex:1;min-width:130px;background:#f0f3f8;border:1px solid var(--border);border-right:none;padding:14px 12px;text-align:center;position:relative;}
+.chain-step:last-child{border-right:1px solid var(--border);border-radius:0 5px 5px 0;}
+.chain-step:first-child{border-radius:5px 0 0 5px;}
+.chain-step::after{content:'›';position:absolute;right:-12px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--navy);z-index:1;font-weight:700;}
+.chain-step:last-child::after{display:none;}
+.chain-step .step-num{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;}
+.chain-step .step-name{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.chain-step .step-detail{font-size:11px;color:var(--text-muted);line-height:1.4;}
+.alert{display:flex;gap:12px;padding:14px 16px;border-radius:5px;margin-bottom:16px;font-size:14px;line-height:1.6;}
+.alert-red{background:#fdf2f0;border-left:4px solid var(--red);}
+.alert-amber{background:#fef9e7;border-left:4px solid var(--amber);}
+.alert-green{background:#eafaf1;border-left:4px solid var(--green);}
+.alert-navy{background:#eef2fa;border-left:4px solid var(--navy);}
+.alert-icon{font-size:18px;flex-shrink:0;padding-top:1px;}
+.alert strong{display:block;margin-bottom:2px;}
+.code-block{background:#1a2744;color:#a8d8ea;padding:16px 20px;border-radius:5px;font-family:"Cascadia Code",Consolas,Monaco,monospace;font-size:13px;line-height:1.7;overflow-x:auto;margin:12px 0;}
+.code-block .comment{color:#6b8cba;}
+.code-block .highlight{color:#f0c040;}
+.sources-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.source-card{border:1px solid var(--border);border-radius:5px;padding:14px 16px;}
+.source-card .source-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:4px;}
+.source-card a{font-size:14px;font-weight:600;color:var(--navy);text-decoration:none;display:block;margin-bottom:4px;line-height:1.4;}
+.source-card a:hover{color:#3b5bdb;text-decoration:underline;}
+.source-card .source-meta{font-size:12px;color:var(--text-muted);}
+.report-footer{border-top:1px solid var(--border);padding:20px 24px;text-align:center;font-size:12px;color:var(--text-muted);background:#fff;}
+p{margin-bottom:10px;}
+p:last-child{margin-bottom:0;}
+code{background:#f0f3f8;padding:1px 5px;border-radius:3px;font-size:13px;font-family:Consolas,monospace;}
+h3.sub{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;}
+@media (max-width:600px){.report-header{padding:28px 20px 24px;}.section-body{padding:16px;}.chain{flex-direction:column;}.chain-step{border-right:1px solid var(--border)!important;border-bottom:none;border-radius:0!important;}.chain-step:first-child{border-radius:5px 5px 0 0!important;}.chain-step:last-child{border-bottom:1px solid var(--border)!important;border-radius:0 0 5px 5px!important;}.chain-step::after{content:'↓';right:auto;left:50%;top:auto;bottom:-14px;transform:translateX(-50%);}}
+@media print{body{background:#fff;}.section{break-inside:avoid;}}
+</style>
+</head>
+<body>
+
+<header class="report-header">
+  <div class="label">Research Brief · SecondBrain</div>
+  <span class="severity-badge high">High Risk</span>
+  <h1>Device Code Phishing 新基礎架構：EvilTokens / Tycoon PhaaS 與 Microsoft 365 權杖竊取</h1>
+  <div class="meta">
+    <span><strong>研究日期</strong>　2026-05-18</span>
+    <span><strong>資料截止</strong>　2026-05-18</span>
+    <span><strong>主要來源</strong>　8</span>
+    <span><strong>觸發來源</strong>　iThome 175885</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- 2. 核心論點 -->
+<section class="section">
+  <div class="section-header">▸ 核心論點</div>
+  <div class="section-body">
+    <div class="alert alert-navy">
+      <div class="alert-icon">◆</div>
+      <div>
+        <strong>OAuth Device Code Phishing 已完成 PhaaS 商品化</strong>
+        Proofpoint 觀察到自 2025 年秋起的新一波 Device Code Phishing，將過去「攻擊者預先產出 Device Code」的固定窗口手法升級為「使用者點擊時動態（on-demand）產生」，繞過 15 分鐘過期窗口；EvilTokens（2026-02 上架）與 Tycoon 2FA 接連把此手法包成 Phishing-as-a-Service，UI 幾乎相同，受害組織已逾 340 個，繞過 MFA 直接竊取 M365 / Outlook 存取權杖。
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi red"><div class="kpi-value">340+</div><div class="kpi-label">受害 M365 組織</div></div>
+      <div class="kpi amber"><div class="kpi-value">7</div><div class="kpi-label">4 月 10 天內變種數</div></div>
+      <div class="kpi"><div class="kpi-value">5</div><div class="kpi-label">主要受害國家</div></div>
+      <div class="kpi red"><div class="kpi-value">0</div><div class="kpi-label">MFA 攔截次數</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 背景與脈絡 -->
+<section class="section">
+  <div class="section-header">▸ 發展時序</div>
+  <div class="section-body">
+    <ul class="timeline">
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2025 秋</div>
+          <div class="tl-title">新版實作首次出現</div>
+          <div class="tl-detail">研究人員觀察到 Device Code 改為「點擊時動態產生」，受害者不再受 15 分鐘輸入時間壓力影響。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-02-19</div>
+          <div class="tl-title">EvilTokens 首次被觀察到</div>
+          <div class="tl-detail">PhaaS 平台 EvilTokens 於 Telegram 宣傳，提供 Microsoft / Adobe / DocuSign 等多種登入頁模板。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-02</div>
+          <div class="tl-title">Tycoon 2FA 部分基礎設施被破壞 → 跟進賣 Device Code PhaaS</div>
+          <div class="tl-detail">Tycoon 2FA 原以 AiTM 為主，遭破壞後將 Device Code Phishing 納入產品線，Landing Page 與 EvilTokens 視覺幾乎一致。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-03 中</div>
+          <div class="tl-title">EvilTokens 觸及 340+ M365 組織</div>
+          <div class="tl-detail">受害分布：美、加、澳、紐、德；產業含建築、非營利、不動產、製造、金融、醫療、法律、地方政府。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-03</div>
+          <div class="tl-title">TA4903 利用此鏈進行 BEC</div>
+          <div class="tl-detail">Proofpoint 將威脅組織 TA4903 與 Device Code Phishing → M365 變臉攻擊鏈關聯。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-04</div>
+          <div class="tl-title">10 天內出現 7 個近乎相同的變種</div>
+          <div class="tl-detail">Proofpoint 統計 4 月十日窗口內出現 7 個 EvilTokens 類變種，疑為 AI 生成複製。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-18</div>
+          <div class="tl-title">iThome 中文媒體刊出綜合報導</div>
+          <div class="tl-detail">iThome 175885 整合 Proofpoint 情資刊出中文版報導，作為本研究觸發點。</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- 攻擊鏈 -->
+<section class="section">
+  <div class="section-header">▸ 攻擊鏈（On-Demand 新版）</div>
+  <div class="section-body">
+    <div class="chain">
+      <div class="chain-step">
+        <div class="step-num">Step 1</div>
+        <div class="step-name">社交工程誘餌</div>
+        <div class="step-detail">寄送 Email / 檔案 / QR Code，內含釣魚連結</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 2</div>
+        <div class="step-name">點擊觸發</div>
+        <div class="step-detail">攻擊者後端動態向微軟請求 Device Code</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 3</div>
+        <div class="step-name">假冒登入頁</div>
+        <div class="step-detail">「Continue to Microsoft」彈出真正的 microsoft.com 裝置登入頁</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 4</div>
+        <div class="step-name">受害者輸入 Code</div>
+        <div class="step-detail">微軟伺服器完成驗證，含 MFA</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 5</div>
+        <div class="step-name">Token 落入攻擊者</div>
+        <div class="step-detail">access token / refresh token 直送 C2，繞過 MFA 後續存取</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 6</div>
+        <div class="step-name">帳號接管 → BEC</div>
+        <div class="step-detail">完整存取 M365 / Outlook，導致 BEC、資料外洩、橫向移動</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. 關鍵發現 -->
+<section class="section">
+  <div class="section-header">▸ 關鍵發現</div>
+  <div class="section-body">
+
+    <div class="alert alert-red">
+      <div class="alert-icon">●</div>
+      <div>
+        <strong>MFA 在此攻擊鏈中完全無效</strong>
+        受害者是「本人」完成微軟驗證流程，MFA 通過後攻擊者拿到的是合法 token；後續直接帶 token 呼叫 Graph API，不會再觸發任何 MFA。<span class="badge badge-confirmed">Proofpoint 確認</span>
+      </div>
+    </div>
+
+    <div class="alert alert-amber">
+      <div class="alert-icon">●</div>
+      <div>
+        <strong>On-Demand 動態產生 = 過期窗口失效</strong>
+        舊版攻擊者得在 15 分鐘內讓受害者上鉤，新版改成「使用者點擊瞬間才向微軟要 code」，每次點擊都是全新的 fresh code，社交工程節奏壓力消失。<span class="badge badge-confirmed">Proofpoint 確認</span>
+      </div>
+    </div>
+
+    <div class="alert alert-amber">
+      <div class="alert-icon">●</div>
+      <div>
+        <strong>EvilTokens 疑為 vibe-coded（AI 生成代碼）</strong>
+        Proofpoint 研究人員判斷 EvilTokens 平台是以「vibe coding」AI 生成技術建立與維護；iThome 原文未揭露 Proofpoint 的具體推論依據。<span class="badge badge-claimed">聲稱未獨立驗證</span>
+      </div>
+    </div>
+
+    <div class="alert alert-navy">
+      <div class="alert-icon">●</div>
+      <div>
+        <strong>Portal Browser 是 BEC 規模化的關鍵加購</strong>
+        EvilTokens 的 affiliate 可加購 Portal Browser，用於同時存取與管理多個被駭 M365 帳號 — 把單一 token 竊取轉換為「跨組織自動化 BEC 工廠」。<span class="badge badge-confirmed">Proofpoint / The Hacker News 確認</span>
+      </div>
+    </div>
+
+    <div class="alert alert-navy">
+      <div class="alert-icon">●</div>
+      <div>
+        <strong>絕大多數鎖定 M365，少部份鎖定 Google</strong>
+        iThome 原文與 Proofpoint 觀察一致：M365 是主目標，Google Workspace 為次目標。Adobe / DocuSign 模板主要作為釣魚誘餌而非最終目標。
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 5. 深度分析 -->
+<section class="section">
+  <div class="section-header">▸ 深度分析：新舊版差異</div>
+  <div class="section-body">
+    <table class="data-table">
+      <thead>
+        <tr><th>維度</th><th>舊版（2024 前後）</th><th>新版（2025 秋起）</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Device Code 產生時機</td><td>攻擊者預產 → 寄給受害者</td><td>受害者點擊時動態觸發</td></tr>
+        <tr><td>過期窗口壓力</td><td>高（15 分鐘必須上鉤）</td><td>幾乎消失（每次點擊都新鮮）</td></tr>
+        <tr><td>誘餌通路</td><td>Email 為主</td><td>Email + 檔案 + QR Code（QR 為新增）</td></tr>
+        <tr><td>自動化程度</td><td>需人工或腳本配合</td><td>完全 PhaaS 化，affiliate 模式</td></tr>
+        <tr><td>身份冒充頁面</td><td>單一 Microsoft</td><td>Microsoft / Adobe / DocuSign 多選</td></tr>
+        <tr><td>後端 Token 處理</td><td>需攻擊者手動</td><td>Portal Browser 自動聚合多帳號</td></tr>
+        <tr><td>變種速度</td><td>低</td><td>4 月十日 7 變種，疑 AI 生成</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header">▸ 深度分析：EvilTokens vs Tycoon 2FA</div>
+  <div class="section-body">
+    <table class="data-table">
+      <thead>
+        <tr><th>項目</th><th>EvilTokens</th><th>Tycoon 2FA</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>首次曝光</td><td>2026-02 Telegram</td><td>較早，原為 AiTM PhaaS</td></tr>
+        <tr><td>核心手法</td><td>Device Code Phishing</td><td>原 AiTM → 2026-02 後加賣 Device Code PhaaS</td></tr>
+        <tr><td>登入頁主題</td><td>Microsoft / Adobe / DocuSign</td><td>視覺與 EvilTokens 幾乎相同</td></tr>
+        <tr><td>銷售模式</td><td>主訂閱 + Portal Browser 加購</td><td>主訂閱</td></tr>
+        <tr><td>已知變種</td><td>4 月觀察 7 個近乎相同變種</td><td>並列同期</td></tr>
+        <tr><td>判定關係</td><td>共用 UI，是否同源未證實</td><td><span class="badge badge-claimed">未證實</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 6. 爭議 / 未確認 -->
+<section class="section">
+  <div class="section-header">▸ 爭議與未確認事項</div>
+  <div class="section-body">
+    <div class="alert alert-amber">
+      <div class="alert-icon">⚠</div>
+      <div>
+        <strong>「EvilTokens 是 vibe-coded」的證據未公開</strong>
+        Proofpoint 在報告中提及這個判斷，但 iThome 與多數轉述媒體均未引述其推論依據（程式碼風格、commit pattern、prompt 殘跡等）。<span class="badge badge-claimed">單一來源判斷</span>
+      </div>
+    </div>
+    <div class="alert alert-amber">
+      <div class="alert-icon">⚠</div>
+      <div>
+        <strong>EvilTokens ↔ Tycoon 2FA 是否同源</strong>
+        Landing page 視覺幾乎一致，但目前公開資訊不足以判定 fork、抄襲、購買代碼或共用 AI 生成 prompt。<span class="badge badge-claimed">公開資訊不足</span>
+      </div>
+    </div>
+    <div class="alert alert-amber">
+      <div class="alert-icon">⚠</div>
+      <div>
+        <strong>TA4903 與 EvilTokens 的關聯方式</strong>
+        Proofpoint 觀察到 TA4903 使用此手法，但 iThome 未明確說明 TA4903 是 EvilTokens 的「客戶 / affiliate / 自行實作」。<span class="badge badge-claimed">未明確</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. 結論與行動建議 -->
+<section class="section">
+  <div class="section-header">▸ 結論與行動建議</div>
+  <div class="section-body">
+
+    <h3 class="sub">立即（本週內）</h3>
+    <div class="alert alert-red">
+      <div class="alert-icon">①</div>
+      <div>
+        <strong>於 Entra Conditional Access 建立 Block Device Code Flow 政策</strong>
+        Microsoft 官方建議「盡可能全域封鎖」。建立流程：Conditional Access → Conditions → Authentication flows → 勾選 <code>Device code flow</code> → Grant → <code>Block access</code>。先以 Report-only 跑 1–2 週確認無合法業務被擋，再切 On。
+      </div>
+    </div>
+
+    <h3 class="sub">短期（兩週內）</h3>
+    <div class="alert alert-amber">
+      <div class="alert-icon">②</div>
+      <div>
+        <strong>建立白名單例外（若無法全域封鎖）</strong>
+        合法 Device Code Flow 使用情境通常只剩：CLI 工具（<code>az login</code>、<code>az ad signed-in-user</code>）、會議室 / 共享裝置、舊式無鍵盤裝置。可用 Conditional Access 例外允許「特定使用者群組 + 特定 IP 範圍 + Compliant Device」三條件交集。
+      </div>
+    </div>
+
+    <div class="alert alert-amber">
+      <div class="alert-icon">③</div>
+      <div>
+        <strong>監控 Sign-in Logs 中 authenticationProtocol = deviceCode</strong>
+        在 Entra Sign-in Logs 建立查詢與告警；結合 Defender for Cloud Apps / Sentinel 偵測「Device Code 成功登入 → 立即建立 mailbox rule / OAuth grant / 異地 Graph API 大量讀信」異常鏈。
+      </div>
+    </div>
+
+    <h3 class="sub">中期（一個月內）</h3>
+    <div class="alert alert-navy">
+      <div class="alert-icon">④</div>
+      <div>
+        <strong>使用者教育</strong>
+        對全公司宣導：「任何要你『輸入此代碼到微軟頁面』的 Email / QR / 連結 = 釣魚」。網址正確（microsoft.com）不代表動作安全，重點是「為什麼此時要輸入這個代碼」。
+      </div>
+    </div>
+
+    <div class="alert alert-navy">
+      <div class="alert-icon">⑤</div>
+      <div>
+        <strong>盤點所有發給 token 的 OAuth App</strong>
+        執行 Entra → Enterprise Applications 審計，列出非預期或低使用率的 OAuth 應用程式，撤銷不需要的 Application 同意；對高風險帳號啟用 token lifetime 縮短（從 90 天降到 7 天）。
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 程式碼示例 -->
+<section class="section">
+  <div class="section-header">▸ Conditional Access PowerShell 範例</div>
+  <div class="section-body">
+    <p>使用 Microsoft Graph PowerShell SDK 建立 Report-only 封鎖政策骨架（需依環境補上必要欄位）：</p>
+    <div class="code-block">
+<span class="comment"># 連線 Graph，需 Policy.ReadWrite.ConditionalAccess scope</span>
+Connect-MgGraph -Scopes <span class="highlight">"Policy.ReadWrite.ConditionalAccess"</span>
+
+<span class="comment"># 建立封鎖 Device Code Flow 的 CA policy（Report-only）</span>
+$params = @{
+  displayName     = <span class="highlight">"Block Device Code Flow (Report-only)"</span>
+  state           = <span class="highlight">"enabledForReportingButNotEnforced"</span>
+  conditions      = @{
+    users         = @{ includeUsers = @(<span class="highlight">"All"</span>) }
+    applications  = @{ includeApplications = @(<span class="highlight">"All"</span>) }
+    authenticationFlows = @{ transferMethods = <span class="highlight">"deviceCodeFlow"</span> }
+  }
+  grantControls   = @{
+    operator         = <span class="highlight">"OR"</span>
+    builtInControls  = @(<span class="highlight">"block"</span>)
+  }
+}
+New-MgIdentityConditionalAccessPolicy -BodyParameter $params
+    </div>
+    <p>觀察 1–2 週 Report-only 結果無誤後，將 <code>state</code> 改為 <code>enabled</code>。</p>
+  </div>
+</section>
+
+<!-- 8. 來源 -->
+<section class="section">
+  <div class="section-header">▸ 主要來源</div>
+  <div class="section-body">
+    <div class="sources-grid">
+
+      <div class="source-card">
+        <div class="source-tag">中文媒體（觸發源）</div>
+        <a href="https://www.ithome.com.tw/news/175885" target="_blank">新駭客基礎架構出現，加速裝置碼釣魚、竊取 Microsoft 365 權杖</a>
+        <div class="source-meta">iThome · 2026-05</div>
+      </div>
+
+      <div class="source-card">
+        <div class="source-tag">威脅情報（一手）</div>
+        <a href="https://www.proofpoint.com/us/blog/threat-insight/device-code-phishing-evolution-identity-takeover" target="_blank">Device Code Phishing is an Evolution in Identity Takeover</a>
+        <div class="source-meta">Proofpoint Threat Insight</div>
+      </div>
+
+      <div class="source-card">
+        <div class="source-tag">威脅情報（一手）</div>
+        <a href="https://www.proofpoint.com/us/blog/threat-insight/access-granted-phishing-device-code-authorization-account-takeover" target="_blank">Access granted: phishing with device code authorization for account takeover</a>
+        <div class="source-meta">Proofpoint Threat Insight</div>
+      </div>
+
+      <div class="source-card">
+        <div class="source-tag">資安媒體</div>
+        <a href="https://thehackernews.com/2026/03/device-code-phishing-hits-340-microsoft.html" target="_blank">Device Code Phishing Hits 340+ Microsoft 365 Orgs Across Five Countries via OAuth Abuse</a>
+        <div class="source-meta">The Hacker News · 2026-03</div>
+      </div>
+
+      <div class="source-card">
+        <div class="source-tag">資安媒體</div>
+        <a href="https://www.bleepingcomputer.com/news/security/tycoon2fa-hijacks-microsoft-365-accounts-via-device-code-phishing/" target="_blank">Tycoon2FA hijacks Microsoft 365 accounts via device-code phishing</a>
+        <div class="source-meta">BleepingComputer</div>
+      </div>
+
+      <div class="source-card">
+        <div class="source-tag">官方文件</div>
+        <a href="https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-block-authentication-flows" target="_blank">Block authentication flows with Conditional Access policy</a>
+        <div class="source-meta">Microsoft Learn · Entra ID</div>
+      </div>
+
+      <div class="source-card">
+        <div class="source-tag">官方文件</div>
+        <a href="https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-authentication-flows" target="_blank">Authentication flows as a condition in Conditional Access policy</a>
+        <div class="source-meta">Microsoft Learn · Entra ID</div>
+      </div>
+
+      <div class="source-card">
+        <div class="source-tag">資安媒體</div>
+        <a href="https://www.infosecurity-magazine.com/news/oauth-phishing-campaigns/" target="_blank">OAuth Device Code Phishing Campaigns Surge Targets Microsoft 365</a>
+        <div class="source-meta">Infosecurity Magazine</div>
+      </div>
+
+      <div class="source-card">
+        <div class="source-tag">產業研究</div>
+        <a href="https://labs.cloudsecurityalliance.org/research/csa-research-note-oauth-device-code-phishing-m365-20260325-c/" target="_blank">CSA Research Note — OAuth Device Code Phishing M365</a>
+        <div class="source-meta">Cloud Security Alliance · 2026-03</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer class="report-footer">
+  Generated 2026-05-18 · SecondBrain Report System · suelife/reports
+</footer>
+
+</body>
+</html>
