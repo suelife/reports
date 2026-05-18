@@ -4,267 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>資安事件報告：台灣政府網站「太陽光電單一服務窗口」網域劫持事件（2026-05-14）</title>
-<style>
-  :root {
-    --navy: #1a2744;
-    --navy-light: #2c3e6b;
-    --red: #c0392b;
-    --amber: #d68910;
-    --green: #1e8449;
-    --gray-bg: #f4f6f9;
-    --border: #dce3ee;
-    --text: #222831;
-    --text-muted: #5a6578;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
-    background: var(--gray-bg);
-    color: var(--text);
-    line-height: 1.7;
-    font-size: 15px;
-  }
-
-  /* ── Header ─────────────────────────────── */
-  .report-header {
-    background: var(--navy);
-    color: #fff;
-    padding: 40px 48px 32px;
-  }
-  .report-header .label {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #8aa4d0;
-    margin-bottom: 8px;
-  }
-  .report-header h1 {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    line-height: 1.3;
-  }
-  .report-header .meta {
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-    font-size: 13px;
-    color: #9bb3d4;
-  }
-  .report-header .meta span strong { color: #fff; }
-
-  .severity-badge {
-    display: inline-block;
-    background: var(--red);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 3px;
-    margin-bottom: 14px;
-  }
-  .severity-badge.amber { background: var(--amber); }
-
-  /* ── Layout ──────────────────────────────── */
-  .container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 32px 24px 60px;
-  }
-
-  /* ── Sections ────────────────────────────── */
-  .section {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-bottom: 24px;
-    overflow: hidden;
-  }
-  .section-header {
-    background: var(--navy);
-    color: #fff;
-    padding: 12px 24px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-header .icon { font-size: 15px; }
-  .section-body { padding: 24px; }
-
-  /* ── Executive Summary ───────────────────── */
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-  .kpi {
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 14px 16px;
-    text-align: center;
-  }
-  .kpi .kpi-value {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--navy);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .kpi .kpi-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .kpi.red .kpi-value { color: var(--red); }
-  .kpi.amber .kpi-value { color: var(--amber); }
-  .kpi.green .kpi-value { color: var(--green); }
-
-  /* ── Tables ──────────────────────────────── */
-  .data-table { width: 100%; border-collapse: collapse; }
-  .data-table th {
-    text-align: left;
-    padding: 10px 14px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: #f0f3f8;
-    border-bottom: 2px solid var(--border);
-    color: var(--navy);
-  }
-  .data-table td {
-    padding: 11px 14px;
-    font-size: 14px;
-    border-bottom: 1px solid #edf0f5;
-    vertical-align: top;
-  }
-  .data-table tr:last-child td { border-bottom: none; }
-  .data-table tr:hover td { background: #fafbfd; }
-
-  /* ── Timeline ────────────────────────────── */
-  .timeline { position: relative; padding-left: 24px; }
-  .timeline::before {
-    content: '';
-    position: absolute;
-    left: 7px; top: 6px; bottom: 6px;
-    width: 2px;
-    background: var(--border);
-  }
-  .tl-item { position: relative; margin-bottom: 20px; }
-  .tl-item:last-child { margin-bottom: 0; }
-  .tl-dot {
-    position: absolute;
-    left: -21px;
-    top: 5px;
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background: var(--navy);
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 2px var(--navy);
-  }
-  .tl-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
-  .tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
-  .tl-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
-  .tl-date { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; font-weight: 600; }
-  .tl-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-  .tl-desc { font-size: 14px; color: var(--text-muted); }
-
-  /* ── Status badges ───────────────────────── */
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 3px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .badge-red { background: #fdecea; color: var(--red); }
-  .badge-amber { background: #fef9ec; color: var(--amber); }
-  .badge-green { background: #eafaf1; color: var(--green); }
-  .badge-navy { background: #eef1f8; color: var(--navy); }
-
-  /* ── Callout ─────────────────────────────── */
-  .callout {
-    border-left: 4px solid var(--navy);
-    background: #f0f3f8;
-    padding: 14px 18px;
-    border-radius: 0 4px 4px 0;
-    margin-bottom: 16px;
-    font-size: 14px;
-  }
-  .callout.red { border-color: var(--red); background: #fdf3f2; }
-  .callout.amber { border-color: var(--amber); background: #fefdf0; }
-  .callout.green { border-color: var(--green); background: #f0faf4; }
-  .callout strong { display: block; margin-bottom: 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-  /* ── Text helpers ────────────────────────── */
-  p { margin-bottom: 12px; font-size: 14px; }
-  p:last-child { margin-bottom: 0; }
-  h3 { font-size: 15px; font-weight: 700; color: var(--navy); margin: 20px 0 10px; }
-  h3:first-child { margin-top: 0; }
-  code {
-    font-family: "SFMono-Regular", Consolas, monospace;
-    background: #f0f3f8;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 13px;
-    color: var(--navy);
-  }
-  .url-dead { color: var(--red); text-decoration: line-through; }
-  a { color: var(--navy); }
-  ul.body-list { padding-left: 20px; margin-bottom: 12px; }
-  ul.body-list li { font-size: 14px; margin-bottom: 6px; }
-
-  /* ── Sources ─────────────────────────────── */
-  .sources-list { list-style: none; padding: 0; }
-  .sources-list li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; gap: 12px; align-items: baseline; }
-  .sources-list li:last-child { border-bottom: none; }
-  .src-num { font-weight: 700; color: var(--navy); min-width: 24px; }
-
-  /* ── Footer ──────────────────────────────── */
-  .footer {
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-muted);
-    padding: 32px 0 16px;
-    border-top: 1px solid var(--border);
-    margin-top: 40px;
-  }
-
-  @media (max-width: 600px) {
-    .report-header { padding: 24px 20px; }
-    .report-header h1 { font-size: 20px; }
-    .container { padding: 16px 12px 40px; }
-    .section-body { padding: 16px; }
-  }
-</style>
+<link rel="stylesheet" href="design.css">
 </head>
 <body>
 
 <!-- ═══════════════ HEADER ═══════════════ -->
-<div class="report-header">
+<header class="report-header">
   <div class="label">資安事件報告 · SecondBrain Investigation</div>
-  <div class="severity-badge">HIGH</div>
+  <span class="severity-badge high">HIGH</span>
   <h1>台灣政府網站「太陽光電單一服務窗口」<br>網域劫持暨 SEO 權重竊用事件</h1>
   <div class="meta">
-    <span><strong>調查日期</strong> 2026-05-14</span>
-    <span><strong>事件狀態</strong> 進行中（尚未公開報導）</span>
-    <span><strong>影響範圍</strong> 數十個 .gov.tw 頁面</span>
-    <span><strong>調查者</strong> Wind Kuo / SecondBrain</span>
+    <span><strong>事件日期</strong>　2026-05-14（發現日）</span>
+    <span><strong>公告日期</strong>　未公告</span>
+    <span><strong>報告日期</strong>　2026-05-14</span>
+    <span><strong>受害者</strong>　台灣政府 mrpv.org.tw</span>
+    <span><strong>攻擊組織</strong>　未知（疑 SEO 詐騙）</span>
   </div>
-</div>
+</header>
 
 <div class="container">
 
@@ -278,15 +34,15 @@
       </div>
       <div class="summary-grid">
         <div class="kpi red">
-          <div class="kpi-value">劫持</div>
+          <div class="kpi-value">已劫持</div>
           <div class="kpi-label">mrpv.org.tw 現況</div>
         </div>
         <div class="kpi amber">
-          <div class="kpi-value">50+</div>
-          <div class="kpi-label">受影響 gov.tw 頁面（估）</div>
+          <div class="kpi-value">50+ 頁</div>
+          <div class="kpi-label">受影響 gov.tw 頁面</div>
         </div>
         <div class="kpi red">
-          <div class="kpi-value">0</div>
+          <div class="kpi-value">0 篇</div>
           <div class="kpi-label">目前主流媒體報導</div>
         </div>
         <div class="kpi amber">
@@ -349,7 +105,7 @@
 
   <!-- ═══════════════ 技術分析 ═══════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">🔍</span> 技術分析：攻擊手法拆解</div>
+    <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
     <div class="section-body">
 
       <h3>手法一：廢棄網域劫持（Expired Domain Hijacking）</h3>
@@ -434,7 +190,7 @@
 
   <!-- ═══════════════ 背景關聯事件 ═══════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">🔗</span> 背景關聯：BadIIS / UAT-8099 攻擊活動</div>
+    <div class="section-header"><span class="icon">🎯</span> 攻擊者背景</div>
     <div class="section-body">
       <div class="callout">
         <strong>說明</strong>
@@ -535,7 +291,7 @@
 
   <!-- ═══════════════ 建議行動 ═══════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">✅</span> 建議行動</div>
+    <div class="section-header"><span class="icon">🛡️</span> 防禦建議</div>
     <div class="section-body">
 
       <h3>政府單位（緊急）</h3>
@@ -588,7 +344,7 @@
 
   <!-- ═══════════════ SOURCES ═══════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">📚</span> 調查來源</div>
+    <div class="section-header"><span class="icon">📚</span> 資料來源</div>
     <div class="section-body">
       <ul class="sources-list">
         <li>

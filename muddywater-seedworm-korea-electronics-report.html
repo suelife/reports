@@ -4,266 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>資安事件報告：MuddyWater（Seedworm）2026 Q1 全球間諜行動——韓國電子製造商入侵事件深度分析</title>
-<style>
-  :root {
-    --navy: #1a2744;
-    --navy-light: #2c3e6b;
-    --red: #c0392b;
-    --amber: #d68910;
-    --green: #1e8449;
-    --gray-bg: #f4f6f9;
-    --border: #dce3ee;
-    --text: #222831;
-    --text-muted: #5a6578;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
-    background: var(--gray-bg);
-    color: var(--text);
-    line-height: 1.7;
-    font-size: 15px;
-  }
-
-  .report-header {
-    background: var(--navy);
-    color: #fff;
-    padding: 40px 48px 32px;
-  }
-  .report-header .label {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #8aa4d0;
-    margin-bottom: 8px;
-  }
-  .report-header h1 {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    line-height: 1.3;
-  }
-  .report-header .meta {
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-    font-size: 13px;
-    color: #9bb3d4;
-  }
-  .report-header .meta span strong { color: #fff; }
-
-  .severity-badge {
-    display: inline-block;
-    background: var(--red);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 3px;
-    margin-bottom: 14px;
-  }
-  .severity-badge.amber { background: var(--amber); }
-
-  .container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 32px 24px 60px;
-  }
-
-  .section {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-bottom: 24px;
-    overflow: hidden;
-  }
-  .section-header {
-    background: var(--navy);
-    color: #fff;
-    padding: 12px 24px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-header .icon { font-size: 15px; }
-  .section-body { padding: 24px; }
-
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-  .kpi {
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 14px 16px;
-    text-align: center;
-  }
-  .kpi .kpi-value {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--navy);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .kpi .kpi-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .kpi.red .kpi-value { color: var(--red); }
-  .kpi.amber .kpi-value { color: var(--amber); }
-  .kpi.green .kpi-value { color: var(--green); }
-
-  .data-table { width: 100%; border-collapse: collapse; }
-  .data-table th {
-    text-align: left;
-    padding: 10px 14px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: #f0f3f8;
-    border-bottom: 2px solid var(--border);
-    color: var(--navy);
-  }
-  .data-table td {
-    padding: 11px 14px;
-    font-size: 14px;
-    border-bottom: 1px solid #edf0f5;
-    vertical-align: top;
-  }
-  .data-table tr:last-child td { border-bottom: none; }
-  .data-table tr:hover td { background: #fafbfd; }
-
-  .timeline { position: relative; padding-left: 24px; }
-  .timeline::before {
-    content: '';
-    position: absolute;
-    left: 7px; top: 6px; bottom: 6px;
-    width: 2px;
-    background: var(--border);
-  }
-  .tl-item { position: relative; margin-bottom: 20px; }
-  .tl-item:last-child { margin-bottom: 0; }
-  .tl-dot {
-    position: absolute;
-    left: -21px;
-    top: 5px;
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background: var(--navy);
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 2px var(--navy);
-  }
-  .tl-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
-  .tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
-  .tl-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
-  .tl-date { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; font-weight: 600; }
-  .tl-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-  .tl-desc { font-size: 14px; color: var(--text-muted); }
-
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 3px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .badge-red { background: #fdecea; color: var(--red); }
-  .badge-amber { background: #fef9ec; color: var(--amber); }
-  .badge-green { background: #eafaf1; color: var(--green); }
-  .badge-navy { background: #eef1f8; color: var(--navy); }
-
-  .callout {
-    border-left: 4px solid var(--navy);
-    background: #f0f3f8;
-    padding: 14px 18px;
-    border-radius: 0 4px 4px 0;
-    margin-bottom: 16px;
-    font-size: 14px;
-  }
-  .callout.red { border-color: var(--red); background: #fdf3f2; }
-  .callout.amber { border-color: var(--amber); background: #fefdf0; }
-  .callout.green { border-color: var(--green); background: #f0faf4; }
-  .callout strong { display: block; margin-bottom: 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-  p { margin-bottom: 12px; font-size: 14px; }
-  p:last-child { margin-bottom: 0; }
-  h3 { font-size: 15px; font-weight: 700; color: var(--navy); margin: 20px 0 10px; }
-  h3:first-child { margin-top: 0; }
-  code {
-    font-family: "SFMono-Regular", Consolas, monospace;
-    background: #f0f3f8;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 13px;
-    color: var(--navy);
-    word-break: break-all;
-  }
-  a { color: var(--navy); }
-  ul.body-list { padding-left: 20px; margin-bottom: 12px; }
-  ul.body-list li { font-size: 14px; margin-bottom: 6px; }
-
-  .sources-list { list-style: none; padding: 0; }
-  .sources-list li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; gap: 12px; align-items: baseline; }
-  .sources-list li:last-child { border-bottom: none; }
-  .src-num { font-weight: 700; color: var(--navy); min-width: 24px; }
-
-  .ioc-code {
-    font-family: "SFMono-Regular", Consolas, monospace;
-    font-size: 12px;
-    background: #f0f3f8;
-    padding: 1px 5px;
-    border-radius: 3px;
-    word-break: break-all;
-  }
-
-  .footer {
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-muted);
-    padding: 32px 0 16px;
-    border-top: 1px solid var(--border);
-    margin-top: 40px;
-  }
-
-  @media (max-width: 600px) {
-    .report-header { padding: 24px 20px; }
-    .report-header h1 { font-size: 20px; }
-    .container { padding: 16px 12px 40px; }
-    .section-body { padding: 16px; }
-  }
-</style>
+<link rel="stylesheet" href="design.css">
 </head>
 <body>
 
 <!-- HEADER -->
-<div class="report-header">
-  <div class="label">APT 威脅分析報告 · SecondBrain Investigation</div>
-  <div class="severity-badge">HIGH</div>
+<header class="report-header">
+  <div class="label">資安事件報告 · SecondBrain Investigation</div>
+  <span class="severity-badge high">HIGH</span>
   <h1>MuddyWater（Seedworm）2026 Q1 全球間諜行動<br>韓國電子製造商入侵事件深度分析</h1>
   <div class="meta">
-    <span><strong>分析日期</strong> 2026-05-15</span>
-    <span><strong>威脅等級</strong> 國家級 APT</span>
-    <span><strong>影響範圍</strong> 4 大洲 9 國 9 組織</span>
-    <span><strong>歸因</strong> 伊朗 MOIS</span>
-    <span><strong>分析者</strong> Wind Kuo / SecondBrain</span>
+    <span><strong>事件日期</strong>　2026-Q1</span>
+    <span><strong>公告日期</strong>　2026-05-15</span>
+    <span><strong>報告日期</strong>　2026-05-15</span>
+    <span><strong>受害者</strong>　韓國電子製造商等 9 組織</span>
+    <span><strong>攻擊組織</strong>　MuddyWater (Seedworm, 伊朗 MOIS)</span>
   </div>
-</div>
+</header>
 
 <div class="container">
 
@@ -271,18 +28,18 @@
   <div class="section">
     <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
     <div class="section-body">
-      <div class="callout red">
+      <div class="alert alert-red">
         <strong>核心結論</strong>
         伊朗國家級駭客組織 MuddyWater（Seedworm）於 2026 年 Q1 發動橫跨四大洲的間諜行動，濫用 <strong>SentinelOne 端點防護元件</strong>與<strong>富迪科技音訊驅動</strong>進行 DLL 側載，部署 ChromElevator 竊資軟體繞過 Chrome ABE 防護，竊取瀏覽器憑證。最引人注目的案例為入侵一家韓國大型電子製造商，駐留長達一週。
       </div>
-      <div class="summary-grid">
-        <div class="kpi red"><div class="kpi-value">9</div><div class="kpi-label">受害組織</div></div>
-        <div class="kpi red"><div class="kpi-value">9</div><div class="kpi-label">受影響國家</div></div>
+      <div class="kpi-grid">
+        <div class="kpi red"><div class="kpi-value">9 個</div><div class="kpi-label">受害組織</div></div>
+        <div class="kpi red"><div class="kpi-value">9 國</div><div class="kpi-label">受影響國家</div></div>
         <div class="kpi amber"><div class="kpi-value">8 天</div><div class="kpi-label">韓國案駐留時間</div></div>
-        <div class="kpi"><div class="kpi-value">5</div><div class="kpi-label">受害產業</div></div>
+        <div class="kpi"><div class="kpi-value">5 類</div><div class="kpi-label">受害產業</div></div>
       </div>
       <h3>受害產業</h3>
-      <ul class="body-list">
+      <ul >
         <li>工業與電子製造業（韓國、東南亞）</li>
         <li>政府機關與國際機場（中東）</li>
         <li>教育機構（多國）</li>
@@ -294,7 +51,7 @@
 
   <!-- ATTACKER PROFILE -->
   <div class="section">
-    <div class="section-header"><span class="icon">🎯</span> 攻擊者背景：MuddyWater 歷史演進</div>
+    <div class="section-header"><span class="icon">🎯</span> 攻擊者背景</div>
     <div class="section-body">
       <p>MuddyWater 是伊朗情報與安全部（MOIS）下屬的國家級 APT 組織，又名 Seedworm / Static Kitten / TEMP.Zagros / Mango Sandstorm / TA450，2022 年 2 月經 FBI、CISA、NSA 及英國 NCSC 聯合公告正式歸因。</p>
       <table class="data-table">
@@ -309,7 +66,7 @@
           <tr><td><strong>2026 Q1</strong></td><td><strong>本次事件：9 國 9 組織全球間諜行動</strong></td></tr>
         </tbody>
       </table>
-      <div class="callout amber" style="margin-top:16px;">
+      <div class="alert alert-amber" style="margin-top:16px;">
         <strong>演進趨勢</strong>
         從早期粗獷的 PowerShell 腳本 → .NET 植入物 → Rust 跨平台後門 → Node.js 自動化編排 + DLL 側載，手法持續朝「更安靜、更難偵測」方向進化。
       </div>
@@ -330,14 +87,14 @@
           <tr><td><code>sentinelmemoryscanner.exe</code></td><td>SentinelOne 端點防護元件</td><td><code>sentinelagentcore.dll</code></td><td>ChromElevator</td></tr>
         </tbody>
       </table>
-      <div class="callout red" style="margin-top:16px;">
+      <div class="alert alert-red" style="margin-top:16px;">
         <strong>安全工具被武器化</strong>
         SentinelOne 的二進位檔具有合法數位簽章，許多端點防護會自動信任同業簽章。攻擊者刻意選擇安全軟體元件來繞過安全工具——此模式已被 Storm-0249、Cephalus 勒索軟體等不同組織複製。
       </div>
 
       <h3>ChromElevator 竊資軟體</h3>
       <p>公開可取得的後滲透工具，能繞過 Google Chrome v127+ 引入的 <strong>App-Bound Encryption（ABE）</strong> 防護：</p>
-      <ul class="body-list">
+      <ul >
         <li><strong>ABE 機制：</strong>Chrome 透過 Windows 特權服務驗證存取 cookie/密碼的程序是否為 Chrome 本體</li>
         <li><strong>繞過方式：</strong>透過 COM 介面與 Chrome 的 IElevator 服務通訊，在與瀏覽器相同資料夾下執行偽裝</li>
         <li><strong>竊取內容：</strong>瀏覽器密碼、Cookie、付款資料</li>
@@ -346,7 +103,7 @@
 
       <h3>Node.js 自動化編排</h3>
       <p>本次行動的一大特色：使用 <code>node.exe</code> 作為攻擊編排引擎。PowerShell 偵察指令與 DLL 側載均由 <code>node.exe</code> 觸發，呈現 ~90 秒週期的自動化 beaconing 行為。</p>
-      <div class="callout">
+      <div class="alert alert-navy">
         <strong>意義</strong>
         攻擊者已從「人工坐在鍵盤前操作」轉向「自動化植入物自主執行」，顯示作戰成熟度的躍升。
       </div>
@@ -355,7 +112,7 @@
 
   <!-- TIMELINE -->
   <div class="section">
-    <div class="section-header"><span class="icon">📅</span> 韓國電子製造商入侵時間線</div>
+    <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
     <div class="section-body">
       <div class="timeline">
         <div class="tl-item">
@@ -478,11 +235,11 @@
 
   <!-- KEY INSIGHTS -->
   <div class="section">
-    <div class="section-header"><span class="icon">💡</span> 關鍵洞察與威脅評估</div>
+    <div class="section-header"><span class="icon">⚠️</span> 衝擊評估</div>
     <div class="section-body">
 
       <h3>作戰成熟度的躍升</h3>
-      <ul class="body-list">
+      <ul >
         <li><strong>編排自動化：</strong>從原始 PowerShell → Node.js 自動化驅動</li>
         <li><strong>隱匿性提升：</strong>DLL 側載取代直接投放惡意執行檔</li>
         <li><strong>工具冗餘：</strong>部署多套憑證竊取工具，確保任一被攔截仍可運作</li>
@@ -493,7 +250,7 @@
       <p>SentinelOne 的合法元件被用作攻擊跳板，揭示端點安全產業的結構性風險：安全產品的簽章檔案享有較高系統信任，攻擊者刻意利用這層信任。此模式已被 Storm-0249、Cephalus 等不同組織複製，形成跨組織的知識擴散。</p>
 
       <h3>地緣政治意涵</h3>
-      <ul class="body-list">
+      <ul >
         <li>MuddyWater 從傳統中東/北非目標<strong>擴展至東亞（韓國）</strong>，打破既有認知</li>
         <li>針對電子製造商可能意圖竊取工業/智慧財產，或取得供應鏈下游存取權</li>
         <li>配合中東機場、政府機關的同期入侵，MOIS 正在全球建構戰略情報收集網</li>
@@ -510,7 +267,7 @@
     <div class="section-body">
 
       <h3>即時行動</h3>
-      <ul class="body-list">
+      <ul >
         <li><strong>偵測 DLL 側載：</strong>監控 <code>fmapp.exe</code> 和 <code>sentinelmemoryscanner.exe</code> 從非標準路徑（如 <code>AppData\Local\[隨機]\</code>）執行</li>
         <li><strong>阻斷已知 IOC：</strong>將上述 IP、Domain、檔案雜湊加入防火牆與 EDR 規則</li>
         <li><strong>監控 node.exe 異常行為：</strong><code>node.exe</code> 作為 <code>cmd.exe</code> 或 <code>powershell.exe</code> 的父程序是高度異常的</li>
@@ -518,7 +275,7 @@
       </ul>
 
       <h3>中期強化</h3>
-      <ul class="body-list">
+      <ul >
         <li><strong>應用程式白名單：</strong>限制非預期的合法簽章二進位檔執行</li>
         <li><strong>Registry Run Key 監控：</strong>偵測 <code>CurrentVersion\Run</code> 中隨機命名的值</li>
         <li><strong>SAM 存取告警：</strong>監控 <code>reg save hklm\sam</code> 等登錄檔傾倒行為</li>
@@ -527,7 +284,7 @@
       </ul>
 
       <h3>長期策略</h3>
-      <ul class="body-list">
+      <ul >
         <li><strong>零信任架構：</strong>不因二進位檔具有合法簽章就自動信任</li>
         <li><strong>供應鏈安全評估：</strong>審視環境中所有第三方安全工具的可被濫用元件</li>
         <li><strong>威脅情報訂閱：</strong>持續追蹤 MuddyWater / Seedworm 的 TTPs 演化</li>
@@ -537,7 +294,7 @@
 
   <!-- SOURCES -->
   <div class="section">
-    <div class="section-header"><span class="icon">📚</span> 資料來源（15 份）</div>
+    <div class="section-header"><span class="icon">📚</span> 資料來源</div>
     <div class="section-body">
       <ol class="sources-list">
         <li><span class="src-num">1</span><a href="https://www.security.com/threat-intelligence/iran-seedworm-electronics" target="_blank">Symantec/Broadcom — Seedworm: Iran-Linked Hackers Breached Korean Electronics Maker</a>（原始報告）</li>

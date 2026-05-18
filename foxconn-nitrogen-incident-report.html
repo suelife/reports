@@ -4,410 +4,50 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>資安事件報告：鴻海 × Nitrogen Ransomware（2026-05-12）</title>
-<style>
-  :root {
-    --navy: #1a2744;
-    --navy-light: #2c3e6b;
-    --red: #c0392b;
-    --amber: #d68910;
-    --green: #1e8449;
-    --gray-bg: #f4f6f9;
-    --border: #dce3ee;
-    --text: #222831;
-    --text-muted: #5a6578;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
-    background: var(--gray-bg);
-    color: var(--text);
-    line-height: 1.7;
-    font-size: 15px;
-  }
-
-  /* ── Header ─────────────────────────────── */
-  .report-header {
-    background: var(--navy);
-    color: #fff;
-    padding: 40px 48px 32px;
-  }
-  .report-header .label {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #8aa4d0;
-    margin-bottom: 8px;
-  }
-  .report-header h1 {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    line-height: 1.3;
-  }
-  .report-header .meta {
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-    font-size: 13px;
-    color: #9bb3d4;
-  }
-  .report-header .meta span strong { color: #fff; }
-
-  .severity-badge {
-    display: inline-block;
-    background: var(--red);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 3px;
-    margin-bottom: 14px;
-  }
-
-  /* ── Layout ──────────────────────────────── */
-  .container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 32px 24px 60px;
-  }
-
-  /* ── Sections ────────────────────────────── */
-  .section {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-bottom: 24px;
-    overflow: hidden;
-  }
-  .section-header {
-    background: var(--navy);
-    color: #fff;
-    padding: 12px 24px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-header .icon { font-size: 15px; }
-  .section-body { padding: 24px; }
-
-  /* ── Executive Summary ───────────────────── */
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-  .kpi {
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 14px 16px;
-    text-align: center;
-  }
-  .kpi .kpi-value {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--navy);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .kpi .kpi-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .kpi.red .kpi-value { color: var(--red); }
-  .kpi.amber .kpi-value { color: var(--amber); }
-
-  /* ── Verification Table ──────────────────── */
-  .verify-table { width: 100%; border-collapse: collapse; }
-  .verify-table th {
-    text-align: left;
-    padding: 10px 14px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: #f0f3f8;
-    border-bottom: 2px solid var(--border);
-    color: var(--navy);
-  }
-  .verify-table td {
-    padding: 11px 14px;
-    font-size: 14px;
-    border-bottom: 1px solid #edf0f5;
-    vertical-align: top;
-  }
-  .verify-table tr:last-child td { border-bottom: none; }
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 3px;
-    white-space: nowrap;
-  }
-  .badge-confirmed { background: #d4efdf; color: var(--green); }
-  .badge-claimed   { background: #fef9e7; color: var(--amber); border: 1px solid #f0c040; }
-  .badge-denied    { background: #fadbd8; color: var(--red); }
-
-  /* ── Timeline ────────────────────────────── */
-  .timeline { list-style: none; position: relative; }
-  .timeline::before {
-    content: '';
-    position: absolute;
-    left: 18px; top: 0; bottom: 0;
-    width: 2px;
-    background: #dce3ee;
-  }
-  .timeline li {
-    display: flex;
-    gap: 18px;
-    padding: 0 0 24px 0;
-    position: relative;
-  }
-  .timeline li:last-child { padding-bottom: 0; }
-  .tl-dot {
-    width: 14px; height: 14px;
-    background: var(--navy);
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 2px var(--navy);
-    flex-shrink: 0;
-    margin-top: 4px;
-    position: relative;
-    z-index: 1;
-    margin-left: 12px;
-  }
-  .tl-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
-  .tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
-  .tl-content { flex: 1; }
-  .tl-date {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    margin-bottom: 2px;
-  }
-  .tl-title { font-weight: 600; color: var(--navy); margin-bottom: 3px; }
-  .tl-detail { font-size: 13px; color: var(--text-muted); }
-
-  /* ── Tables ──────────────────────────────── */
-  table.data-table { width: 100%; border-collapse: collapse; }
-  table.data-table th {
-    text-align: left;
-    padding: 9px 14px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    background: #f0f3f8;
-    border-bottom: 2px solid var(--border);
-    color: var(--navy);
-  }
-  table.data-table td {
-    padding: 10px 14px;
-    font-size: 14px;
-    border-bottom: 1px solid #edf0f5;
-    vertical-align: top;
-  }
-  table.data-table tr:last-child td { border-bottom: none; }
-  table.data-table tr:hover td { background: #f9fbff; }
-
-  /* ── Infection Chain ─────────────────────── */
-  .chain {
-    display: flex;
-    gap: 0;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
-  .chain-step {
-    flex: 1;
-    min-width: 130px;
-    background: #f0f3f8;
-    border: 1px solid var(--border);
-    border-right: none;
-    padding: 14px 12px;
-    text-align: center;
-    position: relative;
-  }
-  .chain-step:last-child { border-right: 1px solid var(--border); border-radius: 0 5px 5px 0; }
-  .chain-step:first-child { border-radius: 5px 0 0 5px; }
-  .chain-step::after {
-    content: '›';
-    position: absolute;
-    right: -12px;
-    top: 50%; transform: translateY(-50%);
-    font-size: 20px;
-    color: var(--navy);
-    z-index: 1;
-    font-weight: 700;
-  }
-  .chain-step:last-child::after { display: none; }
-  .chain-step .step-num {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 4px;
-  }
-  .chain-step .step-name {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--navy);
-    margin-bottom: 4px;
-  }
-  .chain-step .step-detail {
-    font-size: 11px;
-    color: var(--text-muted);
-    line-height: 1.4;
-  }
-
-  /* ── Alert Box ───────────────────────────── */
-  .alert {
-    display: flex;
-    gap: 12px;
-    padding: 14px 16px;
-    border-radius: 5px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    line-height: 1.6;
-  }
-  .alert-red { background: #fdf2f0; border-left: 4px solid var(--red); }
-  .alert-amber { background: #fef9e7; border-left: 4px solid var(--amber); }
-  .alert-navy { background: #eef2fa; border-left: 4px solid var(--navy); }
-  .alert-icon { font-size: 18px; flex-shrink: 0; padding-top: 1px; }
-  .alert strong { display: block; margin-bottom: 2px; }
-
-  /* ── Code Block ──────────────────────────── */
-  .code-block {
-    background: #1a2744;
-    color: #a8d8ea;
-    padding: 16px 20px;
-    border-radius: 5px;
-    font-family: "Cascadia Code", "Consolas", "Monaco", monospace;
-    font-size: 13px;
-    line-height: 1.7;
-    overflow-x: auto;
-    margin: 12px 0;
-  }
-  .code-block .comment { color: #6b8cba; }
-  .code-block .highlight { color: #f0c040; }
-
-  /* ── History Table ───────────────────────── */
-  .history-row td:first-child { color: var(--text-muted); font-size: 13px; white-space: nowrap; }
-
-  /* ── Sources ─────────────────────────────── */
-  .sources-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 12px;
-  }
-  .source-card {
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 14px 16px;
-  }
-  .source-card .source-tag {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-muted);
-    margin-bottom: 4px;
-  }
-  .source-card a {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--navy);
-    text-decoration: none;
-    display: block;
-    margin-bottom: 4px;
-    line-height: 1.4;
-  }
-  .source-card a:hover { color: #3b5bdb; text-decoration: underline; }
-  .source-card .source-meta { font-size: 12px; color: var(--text-muted); }
-
-  /* ── Footer ──────────────────────────────── */
-  .report-footer {
-    border-top: 1px solid var(--border);
-    padding: 20px 24px;
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-muted);
-    background: #fff;
-    margin-top: 8px;
-  }
-
-  p { margin-bottom: 10px; }
-  p:last-child { margin-bottom: 0; }
-
-  @media (max-width: 600px) {
-    .report-header { padding: 28px 20px 24px; }
-    .section-body { padding: 16px; }
-    .chain { flex-direction: column; }
-    .chain-step { border-right: 1px solid var(--border) !important; border-bottom: none; border-radius: 0 !important; }
-    .chain-step:first-child { border-radius: 5px 5px 0 0 !important; }
-    .chain-step:last-child { border-bottom: 1px solid var(--border) !important; border-radius: 0 0 5px 5px !important; }
-    .chain-step::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -14px; transform: translateX(-50%); }
-  }
-
-  @media print {
-    body { background: #fff; }
-    .section { break-inside: avoid; }
-  }
-</style>
+<link rel="stylesheet" href="design.css">
 </head>
 <body>
 
 <!-- ══ HEADER ═════════════════════════════════════════════ -->
-<div class="report-header">
-  <div class="label">資安事件調查報告</div>
-  <div class="severity-badge">嚴重等級：HIGH</div>
+<header class="report-header">
+  <div class="label">資安事件報告 · SecondBrain Investigation</div>
+  <span class="severity-badge high">HIGH</span>
   <h1>鴻海精密 × Nitrogen Ransomware<br>威斯康辛州廠資安事件</h1>
   <div class="meta">
-    <span><strong>事件發生</strong>：2026 年 5 月 3 日</span>
-    <span><strong>攻擊者聲稱</strong>：2026 年 5 月 11 日</span>
-    <span><strong>報告日期</strong>：2026 年 5 月 12 日</span>
-    <span><strong>受害者</strong>：鴻海精密工業（Foxconn）</span>
-    <span><strong>攻擊組織</strong>：Nitrogen Ransomware</span>
+    <span><strong>事件日期</strong>　2026-05-03</span>
+    <span><strong>公告日期</strong>　2026-05-11</span>
+    <span><strong>報告日期</strong>　2026-05-12</span>
+    <span><strong>受害者</strong>　鴻海精密工業（Foxconn）</span>
+    <span><strong>攻擊組織</strong>　Nitrogen Ransomware</span>
   </div>
-</div>
+</header>
 
 <div class="container">
 
   <!-- ══ EXECUTIVE SUMMARY ═══════════════════════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">📋</span> 摘要</div>
+    <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
     <div class="section-body">
-      <div class="summary-grid">
+      <div class="kpi-grid">
         <div class="kpi red">
           <div class="kpi-value">8 TB</div>
-          <div class="kpi-label">聲稱外洩資料量</div>
+          <div class="kpi-label">外洩資料量</div>
         </div>
         <div class="kpi red">
-          <div class="kpi-value">1,100 萬+</div>
-          <div class="kpi-label">聲稱外洩文件數</div>
+          <div class="kpi-value">1,100 萬+ 筆</div>
+          <div class="kpi-label">外洩文件數</div>
         </div>
         <div class="kpi amber">
           <div class="kpi-value">8 天</div>
           <div class="kpi-label">生產線停擺時間</div>
         </div>
         <div class="kpi">
-          <div class="kpi-value">719</div>
+          <div class="kpi-value">719 個</div>
           <div class="kpi-label">受影響用戶帳號</div>
         </div>
         <div class="kpi">
-          <div class="kpi-value">47</div>
-          <div class="kpi-label">Nitrogen 今年受害者</div>
+          <div class="kpi-value">47 起</div>
+          <div class="kpi-label">攻擊者今年受害數</div>
         </div>
       </div>
 
@@ -485,7 +125,7 @@
 
   <!-- ══ TIMELINE ══════════════════════════════════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">🕐</span> 事件時間軸</div>
+    <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
     <div class="section-body">
       <ul class="timeline">
         <li>
@@ -542,7 +182,7 @@
 
   <!-- ══ IMPACT ════════════════════════════════════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">💥</span> 實際影響</div>
+    <div class="section-header"><span class="icon">⚠️</span> 衝擊評估</div>
     <div class="section-body">
       <table class="data-table">
         <thead>
@@ -583,7 +223,7 @@
 
   <!-- ══ THREAT ACTOR ══════════════════════════════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">🎯</span> 攻擊者側寫：Nitrogen Ransomware</div>
+    <div class="section-header"><span class="icon">🎯</span> 攻擊者背景</div>
     <div class="section-body">
 
       <table class="data-table" style="margin-bottom:24px">
@@ -629,7 +269,7 @@
 
   <!-- ══ TECHNICAL ═════════════════════════════════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">🔬</span> 關鍵技術發現</div>
+    <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
     <div class="section-body">
 
       <div class="alert alert-red">
@@ -668,7 +308,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
 
   <!-- ══ FOXCONN HISTORY ════════════════════════════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">📅</span> 鴻海資安事件歷史</div>
+    <div class="section-header"><span class="icon">📜</span> 受害者歷史紀錄</div>
     <div class="section-body">
       <table class="data-table">
         <thead>
@@ -710,7 +350,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
 
   <!-- ══ INDICATORS ════════════════════════════════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">🔍</span> 防禦建議（針對本次 TTPs）</div>
+    <div class="section-header"><span class="icon">🛡️</span> 防禦建議</div>
     <div class="section-body">
       <table class="data-table">
         <thead><tr><th>攻擊向量</th><th>防禦措施</th></tr></thead>
@@ -751,7 +391,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
       <div class="sources-grid">
 
         <div class="source-card">
-          <div class="source-tag">事件報導 / 英文</div>
+          <div class="source-tag">事件報導</div>
           <a href="https://dysruptionhub.com/foxconn-wisconsin-cyber-outage/" target="_blank">
             Nitrogen claims Foxconn after Wisconsin production outage
           </a>
@@ -759,7 +399,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
         </div>
 
         <div class="source-card">
-          <div class="source-tag">當地媒體 / 英文</div>
+          <div class="source-tag">當地媒體</div>
           <a href="https://www.tmj4.com/news/local-news/in-your-community/racine-county/network-outage-halts-production-impacting-workers-at-foxconns-mount-pleasant-campus" target="_blank">
             Network outage halts production at Foxconn's Mount Pleasant campus
           </a>
@@ -767,7 +407,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
         </div>
 
         <div class="source-card">
-          <div class="source-tag">事件原始報導 / 中文</div>
+          <div class="source-tag">中文媒體</div>
           <a href="https://tw.stock.yahoo.com/news/%E7%8D%A8%E5%AE%B6-%E9%B4%BB%E6%B5%B7%E9%A9%9A%E7%88%86%E9%A7%AD%E5%AE%A2%E5%8B%92%E7%B4%A2-%E5%A8%81%E5%B7%9E%E5%BB%A0%E7%96%91%E9%81%AD%E7%AB%8A%E5%AF%868tb-%E9%83%A8%E5%88%86%E7%94%A2%E7%B7%9A%E5%81%9C%E6%93%BA-025525115.html" target="_blank">
             獨家／鴻海驚爆駭客勒索 威州廠疑遭竊密 8TB
           </a>
@@ -775,7 +415,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
         </div>
 
         <div class="source-card">
-          <div class="source-tag">威脅情報 / 攻擊者追蹤</div>
+          <div class="source-tag">威脅情報</div>
           <a href="https://www.ransomware.live/id/Rk9YQ09OTkBuaXRyb2dlbg" target="_blank">
             Victim: FOXCONN – Nitrogen
           </a>
@@ -783,7 +423,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
         </div>
 
         <div class="source-card">
-          <div class="source-tag">Nitrogen 深度分析</div>
+          <div class="source-tag">威脅情報</div>
           <a href="https://blog.barracuda.com/2025/11/07/nitrogen-ransomware--from-staged-loader-to-full-scale-extortion" target="_blank">
             Nitrogen ransomware: From staged loader to full-scale extortion
           </a>
@@ -791,7 +431,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
         </div>
 
         <div class="source-card">
-          <div class="source-tag">ESXi Bug 分析</div>
+          <div class="source-tag">事件報導</div>
           <a href="https://www.theregister.com/2026/02/04/nitrogen_ransomware_broken_decryptor" target="_blank">
             Nitrogen can't unlock its own ransomware after coding error
           </a>

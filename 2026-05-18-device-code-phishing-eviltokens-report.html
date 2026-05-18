@@ -4,106 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Device Code Phishing 新基礎架構 — EvilTokens / Tycoon PhaaS 與 M365 權杖竊取</title>
-<style>
-:root{--navy:#1a2744;--navy-light:#2c3e6b;--red:#c0392b;--amber:#d68910;--green:#1e8449;--gray-bg:#f4f6f9;--border:#dce3ee;--text:#222831;--text-muted:#5a6578;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--gray-bg);color:var(--text);line-height:1.7;font-size:15px;}
-.report-header{background:var(--navy);color:#fff;padding:40px 48px 32px;}
-.report-header .label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8aa4d0;margin-bottom:8px;}
-.report-header h1{font-size:26px;font-weight:700;margin-bottom:10px;line-height:1.3;}
-.report-header .meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:16px;font-size:13px;color:#9bb3d4;}
-.report-header .meta span strong{color:#fff;}
-.severity-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:3px;margin-bottom:14px;}
-.severity-badge.high{background:var(--red);color:#fff;}
-.severity-badge.medium{background:var(--amber);color:#fff;}
-.severity-badge.low{background:var(--green);color:#fff;}
-.severity-badge.info{background:var(--navy-light);color:#fff;}
-.container{max-width:1000px;margin:0 auto;padding:32px 24px 60px;}
-.section{background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:24px;overflow:hidden;}
-.section-header{background:var(--navy);color:#fff;padding:12px 24px;font-size:13px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
-.section-body{padding:24px;}
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:20px;}
-.kpi{border:1px solid var(--border);border-radius:5px;padding:14px 16px;text-align:center;}
-.kpi .kpi-value{font-size:28px;font-weight:800;color:var(--navy);line-height:1;margin-bottom:4px;}
-.kpi .kpi-label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;}
-.kpi.red .kpi-value{color:var(--red);}
-.kpi.amber .kpi-value{color:var(--amber);}
-.kpi.green .kpi-value{color:var(--green);}
-.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;white-space:nowrap;}
-.badge-confirmed{background:#d4efdf;color:var(--green);}
-.badge-claimed{background:#fef9e7;color:var(--amber);border:1px solid #f0c040;}
-.badge-denied{background:#fadbd8;color:var(--red);}
-.badge-info{background:#eef2fa;color:var(--navy);}
-table.data-table{width:100%;border-collapse:collapse;}
-table.data-table th{text-align:left;padding:9px 14px;font-size:12px;font-weight:700;text-transform:uppercase;background:#f0f3f8;border-bottom:2px solid var(--border);color:var(--navy);}
-table.data-table td{padding:10px 14px;font-size:14px;border-bottom:1px solid #edf0f5;vertical-align:top;}
-table.data-table tr:last-child td{border-bottom:none;}
-table.data-table tr:hover td{background:#f9fbff;}
-.timeline{list-style:none;position:relative;}
-.timeline::before{content:'';position:absolute;left:18px;top:0;bottom:0;width:2px;background:#dce3ee;}
-.timeline li{display:flex;gap:18px;padding:0 0 24px;position:relative;}
-.timeline li:last-child{padding-bottom:0;}
-.tl-dot{width:14px;height:14px;background:var(--navy);border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px var(--navy);flex-shrink:0;margin-top:4px;position:relative;z-index:1;margin-left:12px;}
-.tl-dot.red{background:var(--red);box-shadow:0 0 0 2px var(--red);}
-.tl-dot.amber{background:var(--amber);box-shadow:0 0 0 2px var(--amber);}
-.tl-dot.green{background:var(--green);box-shadow:0 0 0 2px var(--green);}
-.tl-content{flex:1;}
-.tl-date{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;}
-.tl-title{font-weight:600;color:var(--navy);margin-bottom:3px;}
-.tl-detail{font-size:13px;color:var(--text-muted);}
-.chain{display:flex;overflow-x:auto;}
-.chain-step{flex:1;min-width:130px;background:#f0f3f8;border:1px solid var(--border);border-right:none;padding:14px 12px;text-align:center;position:relative;}
-.chain-step:last-child{border-right:1px solid var(--border);border-radius:0 5px 5px 0;}
-.chain-step:first-child{border-radius:5px 0 0 5px;}
-.chain-step::after{content:'›';position:absolute;right:-12px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--navy);z-index:1;font-weight:700;}
-.chain-step:last-child::after{display:none;}
-.chain-step .step-num{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;}
-.chain-step .step-name{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px;}
-.chain-step .step-detail{font-size:11px;color:var(--text-muted);line-height:1.4;}
-.alert{display:flex;gap:12px;padding:14px 16px;border-radius:5px;margin-bottom:16px;font-size:14px;line-height:1.6;}
-.alert-red{background:#fdf2f0;border-left:4px solid var(--red);}
-.alert-amber{background:#fef9e7;border-left:4px solid var(--amber);}
-.alert-green{background:#eafaf1;border-left:4px solid var(--green);}
-.alert-navy{background:#eef2fa;border-left:4px solid var(--navy);}
-.alert-icon{font-size:18px;flex-shrink:0;padding-top:1px;}
-.alert strong{display:block;margin-bottom:2px;}
-.code-block{background:#1a2744;color:#a8d8ea;padding:16px 20px;border-radius:5px;font-family:"Cascadia Code",Consolas,Monaco,monospace;font-size:13px;line-height:1.7;overflow-x:auto;margin:12px 0;}
-.code-block .comment{color:#6b8cba;}
-.code-block .highlight{color:#f0c040;}
-.sources-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
-.source-card{border:1px solid var(--border);border-radius:5px;padding:14px 16px;}
-.source-card .source-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:4px;}
-.source-card a{font-size:14px;font-weight:600;color:var(--navy);text-decoration:none;display:block;margin-bottom:4px;line-height:1.4;}
-.source-card a:hover{color:#3b5bdb;text-decoration:underline;}
-.source-card .source-meta{font-size:12px;color:var(--text-muted);}
-.report-footer{border-top:1px solid var(--border);padding:20px 24px;text-align:center;font-size:12px;color:var(--text-muted);background:#fff;}
-p{margin-bottom:10px;}
-p:last-child{margin-bottom:0;}
-code{background:#f0f3f8;padding:1px 5px;border-radius:3px;font-size:13px;font-family:Consolas,monospace;}
-h3.sub{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;}
-@media (max-width:600px){.report-header{padding:28px 20px 24px;}.section-body{padding:16px;}.chain{flex-direction:column;}.chain-step{border-right:1px solid var(--border)!important;border-bottom:none;border-radius:0!important;}.chain-step:first-child{border-radius:5px 5px 0 0!important;}.chain-step:last-child{border-bottom:1px solid var(--border)!important;border-radius:0 0 5px 5px!important;}.chain-step::after{content:'↓';right:auto;left:50%;top:auto;bottom:-14px;transform:translateX(-50%);}}
-@media print{body{background:#fff;}.section{break-inside:avoid;}}
-</style>
+<link rel="stylesheet" href="design.css">
 </head>
 <body>
 
 <header class="report-header">
-  <div class="label">Research Brief · SecondBrain</div>
-  <span class="severity-badge high">High Risk</span>
+  <div class="label">研究簡報 · SecondBrain Research</div>
+  <span class="severity-badge high">HIGH</span>
   <h1>Device Code Phishing 新基礎架構：EvilTokens / Tycoon PhaaS 與 Microsoft 365 權杖竊取</h1>
   <div class="meta">
     <span><strong>研究日期</strong>　2026-05-18</span>
     <span><strong>資料截止</strong>　2026-05-18</span>
-    <span><strong>主要來源</strong>　8</span>
+    <span><strong>主要來源</strong>　9 份</span>
     <span><strong>觸發來源</strong>　iThome 175885</span>
   </div>
 </header>
 
 <div class="container">
 
-<!-- 2. 核心論點 -->
 <section class="section">
-  <div class="section-header">▸ 核心論點</div>
+  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
   <div class="section-body">
     <div class="alert alert-navy">
       <div class="alert-icon">◆</div>
@@ -113,17 +33,16 @@ h3.sub{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-
       </div>
     </div>
     <div class="kpi-grid">
-      <div class="kpi red"><div class="kpi-value">340+</div><div class="kpi-label">受害 M365 組織</div></div>
-      <div class="kpi amber"><div class="kpi-value">7</div><div class="kpi-label">4 月 10 天內變種數</div></div>
-      <div class="kpi"><div class="kpi-value">5</div><div class="kpi-label">主要受害國家</div></div>
-      <div class="kpi red"><div class="kpi-value">0</div><div class="kpi-label">MFA 攔截次數</div></div>
+      <div class="kpi red"><div class="kpi-value">340+ 組織</div><div class="kpi-label">M365 受害組織</div></div>
+      <div class="kpi amber"><div class="kpi-value">7 個</div><div class="kpi-label">近期觀察變種</div></div>
+      <div class="kpi"><div class="kpi-value">5 國</div><div class="kpi-label">主要受害國家</div></div>
+      <div class="kpi red"><div class="kpi-value">0 次</div><div class="kpi-label">MFA 攔截次數</div></div>
     </div>
   </div>
 </section>
 
-<!-- 3. 背景與脈絡 -->
 <section class="section">
-  <div class="section-header">▸ 發展時序</div>
+  <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
   <div class="section-body">
     <ul class="timeline">
       <li>
@@ -186,9 +105,8 @@ h3.sub{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-
   </div>
 </section>
 
-<!-- 攻擊鏈 -->
 <section class="section">
-  <div class="section-header">▸ 攻擊鏈（On-Demand 新版）</div>
+  <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
   <div class="section-body">
     <div class="chain">
       <div class="chain-step">
@@ -225,9 +143,8 @@ h3.sub{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-
   </div>
 </section>
 
-<!-- 4. 關鍵發現 -->
 <section class="section">
-  <div class="section-header">▸ 關鍵發現</div>
+  <div class="section-header"><span class="icon">💡</span> 核心論點</div>
   <div class="section-body">
 
     <div class="alert alert-red">
@@ -273,10 +190,11 @@ h3.sub{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-
   </div>
 </section>
 
-<!-- 5. 深度分析 -->
 <section class="section">
-  <div class="section-header">▸ 深度分析：新舊版差異</div>
+  <div class="section-header"><span class="icon">📊</span> 深度分析</div>
   <div class="section-body">
+
+    <h3 class="sub">新舊版差異</h3>
     <table class="data-table">
       <thead>
         <tr><th>維度</th><th>舊版（2024 前後）</th><th>新版（2025 秋起）</th></tr>
@@ -291,12 +209,8 @@ h3.sub{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-
         <tr><td>變種速度</td><td>低</td><td>4 月十日 7 變種，疑 AI 生成</td></tr>
       </tbody>
     </table>
-  </div>
-</section>
 
-<section class="section">
-  <div class="section-header">▸ 深度分析：EvilTokens vs Tycoon 2FA</div>
-  <div class="section-body">
+    <h3 class="sub" style="margin-top:24px;">EvilTokens vs Tycoon 2FA</h3>
     <table class="data-table">
       <thead>
         <tr><th>項目</th><th>EvilTokens</th><th>Tycoon 2FA</th></tr>
@@ -310,12 +224,12 @@ h3.sub{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-
         <tr><td>判定關係</td><td>共用 UI，是否同源未證實</td><td><span class="badge badge-claimed">未證實</span></td></tr>
       </tbody>
     </table>
+
   </div>
 </section>
 
-<!-- 6. 爭議 / 未確認 -->
 <section class="section">
-  <div class="section-header">▸ 爭議與未確認事項</div>
+  <div class="section-header"><span class="icon">⚖️</span> 爭議與未確認事項</div>
   <div class="section-body">
     <div class="alert alert-amber">
       <div class="alert-icon">⚠</div>
@@ -341,9 +255,36 @@ h3.sub{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-
   </div>
 </section>
 
-<!-- 7. 結論與行動建議 -->
 <section class="section">
-  <div class="section-header">▸ 結論與行動建議</div>
+  <div class="section-header"><span class="icon">💻</span> 程式碼範例</div>
+  <div class="section-body">
+    <p>使用 Microsoft Graph PowerShell SDK 建立 Report-only 封鎖政策骨架（需依環境補上必要欄位）：</p>
+    <div class="code-block">
+<span class="comment"># 連線 Graph，需 Policy.ReadWrite.ConditionalAccess scope</span>
+Connect-MgGraph -Scopes <span class="highlight">"Policy.ReadWrite.ConditionalAccess"</span>
+
+<span class="comment"># 建立封鎖 Device Code Flow 的 CA policy（Report-only）</span>
+$params = @{
+  displayName     = <span class="highlight">"Block Device Code Flow (Report-only)"</span>
+  state           = <span class="highlight">"enabledForReportingButNotEnforced"</span>
+  conditions      = @{
+    users         = @{ includeUsers = @(<span class="highlight">"All"</span>) }
+    applications  = @{ includeApplications = @(<span class="highlight">"All"</span>) }
+    authenticationFlows = @{ transferMethods = <span class="highlight">"deviceCodeFlow"</span> }
+  }
+  grantControls   = @{
+    operator         = <span class="highlight">"OR"</span>
+    builtInControls  = @(<span class="highlight">"block"</span>)
+  }
+}
+New-MgIdentityConditionalAccessPolicy -BodyParameter $params
+    </div>
+    <p>觀察 1–2 週 Report-only 結果無誤後，將 <code>state</code> 改為 <code>enabled</code>。</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon">🎯</span> 結論與行動建議</div>
   <div class="section-body">
 
     <h3 class="sub">立即（本週內）</h3>
@@ -392,87 +333,57 @@ h3.sub{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-
   </div>
 </section>
 
-<!-- 程式碼示例 -->
 <section class="section">
-  <div class="section-header">▸ Conditional Access PowerShell 範例</div>
-  <div class="section-body">
-    <p>使用 Microsoft Graph PowerShell SDK 建立 Report-only 封鎖政策骨架（需依環境補上必要欄位）：</p>
-    <div class="code-block">
-<span class="comment"># 連線 Graph，需 Policy.ReadWrite.ConditionalAccess scope</span>
-Connect-MgGraph -Scopes <span class="highlight">"Policy.ReadWrite.ConditionalAccess"</span>
-
-<span class="comment"># 建立封鎖 Device Code Flow 的 CA policy（Report-only）</span>
-$params = @{
-  displayName     = <span class="highlight">"Block Device Code Flow (Report-only)"</span>
-  state           = <span class="highlight">"enabledForReportingButNotEnforced"</span>
-  conditions      = @{
-    users         = @{ includeUsers = @(<span class="highlight">"All"</span>) }
-    applications  = @{ includeApplications = @(<span class="highlight">"All"</span>) }
-    authenticationFlows = @{ transferMethods = <span class="highlight">"deviceCodeFlow"</span> }
-  }
-  grantControls   = @{
-    operator         = <span class="highlight">"OR"</span>
-    builtInControls  = @(<span class="highlight">"block"</span>)
-  }
-}
-New-MgIdentityConditionalAccessPolicy -BodyParameter $params
-    </div>
-    <p>觀察 1–2 週 Report-only 結果無誤後，將 <code>state</code> 改為 <code>enabled</code>。</p>
-  </div>
-</section>
-
-<!-- 8. 來源 -->
-<section class="section">
-  <div class="section-header">▸ 主要來源</div>
+  <div class="section-header"><span class="icon">📚</span> 資料來源</div>
   <div class="section-body">
     <div class="sources-grid">
 
       <div class="source-card">
-        <div class="source-tag">中文媒體（觸發源）</div>
+        <div class="source-tag">中文媒體</div>
         <a href="https://www.ithome.com.tw/news/175885" target="_blank">新駭客基礎架構出現，加速裝置碼釣魚、竊取 Microsoft 365 權杖</a>
-        <div class="source-meta">iThome · 2026-05</div>
+        <div class="source-meta">iThome · 2026-05-18</div>
       </div>
 
       <div class="source-card">
-        <div class="source-tag">威脅情報（一手）</div>
+        <div class="source-tag">威脅情報</div>
         <a href="https://www.proofpoint.com/us/blog/threat-insight/device-code-phishing-evolution-identity-takeover" target="_blank">Device Code Phishing is an Evolution in Identity Takeover</a>
-        <div class="source-meta">Proofpoint Threat Insight</div>
+        <div class="source-meta">Proofpoint · 2026</div>
       </div>
 
       <div class="source-card">
-        <div class="source-tag">威脅情報（一手）</div>
+        <div class="source-tag">威脅情報</div>
         <a href="https://www.proofpoint.com/us/blog/threat-insight/access-granted-phishing-device-code-authorization-account-takeover" target="_blank">Access granted: phishing with device code authorization for account takeover</a>
-        <div class="source-meta">Proofpoint Threat Insight</div>
+        <div class="source-meta">Proofpoint · 2025</div>
       </div>
 
       <div class="source-card">
-        <div class="source-tag">資安媒體</div>
+        <div class="source-tag">事件報導</div>
         <a href="https://thehackernews.com/2026/03/device-code-phishing-hits-340-microsoft.html" target="_blank">Device Code Phishing Hits 340+ Microsoft 365 Orgs Across Five Countries via OAuth Abuse</a>
         <div class="source-meta">The Hacker News · 2026-03</div>
       </div>
 
       <div class="source-card">
-        <div class="source-tag">資安媒體</div>
+        <div class="source-tag">事件報導</div>
         <a href="https://www.bleepingcomputer.com/news/security/tycoon2fa-hijacks-microsoft-365-accounts-via-device-code-phishing/" target="_blank">Tycoon2FA hijacks Microsoft 365 accounts via device-code phishing</a>
-        <div class="source-meta">BleepingComputer</div>
+        <div class="source-meta">BleepingComputer · 2026</div>
       </div>
 
       <div class="source-card">
         <div class="source-tag">官方文件</div>
         <a href="https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-block-authentication-flows" target="_blank">Block authentication flows with Conditional Access policy</a>
-        <div class="source-meta">Microsoft Learn · Entra ID</div>
+        <div class="source-meta">Microsoft Learn · 2026</div>
       </div>
 
       <div class="source-card">
         <div class="source-tag">官方文件</div>
         <a href="https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-authentication-flows" target="_blank">Authentication flows as a condition in Conditional Access policy</a>
-        <div class="source-meta">Microsoft Learn · Entra ID</div>
+        <div class="source-meta">Microsoft Learn · 2026</div>
       </div>
 
       <div class="source-card">
-        <div class="source-tag">資安媒體</div>
+        <div class="source-tag">事件報導</div>
         <a href="https://www.infosecurity-magazine.com/news/oauth-phishing-campaigns/" target="_blank">OAuth Device Code Phishing Campaigns Surge Targets Microsoft 365</a>
-        <div class="source-meta">Infosecurity Magazine</div>
+        <div class="source-meta">Infosecurity Magazine · 2026</div>
       </div>
 
       <div class="source-card">
