@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub × TeamPCP — VSCode 供應鏈攻擊事件報告</title>
+<link rel="stylesheet" href="design.css">
+</head>
+<body>
+
+<header class="report-header">
+  <div class="label">資安事件報告 · SecondBrain Investigation</div>
+  <span class="severity-badge high">HIGH</span>
+  <h1>GitHub × TeamPCP（Mini Shai-Hulud）<br>Nx Console VSCode 擴展供應鏈攻擊：3,800 個內部 Repo 外洩</h1>
+  <div class="meta">
+    <span><strong>事件日期</strong>　2026-05-18</span>
+    <span><strong>公告日期</strong>　2026-05-19</span>
+    <span><strong>報告日期</strong>　2026-05-21</span>
+    <span><strong>受害者</strong>　GitHub（Microsoft）</span>
+    <span><strong>攻擊組織</strong>　TeamPCP（Mini Shai-Hulud / UNC6780）+ LAPSUS$</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- Executive Summary -->
+<section class="section">
+  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <div class="section-body">
+    <div class="alert alert-red">
+      <div class="alert-icon">🔴</div>
+      <div>
+        <strong>史上首個明確竊取 Claude Code 配置的供應鏈攻擊</strong>
+        TeamPCP 的惡意 Nx Console VSCode 擴展在上架僅 18 分鐘內，即竊取至少一名 GitHub 員工的全部開發憑證，導致 3,800 個 GitHub 內部 repository 被克隆。payload 明確鎖定 Anthropic Claude Code 配置文件（<code>~/.claude/settings.json</code>），標誌著供應鏈攻擊正式將 AI coding assistant 列入高價值目標。
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi red"><div class="kpi-value">3,800 個</div><div class="kpi-label">外洩 repo 數</div></div>
+      <div class="kpi red"><div class="kpi-value">18 分鐘</div><div class="kpi-label">惡意擴展存活時間</div></div>
+      <div class="kpi red"><div class="kpi-value">2.2M 裝置</div><div class="kpi-label">Nx Console 安裝量</div></div>
+      <div class="kpi amber"><div class="kpi-value">6,000+ 人</div><div class="kpi-label">受影響開發者</div></div>
+      <div class="kpi amber"><div class="kpi-value">$95,000</div><div class="kpi-label">暗網標售價格</div></div>
+      <div class="kpi amber"><div class="kpi-value">16M 次/週</div><div class="kpi-label">AntV npm 波及下載量</div></div>
+    </div>
+    <p>2026 年 5 月 18 日，攻擊組織 TeamPCP（又名 Mini Shai-Hulud）向 Visual Studio Code Marketplace 注入惡意版本的 Nx Console 擴展（v18.95.0）。該擴展擁有超過 220 萬裝置安裝量，由合法的 Nrwl 帳號發布，帳號本身已透過前置的 TanStack npm 供應鏈攻擊遭竊取。</p>
+    <p>惡意版本在上架後僅 <strong>18 分鐘</strong>即被下架，但短暫窗口已足以竊取至少一名 GitHub 員工的所有開發憑證。攻擊者利用該憑證克隆了 GitHub 約 3,800 個內部私有 repository，涵蓋 Copilot、CodeQL、Dependabot、Codespaces 等核心產品的原始碼及基礎設施配置。</p>
+    <p>此事件屬於 TeamPCP 自 2025 年 9 月起持續運作的「Mini Shai-Hulud」供應鏈蠕蟲活動之一波，攻擊路徑為 AntV npm → TanStack npm → Nx Console VSCode 擴展 → GitHub 員工機器 → GitHub 內部基礎設施，展現出高度自動化的多層橫向移動能力。</p>
+  </div>
+</section>
+
+<!-- 事實核查矩陣 -->
+<section class="section">
+  <div class="section-header"><span class="icon">✅</span> 事實核查矩陣</div>
+  <div class="section-body">
+    <table class="verify-table">
+      <thead>
+        <tr><th>聲明</th><th>來源</th><th>狀態</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Nx Console v18.95.0 被植入惡意 payload 並上架 VS Marketplace</td>
+          <td>Nx 官方聲明、StepSecurity、The Hacker News</td>
+          <td><span class="badge badge-confirmed">已確認</span></td>
+        </tr>
+        <tr>
+          <td>惡意版本存活約 18 分鐘（2026-05-18 14:36–14:54 CEST）</td>
+          <td>多個資安媒體交叉驗證</td>
+          <td><span class="badge badge-confirmed">已確認</span></td>
+        </tr>
+        <tr>
+          <td>GitHub 一名員工安裝了惡意 Nx Console，導致憑證遭竊</td>
+          <td>GitHub 官方事件報告</td>
+          <td><span class="badge badge-confirmed">已確認</span></td>
+        </tr>
+        <tr>
+          <td>約 3,800 個 GitHub 內部 repository 遭克隆</td>
+          <td>GitHub 確認（與攻擊者聲稱約 4,000「方向一致」）</td>
+          <td><span class="badge badge-confirmed">已確認</span></td>
+        </tr>
+        <tr>
+          <td>外洩內容含 Copilot、CodeQL、Dependabot、Codespaces 相關程式碼</td>
+          <td>BankInfoSecurity、SecurityWeek（引用攻擊者清單）</td>
+          <td><span class="badge badge-claimed">聲稱未驗證</span></td>
+        </tr>
+        <tr>
+          <td>客戶 enterprise 和用戶 repository 未受影響</td>
+          <td>GitHub 官方聲明（調查仍進行）</td>
+          <td><span class="badge badge-info">暫時確認（調查中）</span></td>
+        </tr>
+        <tr>
+          <td>TeamPCP 與 LAPSUS$ 聯合以 $95,000 出售資料</td>
+          <td>暗網論壇貼文截圖（多媒體報導）</td>
+          <td><span class="badge badge-claimed">聲稱未驗證</span></td>
+        </tr>
+        <tr>
+          <td>超過 6,000 名開發者受惡意擴展影響</td>
+          <td>The Hacker News 引用研究員估算</td>
+          <td><span class="badge badge-claimed">聲稱未驗證</span></td>
+        </tr>
+        <tr>
+          <td>AntV npm 攻擊（300+ 套件，16M 週下載量）屬同一行動</td>
+          <td>Wiz、Snyk、Orca Security 研究報告</td>
+          <td><span class="badge badge-confirmed">已確認</span></td>
+        </tr>
+        <tr>
+          <td>payload 明確竊取 ~/.claude/settings.json（Claude Code 配置）</td>
+          <td>The Hacker News、StepSecurity 技術分析</td>
+          <td><span class="badge badge-confirmed">已確認</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 事件時間線 -->
+<section class="section">
+  <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
+  <div class="section-body">
+    <ul class="timeline">
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2025-09</div>
+          <div class="tl-title">Mini Shai-Hulud 活動開始</div>
+          <div class="tl-detail">TeamPCP 展開 Mini Shai-Hulud 供應鏈蠕蟲活動，系統性攻擊開發者工具生態，目標包括 Trivy、Checkmarx、Bitwarden CLI 等。蠕蟲以竊取的 npm token 自我擴散為核心機制。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-19 01:39–02:18 UTC</div>
+          <div class="tl-title">AntV npm 供應鏈攻擊（22 分鐘爆發）</div>
+          <div class="tl-detail">透過入侵的 <code>atool</code> npm 維護者帳號（管理 547 個套件），在 22 分鐘內自動發布 300+ 個惡意套件版本。@antv 命名空間週下載量達 1,600 萬次，主要用於 Alibaba 旗下數據視覺化產品。竊取的 npm OIDC token 用於繼續橫向擴散。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-18～19</div>
+          <div class="tl-title">TanStack npm 供應鏈攻擊</div>
+          <div class="tl-detail">Mini Shai-Hulud 感染 TanStack 生態系，竊取 Nx 開發者的 GitHub OAuth token。Grafana 亦透過 TanStack npm 遭殃（原始碼外洩）。竊取的 GitHub 憑證讓攻擊者獲得 nrwl/nx 官方 repo 的 contributor 執行權。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-18 14:36 CEST</div>
+          <div class="tl-title">Nx Console v18.95.0 上架 VS Code Marketplace</div>
+          <div class="tl-detail">以竊取的 Nx 開發者帳號發布惡意版本。外觀與行為和正常版本完全一致，但啟動後立即從 nrwl/nx 官方 repo 的孤立 commit（orphan commit）拉取並執行 498KB 混淆 payload，偽裝成例行 MCP 設定任務。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-18 14:54 CEST（18 分鐘後）</div>
+          <div class="tl-title">惡意擴展下架</div>
+          <div class="tl-detail">VS Code Marketplace 將 Nx Console v18.95.0 下架。但至少一名 GitHub 員工已在此窗口內安裝更新，機器上的所有憑證遭竊取並外洩至攻擊者控制的基礎設施。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-18～19</div>
+          <div class="tl-title">GitHub 內部 repo 大規模克隆</div>
+          <div class="tl-detail">攻擊者以竊取的 GitHub 員工 token 克隆約 3,800 個內部私有 repository，含核心產品原始碼（Copilot、CodeQL、Dependabot、Codespaces）、基礎設施腳本及內部配置。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-19</div>
+          <div class="tl-title">TeamPCP 暗網公告 + LAPSUS$ 聯手標售</div>
+          <div class="tl-detail">在駭客論壇以 $95,000 出售竊取的 GitHub 內部 repository，並附上樣本截圖。聲明「不搞勒索，若無買家則免費公開外洩」（"No ransom, we do not care about extorting GitHub. If no buyer is found, we leak for free."）。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-19～20</div>
+          <div class="tl-title">GitHub 官方確認事件</div>
+          <div class="tl-detail">GitHub 承認約 3,800 個內部 repository 被克隆，表示目前無客戶資料受影響跡象，已輪換關鍵憑證，並承諾發布完整事件報告。調查仍在進行中。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-21</div>
+          <div class="tl-title">Nx 官方聲明 + 本報告發布</div>
+          <div class="tl-detail">Nx 確認開發者帳號因 TanStack 供應鏈攻擊遭入侵，導致 GitHub 憑證洩露，使攻擊者能以貢獻者身份在官方 repo 執行 workflows，完成 Nx Console 惡意版本發布。</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- 攻擊者背景 -->
+<section class="section">
+  <div class="section-header"><span class="icon">🎯</span> 攻擊者背景</div>
+  <div class="section-body">
+    <h3 class="sub">TeamPCP（Mini Shai-Hulud / UNC6780）</h3>
+    <p>TeamPCP 是一個自 2025 年 9 月以來持續活躍的威脅組織，Mandiant 以 <strong>UNC6780</strong> 追蹤此組織。其核心工具「Mini Shai-Hulud」（取自科幻小說《沙丘》中的沙蟲）具備自我擴散的蠕蟲行為，每次攻擊均以入侵 npm / GitHub / VSCode Marketplace 維護者帳號為入口，再以竊取的 token 繼續感染同一維護者管理的其他套件，形成指數級傳播。</p>
+    <div class="alert alert-amber">
+      <div class="alert-icon">⚠️</div>
+      <div>
+        <strong>俄語 / CIS 時區迴避機制</strong>
+        payload 包含時區偵測邏輯，在俄語或獨立國協時區的機器上不執行惡意行為。此類「地理圍欄」機制常見於東歐犯罪集團，暗示攻擊者可能位於上述地區以外。
+      </div>
+    </div>
+    <table class="data-table" style="margin-top:16px">
+      <thead><tr><th>屬性</th><th>細節</th></tr></thead>
+      <tbody>
+        <tr><td>別名</td><td>Mini Shai-Hulud、UNC6780</td></tr>
+        <tr><td>活躍時間</td><td>2025-09 至今（至少 8 個月）</td></tr>
+        <tr><td>主要目標</td><td>開發者工具生態（npm、VSCode Marketplace、GitHub Actions）</td></tr>
+        <tr><td>技術能力</td><td>多通道外洩、Sigstore 濫用、GitHub Search API C2、DNS tunneling、Sigstore SLSA 偽造</td></tr>
+        <tr><td>已知 2026 年目標</td><td>AntV、TanStack、Grafana、Nx、GitHub、Trivy、Checkmarx、Bitwarden CLI</td></tr>
+        <tr><td>合作關係</td><td>本事件與 LAPSUS$ 合作代理銷售竊取資料</td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub" style="margin-top:20px">LAPSUS$</h3>
+    <p>以資料勒索和高知名度目標聞名的英語系駭客組織，曾成功入侵 Microsoft、Nvidia、Samsung、Okta 等大型企業。此次扮演銷售代理角色，與 TeamPCP 形成機會性合作，共同在暗網出售竊取的 GitHub 內部資料。</p>
+  </div>
+</section>
+
+<!-- 攻擊鏈技術分析 -->
+<section class="section">
+  <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
+  <div class="section-body">
+    <div class="chain">
+      <div class="chain-step">
+        <div class="step-num">Step 1</div>
+        <div class="step-name">AntV npm</div>
+        <div class="step-detail">入侵維護者帳號 → 300+ 惡意套件</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 2</div>
+        <div class="step-name">TanStack npm</div>
+        <div class="step-detail">蠕蟲擴散 → 竊取 Nx 開發者 GitHub token</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 3</div>
+        <div class="step-name">Nx Console</div>
+        <div class="step-detail">植入惡意擴展 → 上架 18 分鐘</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 4</div>
+        <div class="step-name">GitHub 員工</div>
+        <div class="step-detail">全部開發憑證遭竊（含 Claude Code）</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 5</div>
+        <div class="step-name">GitHub 內部</div>
+        <div class="step-detail">3,800 個 repo 克隆外洩</div>
+      </div>
+    </div>
+
+    <h3 class="sub" style="margin-top:24px">惡意 payload 技術細節</h3>
+    <p><strong>載入機制</strong>：payload（498KB 混淆）不直接嵌入 VSIX 擴展檔案，而是在執行時從 nrwl/nx 官方 repo 的 <strong>孤立 commit（orphan commit）</strong>動態拉取，偽裝成例行 MCP 設定任務。此設計使靜態掃描幾乎無法在上架審查時發現惡意行為。</p>
+
+    <p><strong>竊取目標清單</strong>：</p>
+    <div class="alert alert-navy">
+      <div class="alert-icon">🎯</div>
+      <div>
+        GitHub PAT / OAuth Token / SSH Key · npm OIDC Token · AWS Access Key + Secret · 1Password 保管庫 · HashiCorp Vault Token · Kubernetes Config（~/.kube/config） · <strong>Anthropic Claude Code 配置（~/.claude/settings.json）</strong>
+      </div>
+    </div>
+
+    <p><strong>三重外洩通道</strong>：HTTPS 直接上傳 / GitHub REST API / DNS tunneling。即使其中一個通道被封鎖，仍可透過其他通道完成外洩，提供攻擊韌性。</p>
+
+    <p><strong>Sigstore 濫用</strong>：payload 整合 Fulcio 憑證發行和 SLSA provenance 生成，結合竊取的 npm OIDC token，可發布具有合法密碼學簽名的惡意下游套件——使攻擊者的套件看起來是通過驗證的合規構建，繞過基於 Sigstore 的供應鏈完整性驗證。</p>
+
+    <p><strong>C2 機制</strong>：在 macOS 安裝 Python 後門（<code>cat.py</code>），透過 LaunchAgent 開機自啟。使用 GitHub Search API 以關鍵字 <code>firedalazer</code> 輪詢 C2 指令（RSA-4096 簽名）。資料暫存於公開 GitHub repo，描述欄位為反轉字串 <code>niagA oG eW ereH :duluH-iahS</code>（正讀：Shai-Hulud: Here We Go Again）。</p>
+
+    <p><strong>蠕蟲自我擴散</strong>：以竊取的 npm token 對受感染帳號管理的其他套件自動發布惡意版本，形成指數級傳播。每個受感染的 CI/CD 環境都是下一波攻擊的起點。</p>
+  </div>
+</section>
+
+<!-- 入侵指標（IOC）-->
+<section class="section">
+  <div class="section-header"><span class="icon">🔍</span> 入侵指標（IOC）</div>
+  <div class="section-body">
+    <h3 class="sub">惡意檔案</h3>
+    <table class="data-table">
+      <thead><tr><th>類型</th><th>路徑</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td>File</td><td><code>~/.local/share/kitty/cat.py</code></td><td>Python C2 後門</td></tr>
+        <tr><td>File</td><td><code>~/Library/LaunchAgents/com.user.kitty-monitor.plist</code></td><td>macOS 持久化（開機自啟）</td></tr>
+        <tr><td>File</td><td><code>/var/tmp/.gh_update_state</code></td><td>狀態暫存檔</td></tr>
+        <tr><td>File</td><td><code>/tmp/kitty-*</code></td><td>暫存 payload 解壓路徑</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub" style="margin-top:16px">惡意進程</h3>
+    <table class="data-table">
+      <thead><tr><th>類型</th><th>特徵</th></tr></thead>
+      <tbody>
+        <tr><td>Process</td><td>Python 進程執行 <code>cat.py</code></td></tr>
+        <tr><td>Process</td><td>任何環境變數包含 <code>__DAEMONIZED=1</code> 的進程</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub" style="margin-top:16px">網路 / API 指標</h3>
+    <table class="data-table">
+      <thead><tr><th>類型</th><th>特徵</th></tr></thead>
+      <tbody>
+        <tr><td>GitHub API</td><td>搜尋關鍵字包含 <code>firedalazer</code>（C2 dead-drop 指令）</td></tr>
+        <tr><td>GitHub Repo</td><td>公開 repo 描述含 <code>niagA oG eW ereH :duluH-iahS</code>（資料暫存）</td></tr>
+        <tr><td>DNS</td><td>異常高頻 DNS 查詢，尤其來自開發者工作站（外洩備援通道）</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub" style="margin-top:16px">惡意套件版本</h3>
+    <div class="alert alert-red">
+      <div class="alert-icon">⚠️</div>
+      <div><strong><code>nrwl.angular-console</code> v18.95.0</strong> — 已從 VS Code Marketplace 下架，但已安裝的版本仍需手動更新至 v18.96.0 以上並清除殘留後門。</div>
+    </div>
+  </div>
+</section>
+
+<!-- MITRE ATT&CK 對照 -->
+<section class="section">
+  <div class="section-header"><span class="icon">🗺️</span> MITRE ATT&CK 對照</div>
+  <div class="section-body">
+    <table class="data-table">
+      <thead><tr><th>技術 ID</th><th>技術名稱</th><th>應用場景</th></tr></thead>
+      <tbody>
+        <tr><td>T1195.001</td><td>Supply Chain Compromise: Software Dependencies</td><td>AntV → TanStack → Nx Console 逐層供應鏈滲透</td></tr>
+        <tr><td>T1554</td><td>Compromise Client Software Binary</td><td>植入惡意 Nx Console 擴展（VSIX）</td></tr>
+        <tr><td>T1552.001</td><td>Unsecured Credentials: Credentials In Files</td><td>讀取 ~/.claude/settings.json、~/.kube/config 等憑證檔</td></tr>
+        <tr><td>T1567.001</td><td>Exfiltration Over Web Service: Code Repository</td><td>竊取資料上傳至攻擊者控制的公開 GitHub repo</td></tr>
+        <tr><td>T1071.004</td><td>Application Layer Protocol: DNS</td><td>DNS tunneling 作為備援外洩通道</td></tr>
+        <tr><td>T1543.001</td><td>Create or Modify System Process: Launch Agent</td><td>macOS LaunchAgent 開機持久化</td></tr>
+        <tr><td>T1102.002</td><td>Web Service: Bidirectional Communication</td><td>GitHub Search API 作為 C2 dead-drop</td></tr>
+        <tr><td>T1553.004</td><td>Subvert Trust Controls: Install Root Certificate</td><td>濫用 Sigstore/Fulcio 生成合法密碼學簽名</td></tr>
+        <tr><td>T1098.001</td><td>Account Manipulation: Additional Cloud Credentials</td><td>利用竊取 token 在合法 repo 植入孤立 commit</td></tr>
+        <tr><td>T1074.002</td><td>Data Staged: Remote Data Staging</td><td>在公開 GitHub repo 暫存竊取的資料</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 衝擊評估 -->
+<section class="section">
+  <div class="section-header"><span class="icon">⚠️</span> 衝擊評估</div>
+  <div class="section-body">
+    <h3 class="sub">對 GitHub / Microsoft 的直接衝擊</h3>
+    <div class="alert alert-red">
+      <div class="alert-icon">🔴</div>
+      <div>3,800 個內部 repo 若包含基礎設施部署腳本或 secrets 的明文提交，攻擊者可能對 GitHub 自身的生產基礎設施進行進一步滲透，且調查仍在進行中。</div>
+    </div>
+    <ul style="padding-left:20px; margin-bottom:16px">
+      <li>Copilot、CodeQL 等核心產品原始碼外洩，競爭對手可獲取重要技術優勢</li>
+      <li>GitHub 作為全球最大代碼托管平台，其自身遭供應鏈攻擊具有強烈示範效應，影響開發者生態信任</li>
+    </ul>
+
+    <h3 class="sub">對 Claude Code 用戶的衝擊（首要關注）</h3>
+    <div class="alert alert-amber">
+      <div class="alert-icon">⚠️</div>
+      <div>
+        <strong>此為已知第一個明確竊取 Claude Code 配置的供應鏈攻擊。</strong>
+        在 2026-05-18 14:36–14:54 CEST 窗口內開啟任何 VSCode workspace 的開發者，若安裝了 Nx Console，其 <code>~/.claude/settings.json</code>（含 Anthropic API key 及工作流配置）已可能遭竊取。建議立即輪換 Anthropic API key。
+      </div>
+    </div>
+
+    <h3 class="sub">對 npm / 供應鏈生態系的廣泛衝擊</h3>
+    <ul style="padding-left:20px; margin-bottom:16px">
+      <li><strong>Sigstore 信任失效</strong>：Sigstore attestation 可用竊取的 OIDC token 偽造，不能作為供應鏈完整性的唯一依據</li>
+      <li><strong>CI/CD 環境全面暴露</strong>：受感染的 CI runner 上所有 secrets 均可能遭竊，不限於明確傳遞的環境變數</li>
+      <li><strong>長尾蠕蟲風險</strong>：每個受感染環境都是下一波攻擊的起點，真實影響範圍可能遠超目前已確認的 6,000+ 人</li>
+    </ul>
+
+    <h3 class="sub">EDR 防護的根本盲區</h3>
+    <p>傳統 EDR 無法偵測 JavaScript / Python 的解釋型擴展，因為它們不是二進制檔案，無簽名驗證機制。VSCode 的 18 分鐘窗口揭示現有 Marketplace 審查流程不足以攔截針對合法發布者帳號的供應鏈攻擊。</p>
+  </div>
+</section>
+
+<!-- 爭議與未確認事項 -->
+<section class="section">
+  <div class="section-header"><span class="icon">⚖️</span> 爭議與未確認事項</div>
+  <div class="section-body">
+    <ul style="padding-left:20px">
+      <li><strong>竊取 repo 確切數量</strong>：TeamPCP 聲稱約 4,000 個，GitHub 確認約 3,800 個（描述為「方向一致」），具體數字尚未最終確定</li>
+      <li><strong>標售金額不一致</strong>：各媒體報導 $95,000 或 $50,000，兩個數字均來自暗網貼文引用，未獲獨立確認</li>
+      <li><strong>LAPSUS$ 的實際角色</strong>：是主動參與技術攻擊，還是僅作為銷售代理，尚無技術層面的確認證據</li>
+      <li><strong>客戶資料安全</strong>：GitHub 目前表示客戶 repo 未受影響，但調查仍在進行，結論可能更新</li>
+      <li><strong>Windows / Linux 持久化機制</strong>：目前公開的 IOC 主要針對 macOS（cat.py + LaunchAgent），其他平台的持久化方式尚未完整揭露</li>
+      <li><strong>竊取資料是否已出售或外洩</strong>：截至報告日期（2026-05-21）尚無公開外洩的確認紀錄</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 防禦建議 -->
+<section class="section">
+  <div class="section-header"><span class="icon">🛡️</span> 防禦建議</div>
+  <div class="section-body">
+    <h3 class="sub">立即行動（在 2026-05-18 14:36–14:54 CEST 窗口內有安裝 Nx Console 的開發者）</h3>
+    <div class="alert alert-red">
+      <div class="alert-icon">🔴</div>
+      <div>
+        <strong>若符合以下條件，視同全部憑證已外洩，立即輪換：</strong>
+        安裝了 Nx Console 且在 2026-05-18 14:36–14:54 CEST 之間在 VS Code 開啟過任何 workspace。
+      </div>
+    </div>
+    <ol style="padding-left:20px; margin-bottom:16px">
+      <li>掃描 IOC：<code>~/.local/share/kitty/cat.py</code>、LaunchAgent plist、<code>/tmp/kitty-*</code>，搜尋含 <code>__DAEMONIZED=1</code> 的進程</li>
+      <li>終止 cat.py 進程，刪除所有 IOC 檔案</li>
+      <li>全面輪換憑證：GitHub PAT / SSH Key、npm token、AWS Access Key、1Password 密碼、Kubernetes service account、<strong>Anthropic API Key（Claude Code 用戶必做）</strong></li>
+      <li>稽核 CI/CD pipeline secrets：若 runner 環境曾安裝過受影響擴展，視同所有 secrets 已外洩</li>
+    </ol>
+
+    <h3 class="sub">中期防禦強化</h3>
+    <ol style="padding-left:20px; margin-bottom:16px">
+      <li><strong>VSCode 擴展安裝策略</strong>：採用 Aikido 建議的最低上線年限規則（≥ 48 小時），防止剛發布的版本自動安裝；稽核現有已安裝擴展的發布時間異常</li>
+      <li><strong>npm 版本凍結</strong>：CI/CD 環境使用 lockfile（package-lock.json / yarn.lock），禁止非預期版本更新</li>
+      <li><strong>GitHub API 監控</strong>：告警含 <code>firedalazer</code> 等非業務關鍵字的 GitHub Search API 查詢</li>
+      <li><strong>DNS 異常監控</strong>：偵測高頻 DNS 查詢模式（DNS tunneling 特徵），尤其來自開發者工作站</li>
+      <li><strong>不應單獨信任 Sigstore</strong>：Sigstore attestation 可用竊取的 OIDC token 偽造，供應鏈完整性驗證需配合其他機制</li>
+    </ol>
+
+    <h3 class="sub">結構性建議</h3>
+    <div class="alert alert-navy">
+      <div class="alert-icon">◆</div>
+      <div>VS Code Marketplace 的 18 分鐘攻擊窗口揭示現有審查機制的根本不足：已驗證發布者（verified publisher badge）的帳號一旦遭入侵，新版本幾乎無摩擦地通過。Microsoft 應對所有發布者（包括已驗證帳號）的擴展更新施加延遲發布（delayed rollout）與異常行為偵測。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 資料來源 -->
+<section class="section">
+  <div class="section-header"><span class="icon">📚</span> 資料來源</div>
+  <div class="section-body sources-grid">
+
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://thehackernews.com/2026/05/github-internal-repositories-breached.html" target="_blank">GitHub Internal Repositories Breached via Malicious Nx Console VS Code Extension</a>
+      <div class="source-meta">The Hacker News · 2026-05-19</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://thehackernews.com/2026/05/compromised-nx-console-18950-targeted.html" target="_blank">Compromised Nx Console 18.95.0 Targeted VS Code Developers with Credential Stealer</a>
+      <div class="source-meta">The Hacker News · 2026-05-19</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://www.bleepingcomputer.com/news/security/github-confirms-breach-of-3-800-repos-via-malicious-vscode-extension/" target="_blank">GitHub confirms breach of 3,800 repos via malicious VSCode extension</a>
+      <div class="source-meta">BleepingComputer · 2026-05-20</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://www.securityweek.com/github-confirms-hack-impacting-3800-internal-repositories/" target="_blank">GitHub Confirms Hack Impacting 3,800 Internal Repositories</a>
+      <div class="source-meta">SecurityWeek · 2026-05-20</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://therecord.media/github-confirms-teampcp-hack-customers-unaffected" target="_blank">GitHub confirms being hacked by TeamPCP, says customer data unaffected</a>
+      <div class="source-meta">The Record · 2026-05-20</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://cyberscoop.com/github-internal-repositories-vs-code-extension-attack/" target="_blank">GitHub says internal repositories were impacted in poisoned VS Code extension attack</a>
+      <div class="source-meta">CyberScoop · 2026-05-20</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://www.helpnetsecurity.com/2026/05/20/github-breached-teampcp/" target="_blank">TeamPCP breached GitHub's internal codebase via poisoned VS Code extension</a>
+      <div class="source-meta">Help Net Security · 2026-05-20</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">威脅情報</div>
+      <a href="https://www.wiz.io/blog/mini-shai-hulud-teampcp-hits-antv-supply-chain" target="_blank">The Worm That Keeps on Digging: TeamPCP Hits @antv in Latest Wave</a>
+      <div class="source-meta">Wiz · 2026-05-19</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">威脅情報</div>
+      <a href="https://www.wiz.io/blog/mini-shai-hulud-strikes-again-tanstack-more-npm-packages-compromised" target="_blank">Mini Shai-Hulud Strikes Again: TanStack + more npm Packages Compromised</a>
+      <div class="source-meta">Wiz · 2026-05-19</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">威脅情報</div>
+      <a href="https://snyk.io/blog/mini-shai-hulud-antv-npm-supply-chain-attack/" target="_blank">Mini Shai-Hulud Hits AntV: 300+ Malicious npm Packages via Compromised Maintainer</a>
+      <div class="source-meta">Snyk · 2026-05-19</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">威脅情報</div>
+      <a href="https://www.stepsecurity.io/blog/nx-console-vs-code-extension-compromised" target="_blank">Nx Console VS Code Extension Compromised</a>
+      <div class="source-meta">StepSecurity · 2026-05-19</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">威脅情報</div>
+      <a href="https://www.stepsecurity.io/blog/mini-shai-hulud-is-back-a-self-spreading-supply-chain-attack-hits-the-npm-ecosystem" target="_blank">Mini Shai-Hulud Is Back: A Self-Spreading Supply Chain Attack</a>
+      <div class="source-meta">StepSecurity · 2026-05-19</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">威脅情報</div>
+      <a href="https://orca.security/resources/blog/antv-npm-supply-chain-attack/" target="_blank">Massive npm Supply Chain Attack Compromises AntV Ecosystem</a>
+      <div class="source-meta">Orca Security · 2026-05-19</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://www.aikido.dev/blog/github-breached-vs-code-extension" target="_blank">GitHub Breached via VS Code Extension — Developer Supply Chain Attack 2026</a>
+      <div class="source-meta">Aikido Security · 2026-05-20</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">威脅情報</div>
+      <a href="https://www.sophos.com/en-us/blog/github-internal-repositories-breached" target="_blank">GitHub internal repositories breached</a>
+      <div class="source-meta">Sophos · 2026-05-20</div>
+    </div>
+
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://www.bankinfosecurity.com/github-hacked-internal-repositories-offered-for-sale-a-31739" target="_blank">GitHub Hacked, Internal Repositories Offered for Sale</a>
+      <div class="source-meta">BankInfoSecurity · 2026-05-19</div>
+    </div>
+
+  </div>
+</section>
+
+</div>
+
+<footer class="report-footer">
+  Generated 2026-05-21 · SecondBrain Report System · suelife/reports
+</footer>
+
+</body>
+</html>
