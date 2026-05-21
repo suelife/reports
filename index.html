@@ -3,47 +3,381 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reports — suelife</title>
+<title>SecondBrain Reports</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 700px; margin: 60px auto; padding: 0 24px; color: #222; }
-  h1 { font-size: 22px; color: #1a2744; margin-bottom: 6px; }
-  p { color: #666; font-size: 14px; margin-bottom: 32px; }
-  ul { list-style: none; padding: 0; }
-  li { border-bottom: 1px solid #eee; padding: 14px 0; }
-  li:last-child { border-bottom: none; }
-  a { color: #1a2744; font-weight: 600; text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .meta { font-size: 12px; color: #999; margin-top: 3px; }
+  :root {
+    --navy: #1a2744;
+    --navy-light: #2c3e6b;
+    --red: #c0392b;
+    --amber: #d68910;
+    --green: #1e8449;
+    --gray-bg: #f4f6f9;
+    --border: #dce3ee;
+    --text: #222831;
+    --muted: #5a6578;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+    background: var(--gray-bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .site-header {
+    background: var(--navy);
+    color: #fff;
+    padding: 40px 48px 32px;
+  }
+  .site-header .label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8aa4d0;
+    margin-bottom: 10px;
+  }
+  .site-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .site-header p {
+    font-size: 14px;
+    color: #9bb3d4;
+  }
+  .stats {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    font-size: 13px;
+    color: #8aa4d0;
+  }
+  .stat strong {
+    color: #fff;
+    font-size: 20px;
+    display: block;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  /* Main */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 36px 24px 60px;
+  }
+
+  /* Filter tabs */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--navy);
+    color: #fff;
+    border-color: var(--navy);
+  }
+
+  /* Cards */
+  .report-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.15s, border-color 0.15s;
+    border-left: 4px solid transparent;
+  }
+  .report-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border-left-color: var(--navy);
+  }
+  .report-card.severity-high  { border-left-color: var(--red); }
+  .report-card.severity-medium { border-left-color: var(--amber); }
+  .report-card.severity-low   { border-left-color: var(--green); }
+  .report-card.severity-info  { border-left-color: var(--navy-light); }
+
+  .card-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 60px;
+  }
+  .sev-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .sev-badge.high   { background: var(--red);        color: #fff; }
+  .sev-badge.medium { background: var(--amber);      color: #fff; }
+  .sev-badge.low    { background: var(--green);      color: #fff; }
+  .sev-badge.info   { background: var(--navy-light); color: #fff; }
+
+  .card-date {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .card-body { flex: 1; }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+  .report-card:hover .card-title { color: #3b5bdb; }
+  .card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    background: #eef2fa;
+    color: var(--navy);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .tag.red    { background: #fdf2f0; color: var(--red); }
+  .tag.amber  { background: #fef9e7; color: var(--amber); }
+
+  .card-arrow {
+    font-size: 20px;
+    color: #c5d0e0;
+    align-self: center;
+    flex-shrink: 0;
+  }
+  .report-card:hover .card-arrow { color: var(--navy); }
+
+  /* Footer */
+  .site-footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 24px;
+    border-top: 1px solid var(--border);
+    background: #fff;
+  }
+
+  @media (max-width: 600px) {
+    .site-header { padding: 28px 20px 24px; }
+    .report-card { flex-direction: column; gap: 12px; }
+    .card-left { flex-direction: row; min-width: auto; }
+  }
 </style>
 </head>
 <body>
+
+<header class="site-header">
+  <div class="label">SecondBrain Investigation</div>
   <h1>Reports</h1>
-  <p>Research briefs, incident reports, and analysis — generated by SecondBrain.</p>
-  <ul id="list">
-    <li>
-      <a href="2026-05-19-windows-miniplasma-cve-2020-17103-report.html">Windows MiniPlasma — CVE-2020-17103 修補回歸事件，Google 原始 PoC 仍可取得 SYSTEM</a>
-      <div class="meta">2026-05-19 · Windows LPE · cldflt · Patch Regression · Chaotic Eclipse</div>
-    </li>
-    <li>
-      <a href="2026-05-19-cve-2026-31431-copy-fail-ubuntu-ddos-report.html">Copy Fail（CVE-2026-31431）與 Canonical DDoS — Linux 核心提權同日疊加基礎設施癱瘓</a>
-      <div class="meta">2026-05-19 · Linux LPE · algif_aead · Canonical DDoS · 313 Team</div>
-    </li>
-    <li>
-      <a href="2026-05-18-device-code-phishing-eviltokens-report.html">Device Code Phishing 新基礎架構 — EvilTokens 與 Tycoon 2FA 鎖定 Microsoft 365</a>
-      <div class="meta">2026-05-18 · Device Code Phishing · EvilTokens · Tycoon 2FA · M365</div>
-    </li>
-    <li>
-      <a href="muddywater-seedworm-korea-electronics-report.html">MuddyWater（Seedworm）2026 Q1 全球間諜行動——韓國電子製造商入侵深度分析</a>
-      <div class="meta">2026-05-15 · APT · DLL Sideloading · SentinelOne · ChromElevator · 伊朗 MOIS</div>
-    </li>
-    <li>
-      <a href="taiwan-gov-solar-domain-hijack-report.html">台灣政府網站太陽光電連結植入事件調查報告</a>
-      <div class="meta">2026-05-14 · 域名劫持 · SEO 注入 · BadIIS/UAT-8099</div>
-    </li>
-    <li>
-      <a href="foxconn-nitrogen-incident-report.html">富士康鄭州廠氮氣洩漏事件分析報告</a>
-      <div class="meta">2026-05-13 · 工安事故 · 職場安全</div>
-    </li>
-  </ul>
+  <p>資安事件報告、深度研究簡報、比較分析 — 由 SecondBrain 生成</p>
+  <div class="stats">
+    <div class="stat"><strong>7</strong>篇報告</div>
+    <div class="stat"><strong>5</strong>資安事件</div>
+    <div class="stat"><strong>2</strong>工安 / 其他</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="filterCards('all', this)">全部</button>
+    <button class="filter-btn" onclick="filterCards('incident', this)">資安事件</button>
+    <button class="filter-btn" onclick="filterCards('apt', this)">APT</button>
+    <button class="filter-btn" onclick="filterCards('supply-chain', this)">供應鏈</button>
+    <button class="filter-btn" onclick="filterCards('lpe', this)">LPE</button>
+    <button class="filter-btn" onclick="filterCards('phishing', this)">Phishing</button>
+  </div>
+
+  <a class="report-card severity-high" href="2026-05-21-github-teampcp-supply-chain-report.html" data-tags="incident supply-chain">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-05-21</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">GitHub × TeamPCP — Nx Console VSCode 供應鏈攻擊：3,800 個內部 Repo 外洩</div>
+      <div class="card-desc">Mini Shai-Hulud 蠕蟲經 AntV → TanStack → Nx Console 18 分鐘惡意擴展竊取 GitHub 員工全部憑證，首個明確竊取 Claude Code 配置的供應鏈攻擊。</div>
+      <div class="tag-row">
+        <span class="tag red">供應鏈</span>
+        <span class="tag red">VSCode 擴展</span>
+        <span class="tag">npm 蠕蟲</span>
+        <span class="tag">TeamPCP</span>
+        <span class="tag">LAPSUS$</span>
+        <span class="tag amber">Claude Code 憑證</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
+
+  <a class="report-card severity-high" href="2026-05-19-windows-miniplasma-cve-2020-17103-report.html" data-tags="incident lpe">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-05-19</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Windows MiniPlasma — CVE-2020-17103 修補回歸事件，Google 原始 PoC 仍可取得 SYSTEM</div>
+      <div class="card-desc">六年前 Google Project Zero 通報、微軟聲稱已修補的 LPE 漏洞，原始 PoC 在 Win11 25H2/26H1 未修改即取得 SYSTEM 權限。</div>
+      <div class="tag-row">
+        <span class="tag red">LPE</span>
+        <span class="tag">Windows</span>
+        <span class="tag">Patch Regression</span>
+        <span class="tag">cldflt.sys</span>
+        <span class="tag">CVE-2020-17103</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
+
+  <a class="report-card severity-high" href="2026-05-19-cve-2026-31431-copy-fail-ubuntu-ddos-report.html" data-tags="incident lpe">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-05-19</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Copy Fail（CVE-2026-31431）與 Canonical DDoS — Linux 核心提權同日疊加基礎設施癱瘓</div>
+      <div class="card-desc">algif_aead Linux 核心提權漏洞 PoC 公開，同日 Canonical 基礎設施遭 313 Team DDoS 導致 Ubuntu apt 倉庫中斷。</div>
+      <div class="tag-row">
+        <span class="tag red">LPE</span>
+        <span class="tag">Linux Kernel</span>
+        <span class="tag">DDoS</span>
+        <span class="tag">algif_aead</span>
+        <span class="tag">CVE-2026-31431</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
+
+  <a class="report-card severity-high" href="2026-05-18-device-code-phishing-eviltokens-report.html" data-tags="incident phishing">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-05-18</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Device Code Phishing 新基礎架構 — EvilTokens 與 Tycoon 2FA 鎖定 Microsoft 365</div>
+      <div class="card-desc">EvilTokens PhaaS 於 Telegram 上架，繞過 15 分鐘 device code 窗口限制，340+ M365 組織受害，TA4903 已觀察使用。</div>
+      <div class="tag-row">
+        <span class="tag red">Phishing</span>
+        <span class="tag red">MFA Bypass</span>
+        <span class="tag">Device Code Flow</span>
+        <span class="tag">M365</span>
+        <span class="tag">EvilTokens</span>
+        <span class="tag">Tycoon 2FA</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
+
+  <a class="report-card severity-high" href="muddywater-seedworm-korea-electronics-report.html" data-tags="incident apt">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-05-15</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">MuddyWater（Seedworm）2026 Q1 全球間諜行動 — 韓國電子製造商入侵深度分析</div>
+      <div class="card-desc">伊朗 MOIS 關聯 APT 組織入侵韓國電子製造商，DLL 側載 SentinelOne、ChromElevator 竊取憑證，2026 Q1 全球多國目標。</div>
+      <div class="tag-row">
+        <span class="tag red">APT</span>
+        <span class="tag">伊朗 MOIS</span>
+        <span class="tag">DLL Sideloading</span>
+        <span class="tag">SentinelOne 濫用</span>
+        <span class="tag">韓國製造業</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
+
+  <a class="report-card severity-medium" href="taiwan-gov-solar-domain-hijack-report.html" data-tags="incident">
+    <div class="card-left">
+      <span class="sev-badge medium">MED</span>
+      <div class="card-date">2026-05-14</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">台灣政府網站太陽光電連結植入事件調查報告</div>
+      <div class="card-desc">BAD IIS / UAT-8099 針對台灣政府網站進行域名劫持與 SEO 注入，植入太陽光電詐騙頁面連結。</div>
+      <div class="tag-row">
+        <span class="tag">域名劫持</span>
+        <span class="tag">SEO 注入</span>
+        <span class="tag">台灣政府</span>
+        <span class="tag">BAD IIS</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
+
+  <a class="report-card severity-info" href="foxconn-nitrogen-incident-report.html" data-tags="">
+    <div class="card-left">
+      <span class="sev-badge info">INFO</span>
+      <div class="card-date">2026-05-13</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">富士康鄭州廠氮氣洩漏事件分析報告</div>
+      <div class="card-desc">富士康鄭州廠區氮氣洩漏工安事故，供應鏈影響與現場處置分析。</div>
+      <div class="tag-row">
+        <span class="tag">工安事故</span>
+        <span class="tag">供應鏈</span>
+        <span class="tag">富士康</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
+
+</div>
+
+<footer class="site-footer">
+  SecondBrain Report System · <a href="https://github.com/suelife/reports" style="color:#1a2744">suelife/reports</a>
+</footer>
+
+<script>
+function filterCards(tag, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.report-card').forEach(card => {
+    if (tag === 'all') {
+      card.style.display = 'flex';
+    } else {
+      const tags = card.dataset.tags || '';
+      card.style.display = tags.includes(tag) ? 'flex' : 'none';
+    }
+  });
+}
+</script>
+
 </body>
 </html>
