@@ -209,8 +209,8 @@
   <h1>Reports</h1>
   <p>資安事件報告、深度研究簡報、比較分析 — 由 SecondBrain 生成</p>
   <div class="stats">
-    <div class="stat"><strong>7</strong>篇報告</div>
-    <div class="stat"><strong>5</strong>資安事件</div>
+    <div class="stat"><strong>8</strong>篇報告</div>
+    <div class="stat"><strong>6</strong>資安事件</div>
     <div class="stat"><strong>2</strong>工安 / 其他</div>
   </div>
 </header>
@@ -225,6 +225,23 @@
     <button class="filter-btn" onclick="filterCards('lpe', this)">LPE</button>
     <button class="filter-btn" onclick="filterCards('phishing', this)">Phishing</button>
   </div>
+
+  <a class="report-card severity-high" href="2026-05-25-php-npm-supply-chain-triple-attack-report.html" data-tags="incident supply-chain">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-05-25</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">PHP／npm 生態三連爆：Packagist × Laravel-Lang × TanStack 供應鏈攻擊聯合分析</div>
+      <div class="card-desc">12 天內三起供應鏈攻擊同時衝擊 npm / Packagist 生態，受害組織含 GitHub、Grafana、OpenAI。641+ 套件版本受影響，Mini Shai-Hulud worm 代碼公開後催化 PHP 生態仿效攻擊。</div>
+      <div class="tag-row">
+        <span class="tag red">供應鏈</span>
+        <span class="tag red">憑證竊取</span>
+        <span class="tag amber">TeamPCP</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
 
   <a class="report-card severity-high" href="2026-05-21-github-teampcp-supply-chain-report.html" data-tags="incident supply-chain">
     <div class="card-left">
