@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Packagist 8 套件供應鏈攻擊 — package.json Linux Binary Dropper</title>
+<link rel="stylesheet" href="design.css">
+</head>
+<body>
+
+<header class="report-header">
+  <div class="label">資安事件報告 · SecondBrain Investigation</div>
+  <span class="severity-badge medium">MEDIUM</span>
+  <h1>Packagist 8 套件供應鏈攻擊<br>跨生態系 package.json Linux Binary Dropper</h1>
+  <div class="meta">
+    <span><strong>事件日期</strong>　2026-05-21</span>
+    <span><strong>公告日期</strong>　2026-05-23</span>
+    <span><strong>報告日期</strong>　2026-05-25</span>
+    <span><strong>受害者</strong>　PHP / Packagist 開發者</span>
+    <span><strong>攻擊組織</strong>　未知（parikhpreyash4）</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="kpi-row">
+    <div class="kpi red">
+      <div class="kpi-value">8 個</div>
+      <div class="kpi-label">受感染套件</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-value">777 個</div>
+      <div class="kpi-label">GitHub 同源引用</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-value">/tmp/.sshd</div>
+      <div class="kpi-label">惡意進程路徑</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-value">Linux</div>
+      <div class="kpi-label">目標平台</div>
+    </div>
+  </div>
+
+  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <p>2026 年 5 月 21 日前後，攻擊者在 Packagist 上 8 個 PHP 套件的 <code>package.json</code> 中植入惡意 <code>postinstall</code> 腳本，利用開發者執行 <code>npm install</code> 的時機下載並執行 Linux binary。此手法刻意規避針對 PHP 依賴的安全掃描，利用 PHP 套件混搭 JavaScript 建構工具的常見實務作為盲區。惡意 payload 的 GitHub 源帳號（parikhpreyash4）已在事件曝光後刪除，binary 完整行為尚未完整逆向分析，目前排除了資料外洩的直接證據，但長尾風險仍存在。</p>
+
+  <div class="section-header"><span class="icon">✅</span> 事實核查矩陣</div>
+  <table>
+    <thead><tr><th>聲明</th><th>狀態</th><th>來源</th></tr></thead>
+    <tbody>
+      <tr><td>8 個套件確認受感染</td><td>✅ 已確認（Packagist 官方移除）</td><td>fyself.com / THN</td></tr>
+      <tr><td>payload 從 GitHub Releases 下載（parikhpreyash4）</td><td>✅ 已確認（帳號已刪除）</td><td>fyself.com</td></tr>
+      <tr><td>GitHub 上有 777 個同源 payload 引用</td><td>✅ 已確認（研究人員掃描）</td><td>fyself.com</td></tr>
+      <tr><td>惡意進程偽裝為 /tmp/.sshd</td><td>✅ 已確認</td><td>fyself.com</td></tr>
+      <tr><td>binary 後續完整行為（外洩目標、C2）</td><td>⚠️ 聲稱未驗證（帳號已刪除，逆向未完整）</td><td>—</td></tr>
+      <tr><td>攻擊者與 TeamPCP 關聯</td><td>❌ 無確認（不同基礎設施，不同手法）</td><td>—</td></tr>
+      <tr><td>Windows / macOS 環境受影響</td><td>❌ 無確認（payload 為 Linux binary）</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-date">2026-05-21 前後</div>
+      <div class="timeline-content">攻擊者修改 8 個 Packagist 套件的 <code>package.json</code>，植入惡意 postinstall 腳本</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2026-05-23</div>
+      <div class="timeline-content">安全研究人員公開披露；Packagist 移除惡意版本；parikhpreyash4 GitHub 帳號刪除</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2026-05-23（持續）</div>
+      <div class="timeline-content">研究人員發現 GitHub 上仍有 777 個檔案引用同一 payload URL，攻擊面可能超出已知 8 個套件</div>
+    </div>
+  </div>
+
+  <div class="section-header"><span class="icon">🎯</span> 攻擊者背景</div>
+  <p>攻擊者身份未知，唯一已知線索為 GitHub 帳號 <code>parikhpreyash4</code>，以 <code>systemd-network-helper-aa5c751f</code> 為 repository 名稱（偽裝為系統服務），在事件曝光後立即刪帳號。無法確認其國籍、組織關聯或動機。</p>
+  <p>與 TeamPCP（Mini Shai-Hulud）的比較：兩者均使用 npm 生態作為攻擊向量，但 TeamPCP 使用 OIDC token 自我繁殖、具備 SLSA Level 3 attestation，技術成熟度遠高於本事件。本事件手法較簡單，可能為獨立機會性攻擊者。</p>
+
+  <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
+  <h3>核心手法：跨生態系盲區規避</h3>
+  <p>現代 PHP 套件常搭配前端建構工具（Webpack、Vite、Node.js scripts），因此在 <code>composer.json</code> 之外也包含 <code>package.json</code>。安全掃描工具若僅分析 PHP 依賴管理，會跳過 JavaScript 生命週期 hook，形成盲區。</p>
+  <p><strong>攻擊流程</strong>：</p>
+  <ol>
+    <li>攻擊者在 8 個套件的 <code>package.json</code> 中插入 <code>postinstall</code> 腳本（非 <code>composer.json</code>）</li>
+    <li>開發者執行 <code>npm install</code> 時自動觸發 postinstall</li>
+    <li>腳本透過 <code>curl</code> 從 <code>github.com/parikhpreyash4/systemd-network-helper-aa5c751f/releases</code> 下載 Linux binary</li>
+    <li>Binary 儲存於 <code>/tmp/.sshd</code>（偽裝為 SSH daemon），賦予執行權限，後台靜默執行</li>
+  </ol>
+  <p><strong>受影響套件清單</strong>：</p>
+  <ul>
+    <li>moritz-sauer-13/silver</li>
+    <li>crosiersource/crosierlib-base</li>
+    <li>devdojo/wave</li>
+    <li>devdojo/genesis</li>
+    <li>katanaui/katana</li>
+    <li>Elitedevsquad/sidecar-laravel</li>
+    <li>r2luna/brain</li>
+    <li>baskarcm/tzi-chat-ui</li>
+  </ul>
+  <p><strong>未解之謎</strong>：binary 執行後的具體行為（資料外洩目標、C2 通訊、持久性）因帳號刪除而無法完整分析。</p>
+
+  <div class="section-header"><span class="icon">🔍</span> 入侵指標（IOC）</div>
+  <table>
+    <thead><tr><th>類型</th><th>指標</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td>惡意 GitHub 帳號</td><td><code>parikhpreyash4</code>（已刪除）</td><td>payload 源帳號</td></tr>
+      <tr><td>惡意 repo 名稱</td><td><code>systemd-network-helper-aa5c751f</code></td><td>偽裝系統服務名稱</td></tr>
+      <tr><td>可疑進程路徑</td><td><code>/tmp/.sshd</code></td><td>Linux 環境，非標準路徑，不應存在</td></tr>
+      <tr><td>可疑 npm 腳本</td><td>package.json 中非預期的 postinstall 呼叫 curl</td><td>任何 PHP 套件含此模式應審查</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-header"><span class="icon">⚠️</span> 衝擊評估</div>
+  <ul>
+    <li><strong>直接影響</strong>：已確認 8 個 Packagist 套件的受感染版本被下載的開發者 Linux 環境中執行了未知 binary</li>
+    <li><strong>規模不確定性</strong>：777 個 GitHub 同源引用暗示攻擊可能涵蓋更多未被識別的套件</li>
+    <li><strong>Payload 行為未知</strong>：/tmp/.sshd 的功能無法確認，不排除資料外洩或持久性 backdoor</li>
+    <li><strong>侷限</strong>：Linux binary，Windows / macOS 用戶不受影響</li>
+  </ul>
+
+  <div class="section-header"><span class="icon">⚖️</span> 爭議與未確認事項</div>
+  <ul>
+    <li><strong>/tmp/.sshd binary 行為</strong>：payload 源已消失，完整逆向分析尚未公開</li>
+    <li><strong>777 個 GitHub 引用</strong>：是同一攻擊者佈置的備用 payload，還是其他攻擊者複製使用？目前無法確認</li>
+    <li><strong>感染時間窗口</strong>：套件何時被植入惡意代碼、受感染版本存活多久，目前無精確紀錄</li>
+  </ul>
+
+  <div class="section-header"><span class="icon">🛡️</span> 防禦建議</div>
+  <h3>立即</h3>
+  <ol>
+    <li>檢查 <code>/tmp/.sshd</code> 是否存在：<code>ls -la /tmp/.sshd 2>/dev/null &amp;&amp; echo "INFECTED"</code></li>
+    <li>確認是否安裝過上述 8 個套件的受影響版本，若有則全面輪換該機器的所有機密（SSH keys、cloud credentials、.env）</li>
+    <li>掃描 process list 是否有可疑的 /tmp 路徑執行：<code>ps aux | grep /tmp/</code></li>
+  </ol>
+  <h3>中期</h3>
+  <ol>
+    <li><strong>停用 CI 環境中的 postinstall</strong>：使用 <code>npm ci --ignore-scripts</code> 防範 package.json 腳本攻擊</li>
+    <li><strong>PHP 套件掃描需涵蓋 package.json</strong>：告知 SCA 工具需同時分析跨生態系依賴</li>
+    <li><strong>Composer lockfile commit hash pinning</strong>：<code>composer.lock</code> 應鎖定到具體 commit，而非僅版本號</li>
+  </ol>
+
+  <div class="section-header"><span class="icon">📚</span> 資料來源</div>
+  <div class="source-grid">
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://news.fyself.com/packagist-supply-chain-attack-infects-8-packages-using-linux-malware-hosted-on-github/" target="_blank">Packagist supply chain attack infects 8 packages using Linux malware hosted on GitHub</a>
+      <div class="source-meta">Fyself News · 2026-05-23</div>
+    </div>
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://www.hendryadrian.com/packagist-supply-chain-attack-infects-8-packages-using-github-hosted-linux-malware/" target="_blank">Packagist Supply Chain Attack Infects 8 Packages Using GitHub-Hosted Linux Malware</a>
+      <div class="source-meta">Hendrik Adrian · 2026-05-23</div>
+    </div>
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://thehackernews.com/2026/05/packagist-supply-chain-attack-infects-8.html" target="_blank">Packagist Supply Chain Attack Infects 8 Packages Using GitHub-Hosted Linux Malware</a>
+      <div class="source-meta">The Hacker News · 2026-05-23</div>
+    </div>
+  </div>
+
+</div>
+<footer class="report-footer">
+  Generated 2026-05-25 · SecondBrain Report System · suelife/reports
+</footer>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grafana Labs 原始碼外洩事件 — TanStack 供應鏈攻擊延伸：Token 漏輪換導致勒索</title>
+<link rel="stylesheet" href="design.css">
+</head>
+<body>
+
+<header class="report-header">
+  <div class="label">資安事件報告 · SecondBrain Investigation</div>
+  <span class="severity-badge high">HIGH</span>
+  <h1>Grafana Labs 原始碼外洩事件<br>TanStack 供應鏈攻擊延伸：Token 漏輪換導致勒索</h1>
+  <div class="meta">
+    <span><strong>事件日期</strong>　2026-05-11</span>
+    <span><strong>勒索日期</strong>　2026-05-16</span>
+    <span><strong>公告日期</strong>　2026-05-22</span>
+    <span><strong>報告日期</strong>　2026-05-25</span>
+    <span><strong>受害者</strong>　Grafana Labs</span>
+    <span><strong>攻擊組織</strong>　TeamPCP（Mini Shai-Hulud / UNC6780）</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="kpi-row">
+    <div class="kpi red">
+      <div class="kpi-value">原始碼</div>
+      <div class="kpi-label">外洩主體</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-value">1 個</div>
+      <div class="kpi-label">漏輪換 Token</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-value">勒索拒付</div>
+      <div class="kpi-label">Grafana 回應</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-value">5 天</div>
+      <div class="kpi-label">偵測到勒索間隔（5/11→5/16）</div>
+    </div>
+  </div>
+
+  <div class="section-header"><span class="icon">🔗</span> 關聯事件</div>
+  <p>本報告為 <a href="2026-05-21-github-teampcp-supply-chain-report.html"><strong>GitHub × TeamPCP（Mini Shai-Hulud）供應鏈攻擊</strong></a> 的延伸個案。Grafana Labs 的入侵根源與 GitHub 遭攻擊同源，均出自 TeamPCP 主導的 TanStack npm 供應鏈蠕蟲攻擊；本報告聚焦 Grafana 作為獨立受害者的事件脈絡、Token 漏輪換的操作失誤，以及勒索拒付的決策。</p>
+
+  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <p>2026 年 5 月 11 日，Grafana Labs 偵測到源自 TanStack npm 供應鏈攻擊（TeamPCP 發動）的惡意活動，並立即輪換了大量 GitHub workflow token。然而一個被誤判為未受影響的 workflow token 未被撤銷，攻擊者藉此取得 Grafana GitHub 環境的存取權，下載公開與私有原始碼及部分內部資料。5 月 16 日收到勒索要求後，Grafana Labs 拒絕支付並通報執法機關，於 5 月 22 日公開披露事件。調查確認客戶正式環境與 Grafana Cloud 平台均未受影響。</p>
+
+  <div class="section-header"><span class="icon">✅</span> 事實核查矩陣</div>
+  <table>
+    <thead><tr><th>聲明</th><th>狀態</th><th>來源</th></tr></thead>
+    <tbody>
+      <tr><td>攻擊根源為 TanStack npm 供應鏈攻擊（Mini Shai-Hulud）</td><td>✅ 已確認（Grafana 官方聲明）</td><td>grafana.com</td></tr>
+      <tr><td>5/11 偵測惡意活動並輪換大量 workflow token</td><td>✅ 已確認（Grafana 官方）</td><td>grafana.com</td></tr>
+      <tr><td>一個 token 漏輪換，攻擊者藉此進入 GitHub 環境</td><td>✅ 已確認（Grafana 官方）</td><td>grafana.com / SecurityWeek</td></tr>
+      <tr><td>原始碼（公開 + 私有）及部分內部資料遭下載</td><td>✅ 已確認（Grafana 官方）</td><td>grafana.com</td></tr>
+      <tr><td>程式碼未被篡改（下載但未修改）</td><td>✅ 已確認（Grafana 官方）</td><td>grafana.com</td></tr>
+      <tr><td>5/16 收到勒索要求，Grafana 拒絕支付</td><td>✅ 已確認（Grafana 官方）</td><td>grafana.com</td></tr>
+      <tr><td>客戶正式環境與 Grafana Cloud 未受影響</td><td>✅ 已確認（Grafana 官方，調查仍持續）</td><td>grafana.com</td></tr>
+      <tr><td>勒索金額</td><td>⚠️ 未公開</td><td>—</td></tr>
+      <tr><td>具體哪些 repo / 資料遭下載的完整清單</td><td>⚠️ 未公開</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-date">2026-05-11</div>
+      <div class="timeline-content">Grafana Labs 偵測到源自 TanStack npm 供應鏈攻擊的惡意活動；立即啟動應變，輪換大量 GitHub workflow token，但一個被誤判為未受影響的 workflow token 遭遺漏</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2026-05-11 – 5/16（期間）</div>
+      <div class="timeline-content">攻擊者利用漏輪換的 token，持續存取 Grafana GitHub 環境，下載公開及私有原始碼 repository、內部 GitHub repository 及業務聯絡資訊</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2026-05-16</div>
+      <div class="timeline-content">Grafana Labs 收到勒索要求（威脅公開洩露程式碼）；決定拒絕支付，通報執法機關，並部署額外緩解措施</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2026-05-22</div>
+      <div class="timeline-content">Grafana Labs 公開披露事件，發布安全更新公告，說明根本原因、影響範圍及後續措施</div>
+    </div>
+  </div>
+
+  <div class="section-header"><span class="icon">🎯</span> 攻擊者背景</div>
+  <p>本事件攻擊者為 TeamPCP（又名 Mini Shai-Hulud、UNC6780），與 GitHub 員工憑證竊取案同一組織。詳細背景請見 <a href="2026-05-21-github-teampcp-supply-chain-report.html">GitHub × TeamPCP 報告</a>。</p>
+  <p>針對 Grafana 的手法表明攻擊者在初始 TanStack 攻擊後，系統性地尋訪所有可能在 5/11 事件中持有受感染 GitHub token 的組織，並鎖定未完整輪換 token 的受害者發動二次攻擊或勒索。</p>
+
+  <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
+  <h3>根本原因：Token 輪換不完整</h3>
+  <p>TeamPCP 的 TanStack npm 供應鏈攻擊（5/11）的惡意 payload 在受害者機器上盜取 GitHub workflow token。Grafana Labs 的應變流程存在一個盲區：</p>
+  <ol>
+    <li><strong>初始偵測（5/11）</strong>：Grafana 偵測到惡意活動並啟動 token 輪換，但評估某個特定 GitHub workflow 為「未受影響」</li>
+    <li><strong>誤判導致遺漏</strong>：該 workflow 的 token 未被撤銷；事後審查確認此 workflow 實際上已遭到入侵</li>
+    <li><strong>持續存取（5/11–5/16）</strong>：攻擊者利用該有效 token 在 Grafana GitHub 環境中自由行動，下載程式碼與資料</li>
+    <li><strong>勒索施壓（5/16）</strong>：攻擊者確認已取得足夠資料後，向 Grafana 發出勒索要求</li>
+  </ol>
+  <h3>外洩資料範圍</h3>
+  <ul>
+    <li>公開及私有原始碼 repository</li>
+    <li>含業務運營資訊的內部 GitHub repository</li>
+    <li>業務聯絡姓名與電子郵件（來自專業往來脈絡）</li>
+    <li><strong>程式碼未被篡改</strong>（下載但無惡意修改）</li>
+  </ul>
+  <h3>未受影響範圍</h3>
+  <ul>
+    <li>客戶正式環境（生產系統）</li>
+    <li>Grafana Cloud 平台</li>
+    <li>客戶資料</li>
+  </ul>
+
+  <div class="section-header"><span class="icon">🔍</span> 入侵指標（IOC）</div>
+  <table>
+    <thead><tr><th>類型</th><th>指標</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td>攻擊組織</td><td>TeamPCP / Mini Shai-Hulud / UNC6780</td><td>本次及 GitHub 事件的共同攻擊者</td></tr>
+      <tr><td>初始入侵向量</td><td>TanStack npm 供應鏈攻擊（2026-05-11）</td><td>惡意 payload 竊取 GitHub workflow token</td></tr>
+      <tr><td>持久化手段</td><td>未被撤銷的 GitHub workflow token</td><td>Grafana 誤判特定 workflow 為未受影響</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-header"><span class="icon">⚠️</span> 衝擊評估</div>
+  <ul>
+    <li><strong>原始碼外洩</strong>：Grafana 公開與私有 codebase 遭下載，含業務運營資料；競爭情報與潛在後門風險不可排除</li>
+    <li><strong>未被篡改的程式碼完整性</strong>：攻擊者未修改程式碼，短期內下游供應鏈感染風險相對可控，但需持續監控</li>
+    <li><strong>勒索拒付後的公開風險</strong>：Grafana 拒絕支付後，攻擊者仍可能選擇公開或出售竊取的原始碼，長尾風險持續</li>
+    <li><strong>Token 輪換操作失誤的示範效應</strong>：此事件揭示在供應鏈事件應變中，「未受影響」的誤判是危險的盲區，行業應建立完整的強制輪換清單</li>
+  </ul>
+
+  <div class="section-header"><span class="icon">⚖️</span> 爭議與未確認事項</div>
+  <ul>
+    <li><strong>勒索金額</strong>：Grafana 未公開勒索金額</li>
+    <li><strong>竊取資料的完整清單</strong>：具體 repository 名稱與業務資料細節未公開</li>
+    <li><strong>後續影響</strong>：攻擊者是否公開或出售竊取的程式碼，截至報告日期尚未確認</li>
+    <li><strong>攻擊者存取時間窗口</strong>：5/11 至 5/16 之間的具體行動細節未完整披露</li>
+  </ul>
+
+  <div class="section-header"><span class="icon">🛡️</span> 防禦建議</div>
+  <h3>立即（類似事件應變）</h3>
+  <ol>
+    <li><strong>完整 token 清單驅動的輪換流程</strong>：供應鏈事件發生後，不依賴「影響評估」來決定是否輪換——所有 workflow token 一律輪換，無例外</li>
+    <li><strong>GitHub 稽核日誌審查</strong>：事件後立即拉取 <code>git.clone</code>、<code>repository.access</code> 等事件，確認存取範圍</li>
+    <li><strong>Token 最小權限原則</strong>：GitHub workflow token 應限制為 read-only，非必要不授予 <code>contents: write</code> 或 admin 權限</li>
+  </ol>
+  <h3>中期</h3>
+  <ol>
+    <li><strong>Secret scanning 全面啟用</strong>：GitHub Advanced Security / third-party SAST 對 workflow 中的 hardcoded token 進行掃描</li>
+    <li><strong>供應鏈事件 runbook</strong>：建立供應鏈攻擊的標準應變 runbook，明確規定 token / secret 完整輪換清單，消除「誤判未受影響」的操作空間</li>
+    <li><strong>偵測 anomalous clone 行為</strong>：監控單一 token 在短時間內大量 <code>git clone</code> private repo 的行為，作為 IOC 之一</li>
+  </ol>
+
+  <div class="section-header"><span class="icon">📚</span> 資料來源</div>
+  <div class="source-grid">
+    <div class="source-card">
+      <div class="source-tag">官方公告</div>
+      <a href="https://grafana.com/blog/grafana-labs-security-update-latest-on-tanstack-npm-supply-chain-ransomware-incident/" target="_blank">Grafana Labs security update: Latest on TanStack npm supply chain ransomware incident</a>
+      <div class="source-meta">Grafana Labs · 2026-05-22</div>
+    </div>
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://www.securityweek.com/grafana-says-codebase-and-other-data-stolen-via-tanstack-supply-chain-attack/" target="_blank">Grafana Says Codebase and Other Data Stolen via TanStack Supply Chain Attack</a>
+      <div class="source-meta">SecurityWeek · 2026-05-22</div>
+    </div>
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://thehackernews.com/2026/05/grafana-github-breach-exposes-source.html" target="_blank">Grafana GitHub Breach Exposes Source Code via TanStack npm Attack</a>
+      <div class="source-meta">The Hacker News · 2026-05-22</div>
+    </div>
+    <div class="source-card">
+      <div class="source-tag">事件報導</div>
+      <a href="https://www.helpnetsecurity.com/2026/05/21/github-grafana-breach-root-cause-nx-console/" target="_blank">GitHub, Grafana Labs breaches traced back to TanStack supply chain compromise</a>
+      <div class="source-meta">Help Net Security · 2026-05-21</div>
+    </div>
+    <div class="source-card">
+      <div class="source-tag">關聯報告</div>
+      <a href="2026-05-21-github-teampcp-supply-chain-report.html">GitHub × TeamPCP — Nx Console VSCode 供應鏈攻擊：3,800 個內部 Repo 外洩</a>
+      <div class="source-meta">SecondBrain Report · 2026-05-21</div>
+    </div>
+  </div>
+
+</div>
+<footer class="report-footer">
+  Generated 2026-05-25 · SecondBrain Report System · suelife/reports
+</footer>
+</body>
+</html>

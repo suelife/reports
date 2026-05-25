@@ -209,8 +209,8 @@
   <h1>Reports</h1>
   <p>資安事件報告、深度研究簡報、比較分析 — 由 SecondBrain 生成</p>
   <div class="stats">
-    <div class="stat"><strong>8</strong>篇報告</div>
-    <div class="stat"><strong>6</strong>資安事件</div>
+    <div class="stat"><strong>10</strong>篇報告</div>
+    <div class="stat"><strong>8</strong>資安事件</div>
     <div class="stat"><strong>2</strong>工安 / 其他</div>
   </div>
 </header>
@@ -226,18 +226,60 @@
     <button class="filter-btn" onclick="filterCards('phishing', this)">Phishing</button>
   </div>
 
-  <a class="report-card severity-high" href="2026-05-25-php-npm-supply-chain-triple-attack-report.html" data-tags="incident supply-chain">
+  <a class="report-card severity-high" href="2026-05-25-grafana-tanstack-supply-chain-breach-report.html" data-tags="incident supply-chain">
     <div class="card-left">
       <span class="sev-badge high">HIGH</span>
       <div class="card-date">2026-05-25</div>
     </div>
     <div class="card-body">
-      <div class="card-title">PHP／npm 生態三連爆：Packagist × Laravel-Lang × TanStack 供應鏈攻擊聯合分析</div>
-      <div class="card-desc">12 天內三起供應鏈攻擊同時衝擊 npm / Packagist 生態，受害組織含 GitHub、Grafana、OpenAI。641+ 套件版本受影響，Mini Shai-Hulud worm 代碼公開後催化 PHP 生態仿效攻擊。</div>
+      <div class="card-title">Grafana Labs 原始碼外洩事件 — TanStack 供應鏈攻擊延伸：Token 漏輪換導致勒索</div>
+      <div class="card-desc">TeamPCP TanStack 攻擊後，Grafana Labs 誤判一個 workflow token 未受影響，攻擊者持續存取 GitHub 環境下載原始碼，5/16 發出勒索要求遭拒。</div>
+      <div class="tag-row">
+        <span class="tag red">供應鏈</span>
+        <span class="tag red">原始碼外洩</span>
+        <span class="tag">勒索拒付</span>
+        <span class="tag">Token 輪換</span>
+        <span class="tag">TeamPCP</span>
+        <span class="tag">Grafana Labs</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
+
+  <a class="report-card severity-high" href="2026-05-25-laravel-lang-php-credential-stealer-report.html" data-tags="incident supply-chain">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-05-25</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Laravel-Lang 供應鏈攻擊 — GitHub Tag 劫持植入 15 模組 PHP 憑證竊取器</div>
+      <div class="card-desc">攻擊者劫持 laravel-lang 三個套件 GitHub tag，植入 5,900 行 PHP 竊取器，15 個模組涵蓋 AWS/GCP/Azure 金鑰、17 款 Chromium 瀏覽器、加密錢包，C2：flipboxstudio[.]info。</div>
       <div class="tag-row">
         <span class="tag red">供應鏈</span>
         <span class="tag red">憑證竊取</span>
-        <span class="tag amber">TeamPCP</span>
+        <span class="tag">PHP</span>
+        <span class="tag">GitHub Tag 劫持</span>
+        <span class="tag amber">Cloud 金鑰外洩</span>
+        <span class="tag">Packagist</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
+
+  <a class="report-card severity-medium" href="2026-05-25-packagist-8-packages-linux-dropper-report.html" data-tags="incident supply-chain">
+    <div class="card-left">
+      <span class="sev-badge medium">MED</span>
+      <div class="card-date">2026-05-25</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Packagist 8 套件供應鏈攻擊 — package.json Linux Binary Dropper</div>
+      <div class="card-desc">攻擊者在 8 個 PHP 套件的 package.json 植入惡意 postinstall，藉 npm install 從 GitHub 下載並執行 Linux binary（/tmp/.sshd），利用 PHP/JS 跨生態系盲區規避掃描。</div>
+      <div class="tag-row">
+        <span class="tag">供應鏈</span>
+        <span class="tag">PHP</span>
+        <span class="tag">Linux Binary</span>
+        <span class="tag">Packagist</span>
+        <span class="tag amber">跨生態系攻擊</span>
       </div>
     </div>
     <div class="card-arrow">›</div>
