@@ -209,8 +209,8 @@
   <h1>Reports</h1>
   <p>資安事件報告、深度研究簡報、比較分析 — 由 SecondBrain 生成</p>
   <div class="stats">
-    <div class="stat"><strong>10</strong>篇報告</div>
-    <div class="stat"><strong>8</strong>資安事件</div>
+    <div class="stat"><strong>11</strong>篇報告</div>
+    <div class="stat"><strong>9</strong>資安事件</div>
     <div class="stat"><strong>2</strong>工安 / 其他</div>
   </div>
 </header>
@@ -223,8 +223,29 @@
     <button class="filter-btn" onclick="filterCards('apt', this)">APT</button>
     <button class="filter-btn" onclick="filterCards('supply-chain', this)">供應鏈</button>
     <button class="filter-btn" onclick="filterCards('lpe', this)">LPE</button>
+    <button class="filter-btn" onclick="filterCards('cve', this)">CVE</button>
     <button class="filter-btn" onclick="filterCards('phishing', this)">Phishing</button>
   </div>
+
+  <a class="report-card severity-high" href="2026-05-25-apex-one-cve-2026-34926-report.html" data-tags="incident cve">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-05-25</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">CVE-2026-34926 — Trend Micro Apex One 零日漏洞：企業 EDR 管理端變身惡意程式投遞平台</div>
+      <div class="card-desc">Directory Traversal 漏洞允許取得管理員憑證的攻擊者改寫伺服器關鍵資料表，將惡意程式推送至全組織端點。CISA 列入 KEV，聯邦機構修補期限 2026-06-04。CVSS 6.7，Scope Changed。</div>
+      <div class="tag-row">
+        <span class="tag red">在野利用</span>
+        <span class="tag red">CISA KEV</span>
+        <span class="tag">CVE-2026-34926</span>
+        <span class="tag">Apex One</span>
+        <span class="tag amber">EDR 武器化</span>
+        <span class="tag">Directory Traversal</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
 
   <a class="report-card severity-high" href="2026-05-25-grafana-tanstack-supply-chain-breach-report.html" data-tags="incident supply-chain">
     <div class="card-left">
