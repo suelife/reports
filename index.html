@@ -209,8 +209,8 @@
   <h1>Reports</h1>
   <p>資安事件報告、深度研究簡報、比較分析 — 由 SecondBrain 生成</p>
   <div class="stats">
-    <div class="stat"><strong>11</strong>篇報告</div>
-    <div class="stat"><strong>9</strong>資安事件</div>
+    <div class="stat"><strong>12</strong>篇報告</div>
+    <div class="stat"><strong>10</strong>資安事件</div>
     <div class="stat"><strong>2</strong>工安 / 其他</div>
   </div>
 </header>
@@ -226,6 +226,26 @@
     <button class="filter-btn" onclick="filterCards('cve', this)">CVE</button>
     <button class="filter-btn" onclick="filterCards('phishing', this)">Phishing</button>
   </div>
+
+  <a class="report-card severity-medium" href="2026-06-03-ai-edr-evasion-toolkit-report.html" data-tags="incident apt">
+    <div class="card-left">
+      <span class="sev-badge medium">MED</span>
+      <div class="card-date">2026-06-03</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">威脅行為者用 AI 打造 EDR 繞過工具 — Sophos 揭露 Cursor + Claude Opus 4.5 多代理惡意程式開發工作流</div>
+      <div class="card-desc">攻擊者以 Cursor 搭配分工 AI 代理量產近 80 個模組、70+ 規避技術，借用 Cobalt Strike／Sliver。Sophos 強調惡意程式未內嵌 AI、工作流非自主，且「幾乎都能繞過 EDR」的自稱未獲實測支持；已關聯至勒索軟體與資料竊取行動。</div>
+      <div class="tag-row">
+        <span class="tag red">AI 濫用</span>
+        <span class="tag red">EDR 繞過</span>
+        <span class="tag amber">勒索軟體關聯</span>
+        <span class="tag">Cursor / Claude</span>
+        <span class="tag">Cobalt Strike</span>
+        <span class="tag">Sliver</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
 
   <a class="report-card severity-high" href="2026-05-25-apex-one-cve-2026-34926-report.html" data-tags="incident cve">
     <div class="card-left">
