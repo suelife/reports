@@ -25,7 +25,7 @@
 
 <div class="container">
 
-  <div class="kpi-row">
+  <div class="kpi-grid">
     <div class="kpi red">
       <div class="kpi-value">8 個</div>
       <div class="kpi-label">受感染套件</div>
@@ -62,20 +62,11 @@
   </table>
 
   <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
-  <div class="timeline">
-    <div class="timeline-item">
-      <div class="timeline-date">2026-05-21 前後</div>
-      <div class="timeline-content">攻擊者修改 8 個 Packagist 套件的 <code>package.json</code>，植入惡意 postinstall 腳本</div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-date">2026-05-23</div>
-      <div class="timeline-content">安全研究人員公開披露；Packagist 移除惡意版本；parikhpreyash4 GitHub 帳號刪除</div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-date">2026-05-23（持續）</div>
-      <div class="timeline-content">研究人員發現 GitHub 上仍有 777 個檔案引用同一 payload URL，攻擊面可能超出已知 8 個套件</div>
-    </div>
-  </div>
+  <ul class="timeline">
+    <li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-05-21 前後</div><div class="tl-detail">攻擊者修改 8 個 Packagist 套件的 <code>package.json</code>，植入惡意 postinstall 腳本</div></div></li>
+    <li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-05-23</div><div class="tl-detail">安全研究人員公開披露；Packagist 移除惡意版本；parikhpreyash4 GitHub 帳號刪除</div></div></li>
+    <li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-05-23（持續）</div><div class="tl-detail">研究人員發現 GitHub 上仍有 777 個檔案引用同一 payload URL，攻擊面可能超出已知 8 個套件</div></div></li>
+  </ul>
 
   <div class="section-header"><span class="icon">🎯</span> 攻擊者背景</div>
   <p>攻擊者身份未知，唯一已知線索為 GitHub 帳號 <code>parikhpreyash4</code>，以 <code>systemd-network-helper-aa5c751f</code> 為 repository 名稱（偽裝為系統服務），在事件曝光後立即刪帳號。無法確認其國籍、組織關聯或動機。</p>
@@ -145,7 +136,7 @@
   </ol>
 
   <div class="section-header"><span class="icon">📚</span> 資料來源</div>
-  <div class="source-grid">
+  <div class="sources-grid">
     <div class="source-card">
       <div class="source-tag">事件報導</div>
       <a href="https://news.fyself.com/packagist-supply-chain-attack-infects-8-packages-using-linux-malware-hosted-on-github/" target="_blank">Packagist supply chain attack infects 8 packages using Linux malware hosted on GitHub</a>

@@ -116,54 +116,24 @@
   <div class="section">
     <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
     <div class="section-body">
-      <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-dot red"></div>
-          <div class="tl-date">2026-02-20（Day 1）—— 立足點建立</div>
-          <div class="tl-title">偵察、載荷下載、DLL 側載、持久化</div>
-          <div class="tl-desc">
+      <ul class="timeline">
+        <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2026-02-20（Day 1）—— 立足點建立</div><div class="tl-title">偵察、載荷下載、DLL 側載、持久化</div><div class="tl-detail">
             PowerShell 偵察（whoami/hostname/ipconfig/net user）→ WMI 列舉防毒 →
             從 <code>179.43.177[.]220:8080</code> 下載 <code>nm.ps1</code>、<code>a.dat</code>、<code>a.exe</code> →
             部署 fmapp.exe + sentinelmemoryscanner.exe DLL 側載 →
             Registry Run Key 持久化 → SAM/SECURITY/SYSTEM 登錄檔竊取 → 提權工具執行
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot amber"></div>
-          <div class="tl-date">2026-02-21（Day 2）—— 持續監控</div>
-          <div class="tl-title">自動化 Beaconing</div>
-          <div class="tl-desc">約每 90 秒自動 beaconing，持續偵察與 ping 式探測。</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot red"></div>
-          <div class="tl-date">2026-02-22（Day 3）—— 深度滲透</div>
-          <div class="tl-title">第二階段載荷、密集偵察、資料外洩</div>
-          <div class="tl-desc">
+          </div></div></li>
+        <li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">2026-02-21（Day 2）—— 持續監控</div><div class="tl-title">自動化 Beaconing</div><div class="tl-detail">約每 90 秒自動 beaconing，持續偵察與 ping 式探測。</div></div></li>
+        <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2026-02-22（Day 3）—— 深度滲透</div><div class="tl-title">第二階段載荷、密集偵察、資料外洩</div><div class="tl-detail">
             從 <code>timetrakr[.]cloud</code> 下載第二階段 PowerShell 模組 →
             截圖腳本 <code>sp.ps1</code> →
             密集 host/domain 偵察 →
             <strong>透過 sendit[.]sh 外洩資料</strong>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-date">2026-02-23 ~ 24（Day 4–5）—— 維持存取</div>
-          <div class="tl-title">重複偵察與隧道維持</div>
-          <div class="tl-desc">定期 PowerShell 偵察、IP 確認、重新執行側載二進位檔維持 SOCKS5 隧道。</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot amber"></div>
-          <div class="tl-date">2026-02-26（Day 7）—— 沉寂後重新活躍</div>
-          <div class="tl-title">36 小時沉寂後恢復活動</div>
-          <div class="tl-desc">憑證傾倒 → 新隨機目錄重新部署工具 → 對不同群組名稱執行 net group/localgroup。</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot green"></div>
-          <div class="tl-date">2026-02-27（Day 8）—— 最後活動</div>
-          <div class="tl-title">最後一次側載重啟</div>
-          <div class="tl-desc">重新啟動 fmapp.exe，此後未再偵測到活動。</div>
-        </div>
-      </div>
+          </div></div></li>
+        <li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-02-23 ~ 24（Day 4–5）—— 維持存取</div><div class="tl-title">重複偵察與隧道維持</div><div class="tl-detail">定期 PowerShell 偵察、IP 確認、重新執行側載二進位檔維持 SOCKS5 隧道。</div></div></li>
+        <li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">2026-02-26（Day 7）—— 沉寂後重新活躍</div><div class="tl-title">36 小時沉寂後恢復活動</div><div class="tl-detail">憑證傾倒 → 新隨機目錄重新部署工具 → 對不同群組名稱執行 net group/localgroup。</div></div></li>
+        <li><span class="tl-dot green"></span><div class="tl-content"><div class="tl-date">2026-02-27（Day 8）—— 最後活動</div><div class="tl-title">最後一次側載重啟</div><div class="tl-detail">重新啟動 fmapp.exe，此後未再偵測到活動。</div></div></li>
+      </ul>
     </div>
   </div>
 
@@ -176,15 +146,15 @@
       <table class="data-table">
         <thead><tr><th>檔案</th><th>SHA-256</th></tr></thead>
         <tbody>
-          <tr><td>fmapp.exe（合法）</td><td class="ioc-code">e25892603c42e34bd7ba0d8ea73be600d898cadc290e3417a82c04d6281b743b</td></tr>
-          <tr><td>fmapp.dll（惡意）</td><td class="ioc-code">c6182fd01b14d84723e3c9d11bc0e16b34de6607ccb8334fc9bb97c1b44f0cde</td></tr>
-          <tr><td>sentinelmemoryscanner.exe（合法）</td><td class="ioc-code">128b58a2a2f1df66c474094aacb7e50189025fbf45d7cd8e0834e93a8fbed667</td></tr>
-          <tr><td>sentinelagentcore.dll（惡意）</td><td class="ioc-code">0c9b911935a3705b0ad569446804d80026feb6db3884aeb240b6c76e9b8cf139</td></tr>
-          <tr><td>提權工具</td><td class="ioc-code">74ab3838ebed7054b2254bf7d334c80c8b2cfea4a97d1706723f8ea55f11061f</td></tr>
-          <tr><td>SAM 提取器</td><td class="ioc-code">3ee7dab4ae4f6d4f16dfabb6f38faef370411a9fc00ff035844e54703b99600a</td></tr>
-          <tr><td>SAM 提取器</td><td class="ioc-code">bee79c3302b1a7afc0952842d14eff83a604ef00bfdae525176c16c80b2045f7</td></tr>
-          <tr><td>憑證收割器</td><td class="ioc-code">d587959841a763669279ad831b8f0379f6a7b037dffc19deab5d41f37f8b5ffc</td></tr>
-          <tr><td>SOCKS5 代理工具</td><td class="ioc-code">b21c802775df0c0d82c8cfde299084abc624898b10258db641b820172a0ba29a</td></tr>
+          <tr><td>fmapp.exe（合法）</td><td >e25892603c42e34bd7ba0d8ea73be600d898cadc290e3417a82c04d6281b743b</td></tr>
+          <tr><td>fmapp.dll（惡意）</td><td >c6182fd01b14d84723e3c9d11bc0e16b34de6607ccb8334fc9bb97c1b44f0cde</td></tr>
+          <tr><td>sentinelmemoryscanner.exe（合法）</td><td >128b58a2a2f1df66c474094aacb7e50189025fbf45d7cd8e0834e93a8fbed667</td></tr>
+          <tr><td>sentinelagentcore.dll（惡意）</td><td >0c9b911935a3705b0ad569446804d80026feb6db3884aeb240b6c76e9b8cf139</td></tr>
+          <tr><td>提權工具</td><td >74ab3838ebed7054b2254bf7d334c80c8b2cfea4a97d1706723f8ea55f11061f</td></tr>
+          <tr><td>SAM 提取器</td><td >3ee7dab4ae4f6d4f16dfabb6f38faef370411a9fc00ff035844e54703b99600a</td></tr>
+          <tr><td>SAM 提取器</td><td >bee79c3302b1a7afc0952842d14eff83a604ef00bfdae525176c16c80b2045f7</td></tr>
+          <tr><td>憑證收割器</td><td >d587959841a763669279ad831b8f0379f6a7b037dffc19deab5d41f37f8b5ffc</td></tr>
+          <tr><td>SOCKS5 代理工具</td><td >b21c802775df0c0d82c8cfde299084abc624898b10258db641b820172a0ba29a</td></tr>
         </tbody>
       </table>
 
@@ -192,15 +162,15 @@
       <table class="data-table">
         <thead><tr><th>類型</th><th>指標</th><th>用途</th></tr></thead>
         <tbody>
-          <tr><td><span class="badge badge-red">IP</span></td><td><code>179.43.177[.]220:8080</code></td><td>主要載荷暫存伺服器</td></tr>
-          <tr><td><span class="badge badge-red">IP</span></td><td><code>178.128.233[.]36</code></td><td>C2 基礎設施</td></tr>
-          <tr><td><span class="badge badge-red">IP</span></td><td><code>172.67.156[.]47</code></td><td>C2 基礎設施</td></tr>
-          <tr><td><span class="badge badge-red">IP</span></td><td><code>104.21.48[.]205</code></td><td>C2 基礎設施</td></tr>
-          <tr><td><span class="badge badge-red">IP</span></td><td><code>37.187.78[.]41</code></td><td>C2 基礎設施</td></tr>
-          <tr><td><span class="badge badge-red">IP</span></td><td><code>34.117.59[.]81</code></td><td>C2 基礎設施</td></tr>
-          <tr><td><span class="badge badge-amber">Domain</span></td><td><code>timetrakr[.]cloud</code></td><td>攻擊者所有的暫存域名</td></tr>
-          <tr><td><span class="badge badge-amber">Domain</span></td><td><code>svc.wompworthy[.]com</code></td><td>C2 通訊</td></tr>
-          <tr><td><span class="badge badge-navy">Service</span></td><td><code>sendit[.]sh</code></td><td>公開檔案傳輸服務（資料外洩管道）</td></tr>
+          <tr><td><span class="badge badge-denied">IP</span></td><td><code>179.43.177[.]220:8080</code></td><td>主要載荷暫存伺服器</td></tr>
+          <tr><td><span class="badge badge-denied">IP</span></td><td><code>178.128.233[.]36</code></td><td>C2 基礎設施</td></tr>
+          <tr><td><span class="badge badge-denied">IP</span></td><td><code>172.67.156[.]47</code></td><td>C2 基礎設施</td></tr>
+          <tr><td><span class="badge badge-denied">IP</span></td><td><code>104.21.48[.]205</code></td><td>C2 基礎設施</td></tr>
+          <tr><td><span class="badge badge-denied">IP</span></td><td><code>37.187.78[.]41</code></td><td>C2 基礎設施</td></tr>
+          <tr><td><span class="badge badge-denied">IP</span></td><td><code>34.117.59[.]81</code></td><td>C2 基礎設施</td></tr>
+          <tr><td><span class="badge badge-claimed">Domain</span></td><td><code>timetrakr[.]cloud</code></td><td>攻擊者所有的暫存域名</td></tr>
+          <tr><td><span class="badge badge-claimed">Domain</span></td><td><code>svc.wompworthy[.]com</code></td><td>C2 通訊</td></tr>
+          <tr><td><span class="badge badge-info">Service</span></td><td><code>sendit[.]sh</code></td><td>公開檔案傳輸服務（資料外洩管道）</td></tr>
         </tbody>
       </table>
     </div>
@@ -213,23 +183,23 @@
       <table class="data-table">
         <thead><tr><th>階段</th><th>技術 ID</th><th>名稱</th><th>本案證據</th></tr></thead>
         <tbody>
-          <tr><td><span class="badge badge-navy">偵察</span></td><td>T1087.002</td><td>Domain Account Discovery</td><td><code>net user /domain</code>、<code>net group /domain</code></td></tr>
-          <tr><td><span class="badge badge-navy">偵察</span></td><td>T1082</td><td>System Information Discovery</td><td><code>hostname</code>、<code>ipconfig /all</code></td></tr>
-          <tr><td><span class="badge badge-navy">偵察</span></td><td>T1518.001</td><td>Security Software Discovery</td><td>WMI 列舉防毒軟體</td></tr>
-          <tr><td><span class="badge badge-navy">偵察</span></td><td>T1113</td><td>Screen Capture</td><td>PowerShell 螢幕截圖</td></tr>
-          <tr><td><span class="badge badge-amber">執行</span></td><td>T1059.001</td><td>PowerShell</td><td>多階段偵察與載荷執行</td></tr>
-          <tr><td><span class="badge badge-amber">持久化</span></td><td>T1547.001</td><td>Registry Run Keys</td><td><code>HKCU\...\CurrentVersion\Run</code></td></tr>
-          <tr><td><span class="badge badge-green">防禦規避</span></td><td>T1574.002</td><td>DLL Side-Loading</td><td>fmapp.exe / sentinelmemoryscanner.exe 側載</td></tr>
-          <tr><td><span class="badge badge-green">防禦規避</span></td><td>T1036.005</td><td>Masquerading</td><td>使用合法簽章二進位檔</td></tr>
-          <tr><td><span class="badge badge-red">憑證存取</span></td><td>T1003.002</td><td>SAM</td><td><code>reg save hklm\sam</code> 竊取 NTLM 雜湊</td></tr>
-          <tr><td><span class="badge badge-red">憑證存取</span></td><td>T1555</td><td>Credentials from Web Browsers</td><td>ChromElevator 竊取瀏覽器資料</td></tr>
-          <tr><td><span class="badge badge-red">憑證存取</span></td><td>T1056.004</td><td>Credential API Hooking</td><td>假 Windows 認證對話框</td></tr>
-          <tr><td><span class="badge badge-amber">橫向移動</span></td><td>T1021</td><td>Remote Services</td><td>利用竊得憑證移動</td></tr>
-          <tr><td><span class="badge badge-navy">C2</span></td><td>T1090.001</td><td>Internal Proxy</td><td>SOCKS5 反向代理隧道</td></tr>
-          <tr><td><span class="badge badge-navy">C2</span></td><td>T1571</td><td>Non-Standard Port</td><td>Port 8080 HTTP 通道</td></tr>
-          <tr><td><span class="badge badge-navy">C2</span></td><td>T1008</td><td>Fallback Channels</td><td>IP + Domain 雙通道備援</td></tr>
-          <tr><td><span class="badge badge-red">資料外洩</span></td><td>T1567</td><td>Exfiltration Over Web Service</td><td><code>sendit[.]sh</code> 公開服務</td></tr>
-          <tr><td><span class="badge badge-red">資料外洩</span></td><td>T1041</td><td>Exfiltration Over C2 Channel</td><td>SOCKS5 隧道外傳</td></tr>
+          <tr><td><span class="badge badge-info">偵察</span></td><td>T1087.002</td><td>Domain Account Discovery</td><td><code>net user /domain</code>、<code>net group /domain</code></td></tr>
+          <tr><td><span class="badge badge-info">偵察</span></td><td>T1082</td><td>System Information Discovery</td><td><code>hostname</code>、<code>ipconfig /all</code></td></tr>
+          <tr><td><span class="badge badge-info">偵察</span></td><td>T1518.001</td><td>Security Software Discovery</td><td>WMI 列舉防毒軟體</td></tr>
+          <tr><td><span class="badge badge-info">偵察</span></td><td>T1113</td><td>Screen Capture</td><td>PowerShell 螢幕截圖</td></tr>
+          <tr><td><span class="badge badge-claimed">執行</span></td><td>T1059.001</td><td>PowerShell</td><td>多階段偵察與載荷執行</td></tr>
+          <tr><td><span class="badge badge-claimed">持久化</span></td><td>T1547.001</td><td>Registry Run Keys</td><td><code>HKCU\...\CurrentVersion\Run</code></td></tr>
+          <tr><td><span class="badge badge-confirmed">防禦規避</span></td><td>T1574.002</td><td>DLL Side-Loading</td><td>fmapp.exe / sentinelmemoryscanner.exe 側載</td></tr>
+          <tr><td><span class="badge badge-confirmed">防禦規避</span></td><td>T1036.005</td><td>Masquerading</td><td>使用合法簽章二進位檔</td></tr>
+          <tr><td><span class="badge badge-denied">憑證存取</span></td><td>T1003.002</td><td>SAM</td><td><code>reg save hklm\sam</code> 竊取 NTLM 雜湊</td></tr>
+          <tr><td><span class="badge badge-denied">憑證存取</span></td><td>T1555</td><td>Credentials from Web Browsers</td><td>ChromElevator 竊取瀏覽器資料</td></tr>
+          <tr><td><span class="badge badge-denied">憑證存取</span></td><td>T1056.004</td><td>Credential API Hooking</td><td>假 Windows 認證對話框</td></tr>
+          <tr><td><span class="badge badge-claimed">橫向移動</span></td><td>T1021</td><td>Remote Services</td><td>利用竊得憑證移動</td></tr>
+          <tr><td><span class="badge badge-info">C2</span></td><td>T1090.001</td><td>Internal Proxy</td><td>SOCKS5 反向代理隧道</td></tr>
+          <tr><td><span class="badge badge-info">C2</span></td><td>T1571</td><td>Non-Standard Port</td><td>Port 8080 HTTP 通道</td></tr>
+          <tr><td><span class="badge badge-info">C2</span></td><td>T1008</td><td>Fallback Channels</td><td>IP + Domain 雙通道備援</td></tr>
+          <tr><td><span class="badge badge-denied">資料外洩</span></td><td>T1567</td><td>Exfiltration Over Web Service</td><td><code>sendit[.]sh</code> 公開服務</td></tr>
+          <tr><td><span class="badge badge-denied">資料外洩</span></td><td>T1041</td><td>Exfiltration Over C2 Channel</td><td>SOCKS5 隧道外傳</td></tr>
         </tbody>
       </table>
     </div>

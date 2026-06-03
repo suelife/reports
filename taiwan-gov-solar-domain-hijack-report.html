@@ -63,45 +63,25 @@
   <div class="section">
     <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
     <div class="section-body">
-      <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-dot green"></div>
-          <div class="tl-date">～2015 — 2023</div>
-          <div class="tl-title">mrpv.org.tw 正式運作期</div>
-          <div class="tl-desc">
+      <ul class="timeline">
+        <li><span class="tl-dot green"></span><div class="tl-content"><div class="tl-date">～2015 — 2023</div><div class="tl-title">mrpv.org.tw 正式運作期</div><div class="tl-detail">
             「太陽光電單一服務窗口」由經濟部能源署主導設立，提供申設流程、補助說明、法規查詢。
             行政院、能源署、各縣市政府（雲林、臺南、高雄等）、台電、學校等大量 .gov.tw 頁面合法引用此網域。
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot amber"></div>
-          <div class="tl-date">不明時間點（2023—2025 之間）</div>
-          <div class="tl-title">原管理單位停止維護，網域廢棄</div>
-          <div class="tl-desc">
+          </div></div></li>
+        <li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">不明時間點（2023—2025 之間）</div><div class="tl-title">原管理單位停止維護，網域廢棄</div><div class="tl-detail">
             能源政策整合或預算縮編後，mrpv.org.tw 停止更新。.org.tw 網域因未續約而釋出。
             部分子頁面（如 <code>/index.aspx</code>）仍可存取（可能為伺服器殘留快取），但 Google 搜尋結果已出現「系統忙碌中請稍後再試」警示。
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot red"></div>
-          <div class="tl-date">2024—2025（確切時間待查）</div>
-          <div class="tl-title">網域遭接管 — 援交廣告上線</div>
-          <div class="tl-desc">
+          </div></div></li>
+        <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2024—2025（確切時間待查）</div><div class="tl-title">網域遭接管 — 援交廣告上線</div><div class="tl-detail">
             第三方（目前不明）接管 mrpv.org.tw 根目錄，部署違法成人廣告網站，
             標題改為「<strong>定點茶與外送茶首選品牌 | 太陽光電 — 真人實照保證</strong>」。
             故意保留「太陽光電」關鍵字以繼承搜尋引擎 SEO 權重。
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot red"></div>
-          <div class="tl-date">2026-05-14</div>
-          <div class="tl-title">本次調查發現並記錄</div>
-          <div class="tl-desc">
+          </div></div></li>
+        <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2026-05-14</div><div class="tl-title">本次調查發現並記錄</div><div class="tl-detail">
             主流媒體（iThome、TechNews、bnext）及社群（PTT、Dcard）尚無任何公開討論或報導。
             政府相關單位尚無公告因應措施。
-          </div>
-        </div>
-      </div>
+          </div></div></li>
+      </ul>
     </div>
   </div>
 
@@ -158,32 +138,32 @@
           <tr>
             <td><code>mrpv.org.tw/</code>（根目錄）</td>
             <td>WebFetch 直接抓取</td>
-            <td><span class="badge badge-red">已劫持</span> Dynadot 停車頁 + 援交廣告內容</td>
+            <td><span class="badge badge-denied">已劫持</span> Dynadot 停車頁 + 援交廣告內容</td>
           </tr>
           <tr>
             <td><code>mrpv.org.tw/index.aspx</code></td>
             <td>Google 搜尋結果</td>
-            <td><span class="badge badge-amber">殘留快取</span> 仍顯示舊政府服務內容</td>
+            <td><span class="badge badge-claimed">殘留快取</span> 仍顯示舊政府服務內容</td>
           </tr>
           <tr>
             <td><code>"太陽光電單一服務窗口" site:gov.tw</code></td>
             <td>Google 搜尋</td>
-            <td><span class="badge badge-red">持續存在</span> 能源署、雲林縣、台電等多頁面仍含舊連結</td>
+            <td><span class="badge badge-denied">持續存在</span> 能源署、雲林縣、台電等多頁面仍含舊連結</td>
           </tr>
           <tr>
             <td><code>moeaboe.gov.tw</code> 特定頁面</td>
             <td>WebFetch</td>
-            <td><span class="badge badge-amber">ECONNREFUSED</span> 連線被拒，可能已下線</td>
+            <td><span class="badge badge-claimed">ECONNREFUSED</span> 連線被拒，可能已下線</td>
           </tr>
           <tr>
             <td>主流媒體報導</td>
             <td>WebSearch（iThome / TechNews / bnext）</td>
-            <td><span class="badge badge-navy">尚無報導</span></td>
+            <td><span class="badge badge-info">尚無報導</span></td>
           </tr>
           <tr>
             <td>PTT / Dcard 社群討論</td>
             <td>WebSearch</td>
-            <td><span class="badge badge-navy">尚無討論串</span></td>
+            <td><span class="badge badge-info">尚無討論串</span></td>
           </tr>
         </tbody>
       </table>
@@ -264,27 +244,27 @@
           <tr>
             <td><strong>政府公信力</strong></td>
             <td>民眾從政府官網點擊「太陽光電申請」相關連結，直接跳轉至援交廣告，嚴重損害政府形象</td>
-            <td><span class="badge badge-red">高</span></td>
+            <td><span class="badge badge-denied">高</span></td>
           </tr>
           <tr>
             <td><strong>搜尋引擎毒化</strong></td>
             <td>Google 索引中的 .gov.tw 頁面仍「背書」mrpv.org.tw，使違法業者享有不當 SEO 排名優勢</td>
-            <td><span class="badge badge-red">高</span></td>
+            <td><span class="badge badge-denied">高</span></td>
           </tr>
           <tr>
             <td><strong>民眾誤導風險</strong></td>
             <td>太陽能申設流程的民眾可能誤信為官方服務並留下個資或付款</td>
-            <td><span class="badge badge-red">高</span></td>
+            <td><span class="badge badge-denied">高</span></td>
           </tr>
           <tr>
             <td><strong>法規/品牌混淆</strong></td>
             <td>業者在標題保留「太陽光電」關鍵字，可能構成冒充政府機關之問題</td>
-            <td><span class="badge badge-amber">中</span></td>
+            <td><span class="badge badge-claimed">中</span></td>
           </tr>
           <tr>
             <td><strong>各縣市政府網站</strong></td>
             <td>雲林、臺南、高雄等縣市政府頁面仍含舊連結，各自需要個別清理</td>
-            <td><span class="badge badge-amber">中</span></td>
+            <td><span class="badge badge-claimed">中</span></td>
           </tr>
         </tbody>
       </table>
@@ -303,32 +283,32 @@
         </thead>
         <tbody>
           <tr>
-            <td><span class="badge badge-red">立即</span></td>
+            <td><span class="badge badge-denied">立即</span></td>
             <td>向 TWCERT（台灣電腦緊急應變小組）通報此事件</td>
             <td>能源署 / 發現單位</td>
           </tr>
           <tr>
-            <td><span class="badge badge-red">立即</span></td>
+            <td><span class="badge badge-denied">立即</span></td>
             <td>掃描所有 gov.tw 頁面，移除或修正指向 mrpv.org.tw 的連結</td>
             <td>數位部 / 各機關資訊室</td>
           </tr>
           <tr>
-            <td><span class="badge badge-amber">短期</span></td>
+            <td><span class="badge badge-claimed">短期</span></td>
             <td>評估是否由政府重新接管 mrpv.org.tw 網域，或設立永久性替代連結並 301 重定向</td>
             <td>能源署</td>
           </tr>
           <tr>
-            <td><span class="badge badge-amber">短期</span></td>
+            <td><span class="badge badge-claimed">短期</span></td>
             <td>向 Google Search Console 提交「連結移除」請求，加速清除索引中的毒化頁面</td>
             <td>數位部</td>
           </tr>
           <tr>
-            <td><span class="badge badge-navy">中期</span></td>
+            <td><span class="badge badge-info">中期</span></td>
             <td>建立政府網域到期監控機制，防止類似事件重演</td>
             <td>數位部</td>
           </tr>
           <tr>
-            <td><span class="badge badge-navy">中期</span></td>
+            <td><span class="badge badge-info">中期</span></td>
             <td>針對 BadIIS 威脅，稽核所有政府 IIS 伺服器是否存在異常 Native Module</td>
             <td>各機關資訊室 / CERT</td>
           </tr>

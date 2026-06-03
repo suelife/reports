@@ -26,7 +26,7 @@
 
 <div class="container">
 
-  <div class="kpi-row">
+  <div class="kpi-grid">
     <div class="kpi red">
       <div class="kpi-value">原始碼</div>
       <div class="kpi-label">外洩主體</div>
@@ -68,24 +68,12 @@
   </table>
 
   <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
-  <div class="timeline">
-    <div class="timeline-item">
-      <div class="timeline-date">2026-05-11</div>
-      <div class="timeline-content">Grafana Labs 偵測到源自 TanStack npm 供應鏈攻擊的惡意活動；立即啟動應變，輪換大量 GitHub workflow token，但一個被誤判為未受影響的 workflow token 遭遺漏</div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-date">2026-05-11 – 5/16（期間）</div>
-      <div class="timeline-content">攻擊者利用漏輪換的 token，持續存取 Grafana GitHub 環境，下載公開及私有原始碼 repository、內部 GitHub repository 及業務聯絡資訊</div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-date">2026-05-16</div>
-      <div class="timeline-content">Grafana Labs 收到勒索要求（威脅公開洩露程式碼）；決定拒絕支付，通報執法機關，並部署額外緩解措施</div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-date">2026-05-22</div>
-      <div class="timeline-content">Grafana Labs 公開披露事件，發布安全更新公告，說明根本原因、影響範圍及後續措施</div>
-    </div>
-  </div>
+  <ul class="timeline">
+    <li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-05-11</div><div class="tl-detail">Grafana Labs 偵測到源自 TanStack npm 供應鏈攻擊的惡意活動；立即啟動應變，輪換大量 GitHub workflow token，但一個被誤判為未受影響的 workflow token 遭遺漏</div></div></li>
+    <li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-05-11 – 5/16（期間）</div><div class="tl-detail">攻擊者利用漏輪換的 token，持續存取 Grafana GitHub 環境，下載公開及私有原始碼 repository、內部 GitHub repository 及業務聯絡資訊</div></div></li>
+    <li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-05-16</div><div class="tl-detail">Grafana Labs 收到勒索要求（威脅公開洩露程式碼）；決定拒絕支付，通報執法機關，並部署額外緩解措施</div></div></li>
+    <li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-05-22</div><div class="tl-detail">Grafana Labs 公開披露事件，發布安全更新公告，說明根本原因、影響範圍及後續措施</div></div></li>
+  </ul>
 
   <div class="section-header"><span class="icon">🎯</span> 攻擊者背景</div>
   <p>本事件攻擊者為 TeamPCP（又名 Mini Shai-Hulud、UNC6780），與 GitHub 員工憑證竊取案同一組織。詳細背景請見 <a href="2026-05-21-github-teampcp-supply-chain-report.html">GitHub × TeamPCP 報告</a>。</p>
@@ -155,7 +143,7 @@
   </ol>
 
   <div class="section-header"><span class="icon">📚</span> 資料來源</div>
-  <div class="source-grid">
+  <div class="sources-grid">
     <div class="source-card">
       <div class="source-tag">官方公告</div>
       <a href="https://grafana.com/blog/grafana-labs-security-update-latest-on-tanstack-npm-supply-chain-ransomware-incident/" target="_blank">Grafana Labs security update: Latest on TanStack npm supply chain ransomware incident</a>
