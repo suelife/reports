@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WP2Shell：WordPress 核心 Pre-Auth RCE 漏洞鏈遭大規模利用</title>
+<link rel="stylesheet" href="design.css">
+</head>
+<body>
+
+<nav class="back-nav"><a href="index.html">All Reports</a></nav>
+
+<header class="report-header">
+  <div class="label">研究簡報 · SecondBrain Research</div>
+  <span class="severity-badge high">HIGH</span>
+  <h1>WP2Shell：WordPress 核心 Pre-Auth RCE 漏洞鏈<br>CVE-2026-63030 + CVE-2026-60137 遭大規模利用</h1>
+  <div class="meta">
+    <span><strong>研究日期</strong>　2026-07-21</span>
+    <span><strong>資料截止</strong>　2026-07-21</span>
+    <span><strong>主要來源</strong>　5 份</span>
+    <span><strong>觸發來源</strong>　informationsecurity.com.tw/article/article_detail.aspx?aid=13101</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ─── 1. Executive Summary ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <div class="section-body">
+    <div class="alert alert-navy">
+      <div class="alert-icon">◆</div>
+      <div><strong>未持有登入憑證的攻擊者，可串鏈兩個 WordPress 核心漏洞，在預設安裝的網站上取得完整遠端程式碼執行（RCE）。</strong> 該漏洞鏈被命名為 WP2Shell，由 Searchlight Cyber 於 2026-07-17 揭露；WordPress 同日釋出修補。公開 PoC 在揭露後數小時內出現，多家資安公司於 07-20 前確認野外利用。</div>
+    </div>
+    <div class="alert alert-red">
+      <div class="alert-icon">▲</div>
+      <div><strong>立即行動：升級至 WordPress 7.0.2 / 6.9.5 / 6.8.6。</strong> 全球逾 5 億個網站使用 WordPress，凡運行 6.9.0–6.9.4 或 7.0.0–7.0.1 且未關閉 REST API 者皆在攻擊面上。</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi red"><div class="kpi-value">9.8 分</div><div class="kpi-label">最高 CVSS 評分</div></div>
+      <div class="kpi red"><div class="kpi-value">2 個</div><div class="kpi-label">串鏈漏洞</div></div>
+      <div class="kpi amber"><div class="kpi-value">5 億+ 個</div><div class="kpi-label">WordPress 網站</div></div>
+      <div class="kpi amber"><div class="kpi-value">10 小時</div><div class="kpi-label">AI 開發耗時</div></div>
+      <div class="kpi red"><div class="kpi-value">數萬 次</div><div class="kpi-label">攻擊嘗試</div></div>
+      <div class="kpi red"><div class="kpi-value">100+ 個</div><div class="kpi-label">後門帳號</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── 2. 事件時間線 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
+  <div class="section-body">
+    <ul class="timeline">
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-07-17</div>
+          <div class="tl-title">Searchlight Cyber 揭露，WordPress 同日釋出修補</div>
+          <div class="tl-detail">WordPress 發布 7.0.2 / 6.9.5（修 RCE 鏈）與 6.8.6（修 SQLi 元件），WordPress.org 對受影響版本啟用強制自動更新。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-07-18</div>
+          <div class="tl-title">首批公開 PoC 上 GitHub，watchTowr 觀測到首波利用</div>
+          <div class="tl-detail">攻擊者先以公開 exploit 抽出雜湊憑證，隨技術細節釋出後轉為遠端執行程式碼。Cloudflare 對含免費方案部署 WAF 防護規則。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-07-19</div>
+          <div class="tl-title">超過 20 個概念驗證程式現身</div>
+          <div class="tl-detail">公開工具化程度快速升高，攻擊門檻進一步降低（觸發文章：資安人科技網）。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-07-20</div>
+          <div class="tl-title">技術分析公開，多家確認野外大規模利用</div>
+          <div class="tl-detail">Patchstack、Hexastrike 確認 in-the-wild；watchTowr 蜜罐（Attacker Eye）累計數萬次利用嘗試、逾 100 個由不同攻擊者建立的後門帳號。</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── 3. 攻擊鏈技術分析 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
+  <div class="section-body">
+    <h3 class="sub">攻擊鏈五階段</h3>
+    <div class="chain">
+      <div class="chain-step">
+        <div class="step-num">Step 1</div>
+        <div class="step-name">REST 批次路由混淆</div>
+        <div class="step-detail">serve_batch_request_v1() 讓未驗證請求送達不該存取的處理器</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 2</div>
+        <div class="step-name">繞過權限檢查</div>
+        <div class="step-detail">請求以未驗證狀態抵達 posts handler</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 3</div>
+        <div class="step-name">SQL 注入抽雜湊</div>
+        <div class="step-detail">author__not_in 參數注入 WP_Query，導出使用者密碼雜湊</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 4</div>
+        <div class="step-name">偽造管理員</div>
+        <div class="step-detail">透過 object hydration、oEmbed 快取與巢狀存檔臨時以管理員身份執行</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 5</div>
+        <div class="step-name">RCE / Webshell</div>
+        <div class="step-detail">取得完整遠端程式碼執行，植入後門</div>
+      </div>
+    </div>
+    <h3 class="sub">漏洞明細</h3>
+    <table class="data-table">
+      <thead><tr><th>CVE</th><th>類型</th><th>CVSS</th><th>受影響版本</th><th>修補版本</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>CVE-2026-63030</code></td>
+          <td>REST API 批次路由混淆（Pre-Auth RCE）</td>
+          <td>9.8</td>
+          <td>6.9.0–6.9.4、7.0.0–7.0.1</td>
+          <td>6.9.5、7.0.2</td>
+        </tr>
+        <tr>
+          <td><code>CVE-2026-60137</code></td>
+          <td>WP_Query <code>author__not_in</code> SQL 注入</td>
+          <td>5.9</td>
+          <td>6.8.0–6.8.5、6.9.0–6.9.4、7.0.0–7.0.1</td>
+          <td>6.8.6、6.9.5、7.0.2</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>兩者單獨風險有限——SQLi 需身分驗證、批次端點缺陷屬邏輯層；但一旦串鏈，路由混淆讓 SQLi 得以在「未驗證」狀態下觸發，門檻從「需帳號」降到「零憑證」，這正是 WP2Shell 被評為關鍵的原因。</p>
+  </div>
+</section>
+
+<!-- ─── 4. 核心論點 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">💡</span> 核心論點</div>
+  <div class="section-body">
+    <div class="alert alert-red">
+      <div class="alert-icon">1</div>
+      <div><strong>零憑證 + 預設安裝 = 最壞組合。</strong> 攻擊不需要任何帳號，也不依賴特定外掛，預設 WordPress 即在攻擊面上，使可利用目標池達到全網規模。</div>
+    </div>
+    <div class="alert alert-amber">
+      <div class="alert-icon">2</div>
+      <div><strong>AI 正在壓縮「揭露到武器化」的時間窗。</strong> watchTowr 指 PoC 在揭露後數小時內出現，而歷史上通常需 24 小時以上。發現者 Adam Kues 明言「沒有 AI，任何研究者都不可能在 10 小時內找到並完成這條攻擊鏈」。</div>
+    </div>
+    <div class="alert alert-navy">
+      <div class="alert-icon">3</div>
+      <div><strong>修補已備，時間才是敵人。</strong> 官方修補與強制自動更新同日到位，勝負取決於站方多快套用——後門帳號一旦植入，單純升級無法清除既有立足點。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── 5. 深度分析 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📊</span> 深度分析</div>
+  <div class="section-body">
+    <h3 class="sub">關鍵聲明核查</h3>
+    <table class="verify-table">
+      <thead><tr><th>聲明</th><th>狀態</th><th>佐證來源</th></tr></thead>
+      <tbody>
+        <tr><td>CVE-2026-63030 CVSS 9.8、CVE-2026-60137 CVSS 5.9，可串鏈達 Pre-Auth RCE</td><td><span class="badge badge-confirmed">已確認</span></td><td>Tenable、Picus、BleepingComputer</td></tr>
+        <tr><td>受影響版本 6.9.0–6.9.4 / 7.0.0–7.0.1，修補於 7.0.2 / 6.9.5 / 6.8.6</td><td><span class="badge badge-confirmed">已確認</span></td><td>Tenable、BleepingComputer</td></tr>
+        <tr><td>公開 PoC 於揭露後數小時內出現，07-20 前確認野外利用（Patchstack、Hexastrike、watchTowr）</td><td><span class="badge badge-confirmed">已確認</span></td><td>SecurityWeek、BleepingComputer</td></tr>
+        <tr><td>watchTowr 蜜罐累計數萬次嘗試、逾 100 個後門帳號</td><td><span class="badge badge-claimed">單一來源</span></td><td>watchTowr（經觸發文章與媒體轉述）</td></tr>
+        <tr><td>Searchlight Cyber 以「GPT-5.6 Sol Ultra」在 10 小時內開發攻擊鏈</td><td><span class="badge badge-claimed">部分待證</span></td><td>資安人科技網、DarkReading（模型名為媒體轉述；Kues 原話僅確認「10 小時 + AI」）</td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub">防護層對照</h3>
+    <table class="data-table">
+      <thead><tr><th>防護層</th><th>措施</th><th>局限</th></tr></thead>
+      <tbody>
+        <tr><td>官方修補</td><td>升級至 7.0.2 / 6.9.5 / 6.8.6，啟用強制自動更新</td><td>無法清除升級前已植入的後門帳號</td></tr>
+        <tr><td>WAF / 邊界</td><td>Cloudflare（含免費方案）、F5 BIG-IP、FortiGate、Check Point 已釋出簽章</td><td>屬緩解非根治，簽章可能被變形繞過</td></tr>
+        <tr><td>事後鑑識</td><td>排查異常管理員帳號、可疑外掛、REST 批次端點存取紀錄</td><td>需人工介入，攻擊者工具多變</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ─── 6. 爭議與未確認事項 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">⚖️</span> 爭議與未確認事項</div>
+  <div class="section-body">
+    <ul>
+      <li><strong>使用的 AI 模型名稱：</strong>觸發文章與 DarkReading 稱 Searchlight Cyber 使用「GPT-5.6 Sol Ultra」。經第一手可查證的僅 Adam Kues「沒有 AI 不可能在 10 小時內完成」的引述（Tenable 引用），具體模型名目前為媒體轉述，尚未見 Searchlight 官方文件直接佐證。</li>
+      <li><strong>後門帳號與攻擊嘗試數：</strong>「數萬次嘗試、逾 100 個後門帳號」源自 watchTowr 的 Attacker Eye 蜜罐網路，屬單一廠商觀測樣本，非全網統計；不同報導對發言人（Jake Knott / Benjamin Harris）歸屬略有出入，但皆為 watchTowr。</li>
+      <li><strong>影響網站數：</strong>「數千萬至上億」為推估。WordPress 全球逾 5 億站為母數，實際易受攻擊者取決於版本分佈與是否關閉 REST API，尚無精確受害統計。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── 7. 結論與行動建議 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">🎯</span> 結論與行動建議</div>
+  <div class="section-body">
+    <ul>
+      <li><strong>立即升級：</strong>將 WordPress 更新至 7.0.2、6.9.5 或 6.8.6；確認 WordPress.org 強制自動更新已生效，勿延後至維護窗口。</li>
+      <li><strong>假設已被入侵並排查：</strong>清點所有管理員帳號、近期新建帳號與外掛，比對建立時間；升級無法移除既存後門，需主動獵捕。</li>
+      <li><strong>收斂攻擊面：</strong>對非必要站台限制或關閉 REST API 批次端點；於 WAF（Cloudflare / FortiGate / F5 等）套用 WP2Shell 簽章作為緩衝。</li>
+      <li><strong>監控利用跡象：</strong>留意針對 REST 批次路由的異常請求、憑證雜湊外洩與 webshell 落地；接入威脅情資持續追蹤變形工具。</li>
+      <li><strong>將「AI 加速武器化」納入修補 SLA：</strong>PoC 已可在數小時內出現，關鍵漏洞的修補窗口應以小時計，而非天。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── 8. 資料來源 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📚</span> 資料來源</div>
+  <div class="section-body">
+    <div class="sources-grid">
+      <div class="source-card">
+        <div class="source-tag">中文媒體</div>
+        <a href="https://www.informationsecurity.com.tw/article/article_detail.aspx?aid=13101&mod=1" target="_blank">WP2Shell漏洞鏈遭大規模利用，數百萬WordPress網站曝遠端接管風險</a>
+        <div class="source-meta">資安人科技網 · 2026-07-21</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">威脅情報</div>
+        <a href="https://www.tenable.com/blog/wp2shell-cve-2026-63030-cve-2026-60137-frequently-asked-questions-about-remote-code-execution" target="_blank">wp2shell (CVE-2026-63030, CVE-2026-60137)：Pre-Auth RCE FAQ</a>
+        <div class="source-meta">Tenable · 2026-07-20</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">事件報導</div>
+        <a href="https://www.bleepingcomputer.com/news/security/wordpress-core-wp2shell-rce-flaws-get-public-exploits-patch-now/" target="_blank">WordPress Core "wp2shell" RCE flaws get public exploits, patch now</a>
+        <div class="source-meta">BleepingComputer · 2026-07-18</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">事件報導</div>
+        <a href="https://www.securityweek.com/wp2shell-wordpress-vulnerabilities-exploited-in-the-wild/" target="_blank">WP2Shell WordPress Vulnerabilities Exploited in the Wild</a>
+        <div class="source-meta">SecurityWeek · 2026-07-20</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">威脅情報</div>
+        <a href="https://www.picussecurity.com/resource/blog/cve-2026-63030-and-cve-2026-60137-wp2shell-wordpress-rce-explained" target="_blank">CVE-2026-63030 and CVE-2026-60137 (wp2shell)：WordPress RCE Explained</a>
+        <div class="source-meta">Picus Security · 2026-07-20</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer class="report-footer">
+  Generated 2026-07-21 · SecondBrain Report System · suelife/reports
+</footer>
+
+</body>
+</html>
