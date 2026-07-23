@@ -30,6 +30,10 @@
   <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
   <div class="section-body">
     <div class="alert alert-navy">
+      <div class="alert-icon">▶</div>
+      <div><strong>一句話看懂（給非技術讀者）：</strong>駭客盜用一間以色列律師事務所的 Outlook 帳號，把它的「行事曆」當成秘密信箱來傳送攻擊指令——<strong>不是微軟軟體有漏洞，而是帳號與雲端權限被濫用</strong>。<strong>跟你的組織有沒有關係：</strong>目前只鎖定特定以色列組織，一般公司直接受害機率低；但這種「用信箱／雲端權限做壞事」的手法，任何在用 Microsoft 365 的公司都可能遇到，建議請資安確認 OAuth 應用程式權限與帳號安全設定。（技術細節可略過，直接看下方「衝擊評估」與「防禦建議」。）</div>
+    </div>
+    <div class="alert alert-navy">
       <div class="alert-icon">◆</div>
       <div><strong>一支伊朗系間諜框架把遭入侵的 Microsoft 365 信箱行事曆，變成命令暨控制（C2）通道。</strong>卡巴斯基 GReAT 於 2026-07-21 揭露 Project CAV3RN 的新通訊模組 AzureCommunication.dll，它透過 Microsoft Graph 讀寫 Outlook 預設行事曆——把加密指令藏在排程於 <code>2050-05-13</code> 的行事曆事件附件中，指令、心跳、執行結果全走這條「dead-drop」通道。Group-IB 同一週以 <strong>HollowGraph</strong> 之名獨立揭露同一活動叢集。</div>
     </div>
@@ -323,6 +327,17 @@ DELETE /v1.0/users/&lt;mailbox&gt;/calendar/events/&lt;EventId&gt;
   <div class="section-header"><span class="icon">🛡️</span> 防禦建議</div>
   <div class="section-body">
 
+    <h3 class="sub">第一步：清點被濫用的 app 權限（最便宜、當天可做）</h3>
+    <p>此攻擊的本質是「一個已被授權的 OAuth 應用程式，用 client-credential 讀寫信箱行事曆」。要真正擋住這次事件，第一件事不是換憑證，而是<strong>先找出租戶內持有 application 權限 <code>Calendars.ReadWrite</code>（以及讀 <code>/organization</code> 需要的 <code>Directory.Read.All</code>）的 service principal，逐一核對來源</strong>——尤其仍在用 client secret 者，就是這支攻擊會躲藏的地方。</p>
+    <div class="code-block">
+<span class="comment"># 列出所有 service principal 的 app 權限指派，挑出行事曆／信箱類</span>
+Get-MgServicePrincipal -All | ForEach-Object {
+  Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $_.Id
+} | Where-Object { $_.AppRoleId -in $calendarMailRoleIds }
+<span class="comment"># $calendarMailRoleIds 填 Calendars.ReadWrite / Mail.ReadWrite 的 app role GUID</span>
+<span class="comment"># 對來源不明、近期新增、仍用 client secret 者 → 標記調查</span></div>
+    <p>Entra 後台路徑：<code>Enterprise applications → 選該 app → Permissions</code>，篩出 Application 類型權限，核對建立者與建立時間。</p>
+
     <h3 class="sub">一、身分與應用治理（對映 Microsoft 官方偵測目錄）</h3>
     <ul>
       <li>啟用 <strong>Microsoft Entra ID Protection 的「Suspicious API Traffic」</strong>（<code>suspiciousAPITraffic</code>）與「Anomalous service principal activity」偵測——專門標記 service principal 的異常 Graph 流量與目錄列舉。</li>
@@ -331,11 +346,29 @@ DELETE /v1.0/users/&lt;mailbox&gt;/calendar/events/&lt;EventId&gt;
       <li>以 <strong>Managed Identity 或 X.509 憑證取代 client secret</strong>；用 Conditional Access 限制 client-credential 應用程式的來源與範圍。</li>
     </ul>
 
-    <h3 class="sub">二、偵測行事曆 dead-drop 行為</h3>
-    <ul>
-      <li>監控 Graph / M365 稽核日誌中「<strong>應用程式驅動</strong>的行事曆活動」，特別是<strong>排程於遠期（如 2050）</strong>、主旨或附件異常的事件（Group-IB 明確建議）。</li>
-      <li>對 service principal 大量呼叫 <code>calendarView</code>／<code>events/attachments</code> 建立行為基線並告警。</li>
-    </ul>
+    <h3 class="sub">二、偵測行事曆 dead-drop（附偵測特徵與查詢）</h3>
+    <p>本攻擊最高保真、近乎零誤報的偵測點如下——直接拿去建規則：</p>
+    <table class="data-table">
+      <thead><tr><th>偵測特徵</th><th>值</th></tr></thead>
+      <tbody>
+        <tr><td>行事曆事件時間窗</td><td><code>2050-05-13 22:00–23:00 UTC</code></td></tr>
+        <tr><td>事件主旨樣式</td><td><code>Event ID: &lt;id&gt;</code>／<code>Boss update ID: &lt;id&gt;1500</code>／<code>Boss Report ID: &lt;id&gt;1500</code></td></tr>
+        <tr><td>主機落地檔</td><td><code>logAzure.txt</code>（工作目錄，首次執行寫入內嵌設定）</td></tr>
+        <tr><td>附件檔名樣式</td><td><code>file0.txt</code>（入站指令）／<code>File0.txt</code>（出站結果，首字大寫）</td></tr>
+      </tbody>
+    </table>
+    <p>可直接執行的獵捕（擇一）：</p>
+    <div class="code-block">
+<span class="comment"># A. 掃全租戶信箱有無 2050 惡意行事曆事件（Graph；命中即高信度感染）</span>
+GET /v1.0/users/{mailbox}/calendarView
+    ?startDateTime=2050-05-13T22:00:00&amp;endDateTime=2050-05-13T23:00:00
+    &amp;$filter=startswith(subject,'Event ID:') or startswith(subject,'Boss ')
+
+<span class="comment"># B. Sentinel / Advanced Hunting：SP 對行事曆的 app-only 存取</span>
+MicrosoftGraphActivityLogs
+| where RequestUri has_any ('calendarView','/events','/attachments')
+| where AppId == '<span class="highlight">&lt;可疑或未知的 service principal AppId&gt;</span>'</div>
+    <p><strong>資料來源前提：</strong><code>calendarView</code> 是<strong>讀</strong>操作，很可能不進標準 Unified Audit Log；要偵測 app 驅動的行事曆讀取，需先啟用並把 <code>MicrosoftGraphActivityLogs</code> 導流到 Log Analytics／Sentinel（Entra diagnostic settings）。而 §11 一列的具名偵測（Suspicious API Traffic、Anomalous service principal activity）屬 workload identity 風險偵測，<strong>需 Microsoft Entra Workload ID Premium 授權</strong>才會觸發——沒授權就得改走上面的自建查詢，別誤以為「勾了就有防護」。</p>
 
     <h3 class="sub">三、網路層</h3>
     <ul>
