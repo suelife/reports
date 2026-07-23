@@ -209,8 +209,8 @@
   <h1>Reports</h1>
   <p>資安事件報告、深度研究簡報、比較分析 — 由 SecondBrain 生成</p>
   <div class="stats">
-    <div class="stat"><strong>13</strong>篇報告</div>
-    <div class="stat"><strong>11</strong>資安事件</div>
+    <div class="stat"><strong>14</strong>篇報告</div>
+    <div class="stat"><strong>12</strong>資安事件</div>
     <div class="stat"><strong>2</strong>工安 / 其他</div>
   </div>
 </header>
@@ -226,6 +226,26 @@
     <button class="filter-btn" onclick="filterCards('cve', this)">CVE</button>
     <button class="filter-btn" onclick="filterCards('phishing', this)">Phishing</button>
   </div>
+
+  <a class="report-card severity-high" href="2026-07-23-project-cav3rn-outlook-c2-report.html" data-tags="incident apt">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-07-23</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Project CAV3RN / HollowGraph — 濫用 Microsoft Graph 與 Outlook 行事曆的隱蔽 C2 框架</div>
+      <div class="card-desc">伊朗系間諜框架把遭入侵的 Microsoft 365 信箱行事曆變成 C2：加密指令藏在排程於 2050 年的 Outlook 事件附件，經 Microsoft Graph 收發；Graph 認證失敗時改以 DNS AAAA 記錄回復連線設定。卡巴斯基（CAV3RN）與 Group-IB（HollowGraph）同週各自揭露，歸因 OilRig/APT34 或 Lyceum，皆低信心。非漏洞、無 patch 可修。</div>
+      <div class="tag-row">
+        <span class="tag red">行事曆 C2</span>
+        <span class="tag red">Microsoft Graph 濫用</span>
+        <span class="tag amber">DNS 設定回復</span>
+        <span class="tag">OilRig / APT34</span>
+        <span class="tag">以色列</span>
+        <span class="tag">間諜</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
 
   <a class="report-card severity-high" href="2026-07-21-wordpress-wp2shell-rce-report.html" data-tags="cve incident supply-chain">
     <div class="card-left">

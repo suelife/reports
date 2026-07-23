@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project CAV3RN / HollowGraph — 濫用 Microsoft Graph 與 Outlook 行事曆的隱蔽 C2</title>
+<link rel="stylesheet" href="design.css">
+</head>
+<body>
+
+<nav class="back-nav"><a href="index.html">All Reports</a></nav>
+
+<header class="report-header">
+  <div class="label">資安事件報告 · SecondBrain Investigation</div>
+  <span class="severity-badge high">HIGH</span>
+  <h1>Project CAV3RN / HollowGraph<br>濫用 Microsoft Graph 與 Outlook 行事曆的隱蔽 C2 框架</h1>
+  <div class="meta">
+    <span><strong>事件日期</strong>　2026-06-03</span>
+    <span><strong>公告日期</strong>　2026-07-20</span>
+    <span><strong>報告日期</strong>　2026-07-23</span>
+    <span><strong>受害者</strong>　以色列組織（律師事務所 M365 信箱遭入侵）</span>
+    <span><strong>攻擊組織</strong>　伊朗系 APT（OilRig/APT34 或 Lyceum，皆低信心）</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ─── 1. Executive Summary ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <div class="section-body">
+    <div class="alert alert-navy">
+      <div class="alert-icon">◆</div>
+      <div><strong>一支伊朗系間諜框架把遭入侵的 Microsoft 365 信箱行事曆，變成命令暨控制（C2）通道。</strong>卡巴斯基 GReAT 於 2026-07-21 揭露 Project CAV3RN 的新通訊模組 AzureCommunication.dll，它透過 Microsoft Graph 讀寫 Outlook 預設行事曆——把加密指令藏在排程於 <code>2050-05-13</code> 的行事曆事件附件中，指令、心跳、執行結果全走這條「dead-drop」通道。Group-IB 同一週以 <strong>HollowGraph</strong> 之名獨立揭露同一活動叢集。</div>
+    </div>
+    <div class="alert alert-amber">
+      <div class="alert-icon">▲</div>
+      <div><strong>這不是 Microsoft 產品漏洞，沒有 patch 可修。</strong>攻擊濫用的是組織本就允許的信任、權限與正常 Graph API 流量。防守方唯一著力點在身分治理（OAuth app／client secret）與行為偵測，而非修補漏洞。</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi red"><div class="kpi-value">12 台</div><div class="kpi-label">受害系統</div></div>
+      <div class="kpi amber"><div class="kpi-value">3 台</div><div class="kpi-label">活躍回連主機</div></div>
+      <div class="kpi"><div class="kpi-value">2050 年</div><div class="kpi-label">C2 事件排程年份</div></div>
+      <div class="kpi"><div class="kpi-value">0 個</div><div class="kpi-label">所需漏洞</div></div>
+      <div class="kpi"><div class="kpi-value">7 個月</div><div class="kpi-label">框架追蹤時長</div></div>
+      <div class="kpi"><div class="kpi-value">3 個</div><div class="kpi-label">惡意檔案雜湊</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── 2. 事實核查矩陣 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">✅</span> 事實核查矩陣</div>
+  <div class="section-body">
+    <table class="verify-table">
+      <thead><tr><th>聲明</th><th>狀態</th><th>佐證來源</th></tr></thead>
+      <tbody>
+        <tr><td>AzureCommunication.dll 透過 Microsoft Graph 讀寫 Outlook 行事曆作為 C2 通道</td><td><span class="badge badge-confirmed">已確認</span></td><td>Kaspersky GReAT 逆向分析</td></tr>
+        <tr><td>C2 事件固定排程於 2050-05-13 22:00–23:00 UTC，以避開日常行事曆視圖</td><td><span class="badge badge-confirmed">已確認</span></td><td>Kaspersky、Group-IB 各自獨立確認</td></tr>
+        <tr><td>Graph 認證失敗時，模組以 DNS AAAA 記錄回復 TenantId / ClientId / ClientSecret / UserEmail</td><td><span class="badge badge-confirmed">已確認</span></td><td>Kaspersky GReAT</td></tr>
+        <tr><td>指令與結果採 RSA-OAEP-SHA256 + AES-256-GCM 混合加密</td><td><span class="badge badge-confirmed">已確認</span></td><td>Kaspersky GReAT</td></tr>
+        <tr><td>歸因於伊朗系 OilRig（APT34），低信心；無直接程式碼或基礎設施重疊</td><td><span class="badge badge-info">未定論</span></td><td>Kaspersky（低信心評估）</td></tr>
+        <tr><td>Group-IB 另命名為 HollowGraph，並關聯 Cavern C2 框架與伊朗系 Lyceum</td><td><span class="badge badge-info">未定論</span></td><td>Group-IB / BleepingComputer</td></tr>
+        <tr><td>此攻擊利用 Microsoft 365 或 Graph 的產品漏洞</td><td><span class="badge badge-denied">已否定</span></td><td>非漏洞，屬信任／權限濫用</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ─── 3. 事件時間線 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
+  <div class="section-body">
+    <ul class="timeline">
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2025-12-24</div>
+          <div class="tl-title">DNS 回復網域 cloudlanecdn[.]com 註冊</div>
+          <div class="tl-detail">初期使用 Namecheap 代管 nameserver，尚無自建授權伺服器。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2025-12</div>
+          <div class="tl-title">卡巴斯基開始追蹤 CAV3RN</div>
+          <div class="tl-detail">當時為 downloader / executor / uploader 三元件架構，鎖定以色列目標。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-04</div>
+          <div class="tl-title">架構轉為 controller + plugin</div>
+          <div class="tl-detail">導入 WebSocket C2 元件（n-HTCommp.dll）與可擴充外掛系統；controller uxtheme.dll 產生 7 字元 Agent ID。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-02</div>
+          <div class="tl-title">DNS 由代管轉自建授權 nameserver</div>
+          <div class="tl-detail">cloudlanecdn[.]com 委派給 ns1–ns4，讓操作者可依 Agent ID／欄位／片段位移動態生成 AAAA 回應——與新模組的 DNS 回復設計吻合。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-05-19</div>
+          <div class="tl-title">新模組 AzureCommunication.dll 時間戳</div>
+          <div class="tl-detail">.NET Native AOT 編譯，改以 Outlook 行事曆事件經 Graph 傳遞指令，設計上取代 HTTP/WebSocket 元件。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-06-03 ～ 07-09</div>
+          <div class="tl-title">觀察到活躍 C2 通訊</div>
+          <div class="tl-detail">Group-IB 記錄至少 12 台受害系統，其中 3 台持續與攻擊者互動。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-06</div>
+          <div class="tl-title">卡巴斯基付費威脅情報報告首度發布 CAV3RN 研究</div>
+          <div class="tl-detail">涵蓋 controller 架構，但尚未含本次行事曆通訊模組。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-07</div>
+          <div class="tl-title">Check Point Research 公開 controller 架構</div>
+          <div class="tl-detail">確認 controller-based 架構，同樣未涵蓋新的行事曆通訊元件。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-07-20</div>
+          <div class="tl-title">Group-IB 公開揭露 HollowGraph</div>
+          <div class="tl-detail">首個對外公開此行事曆 C2 模組的報告；關聯 Cavern C2 與伊朗系 Lyceum（低信心）。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-07-21</div>
+          <div class="tl-title">卡巴斯基 GReAT 公開新模組完整分析</div>
+          <div class="tl-detail">獨立逆向 AzureCommunication.dll，補充多項實作細節與 DNS AAAA 回復協定。</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── 4. 攻擊者背景 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">🎯</span> 攻擊者背景</div>
+  <div class="section-body">
+    <p>兩家廠商都把此活動指向<strong>伊朗系 APT</strong>，但落在不同組織、且皆為低信心。卡巴斯基延續先前評估，指向 <strong>OilRig（APT34）</strong>；Group-IB 則關聯至 <strong>Lyceum</strong>（亦稱 HEXANE）。兩者都缺乏直接程式碼重用或基礎設施重疊，因此屬「行為模式相似」而非「確認同一組織」。</p>
+    <p>卡巴斯基支持 OilRig 關聯的核心理由，是這個組織<strong>長年把 Microsoft 託管服務當 C2</strong> 的一貫手法。CAV3RN 的行事曆通道，正是這條演進線的最新一站：</p>
+    <ul>
+      <li><strong>RDAT</strong>：透過 Exchange Web Services（EWS）電子郵件交換指令與結果。</li>
+      <li><strong>SC5k</strong>：利用 Office 365 草稿匣（drafts）作為 dead-drop。</li>
+      <li><strong>OilCheck</strong>：改用 Microsoft Graph 存取 Outlook 草稿匣。</li>
+      <li><strong>OilBooster</strong>：以 Microsoft OneDrive 為 C2，並在多次連線失敗後從遭入侵網站取回替換用的 OAuth refresh token（雲端 C2 的次要回復機制）。</li>
+      <li><strong>CAV3RN / HollowGraph</strong>：同一類服務，但把指令與結果存進 <strong>Outlook 行事曆事件</strong>，並以 DNS AAAA 記錄取回替換的連線設定。</li>
+    </ul>
+    <p><strong>受害者側</strong>：本模組使用的是一間<strong>以色列律師事務所</strong>遭入侵的 Microsoft 365 信箱。這與 OilRig 慣用「被入侵的區域組織基礎設施」一致——例如 Solar 惡意程式曾用以色列人資公司網站、Whisper/Veaty 曾用伊拉克政府的 M365 信箱。</p>
+  </div>
+</section>
+
+<!-- ─── 5. 攻擊鏈技術分析 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
+  <div class="section-body">
+
+    <h3 class="sub">一、OilRig 濫用 Microsoft 託管服務作 C2 的演進</h3>
+    <p>把 C2 藏進 Microsoft 生態的價值在於：流量目的地是 <code>graph.microsoft.com</code> 與 <code>login.microsoftonline.com</code>——這些網域幾乎不可能被封鎖，且與正常辦公流量無異。</p>
+    <div class="chain">
+      <div class="chain-step">
+        <div class="step-num">RDAT</div>
+        <div class="step-name">EWS 郵件</div>
+        <div class="step-detail">以 Exchange Web Services 電子郵件收發指令</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">SC5k</div>
+        <div class="step-name">O365 草稿匣</div>
+        <div class="step-detail">指令藏在 Office 365 draft 郵件</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">OilCheck</div>
+        <div class="step-name">Graph 草稿匣</div>
+        <div class="step-detail">改用 Microsoft Graph 存取 Outlook drafts</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">CAV3RN</div>
+        <div class="step-name">Graph 行事曆</div>
+        <div class="step-detail">指令／結果藏於 2050 年 Outlook 行事曆事件</div>
+      </div>
+    </div>
+
+    <h3 class="sub">二、行事曆 dead-drop 的三種事件</h3>
+    <p>模組把「指令、心跳、結果」全塞進同一個一小時視窗（<code>2050-05-13 22:00–23:00 UTC</code>），並用事件主旨（subject）區分用途與對應的 Agent ID。心跳與結果主旨會固定加上後綴 <code>1500</code>（非 Agent ID 的一部分）。指令附件與結果附件連檔名大小寫都不同（<code>file0.txt</code> vs <code>File0.txt</code>）。</p>
+    <table class="data-table">
+      <thead><tr><th>主旨格式</th><th>用途</th><th>模組行為</th></tr></thead>
+      <tbody>
+        <tr><td><code>Event ID: &lt;agent-id&gt;</code></td><td>操作者 → 代理（下指令）</td><td>找到事件、下載附件、消費後刪除事件</td></tr>
+        <tr><td><code>Boss update ID: &lt;agent-id&gt;1500</code></td><td>代理心跳（回報在線）</td><td>刪除舊心跳、建立替換事件（無附件）</td></tr>
+        <tr><td><code>Boss Report ID: &lt;agent-id&gt;1500</code></td><td>代理 → 操作者（回傳結果）</td><td>建立事件、上傳加密結果附件、改主旨標記完成</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub">三、認證與 Microsoft Graph 請求</h3>
+    <p>模組內嵌完整設定（Entra tenant ID、application 憑證、目標信箱、DNS bootstrap host、RSA 金鑰對），首次執行時寫入工作目錄的 <code>logAzure.txt</code>。它以 <strong>client credentials 流程</strong>取得 OAuth application token，再以 <code>Bearer</code> 權杖對信箱的預設行事曆讀寫：</p>
+    <div class="code-block">
+<span class="comment"># 1. 取得 application token（client_credentials）</span>
+POST https://login.microsoftonline.com/&lt;TenantId&gt;/oauth2/v2.0/token
+  client_id=&lt;ClientId&gt;  client_secret=&lt;ClientSecret&gt;
+  scope=https://graph.microsoft.com/.default  grant_type=client_credentials
+
+<span class="comment"># 2. 驗證租戶存取</span>
+GET  https://graph.microsoft.com/v1.0/organization
+
+<span class="comment"># 3. 依 Agent ID 過濾 2050 年行事曆事件，取指令</span>
+GET  /v1.0/users/&lt;mailbox&gt;/calendarView
+     ?startDateTime=2050-05-13T22:00:00&amp;endDateTime=2050-05-13T23:00:00
+     &amp;$filter=contains(subject,'<span class="highlight">Event ID: &lt;agent-id&gt;</span>')
+
+<span class="comment"># 4. 下載附件後刪除事件（消費式）</span>
+GET    /v1.0/users/&lt;mailbox&gt;/events/&lt;EventId&gt;/attachments
+DELETE /v1.0/users/&lt;mailbox&gt;/calendar/events/&lt;EventId&gt;
+    </div>
+
+    <h3 class="sub">四、混合加密（RSA + AES-256-GCM）</h3>
+    <p>入站指令緩衝區開頭是 256 bytes 的 RSA 加密區塊，內含 32-byte AES 金鑰，以 <strong>RSA-OAEP + SHA-256</strong> 用內建私鑰解開；接著 12 bytes 為 AES-GCM nonce、末 16 bytes 為驗證標籤，中間為密文，以 <strong>AES-256-GCM</strong> 解密。解密後為 JSON 指令，例如 <code>{"cid":"...","type":"self","cmd":"003_;;__,_"}</code>——<code>type:self</code> 表示由 controller 內部處理，<code>cmd 003</code> 為切換除錯記錄。出站結果則以新生成的 AES 金鑰加密、RSA 公鑰保護，分割為每塊最多 10 MiB 的附件回傳。</p>
+
+    <h3 class="sub">五、DNS AAAA 設定回復（韌性設計）</h3>
+    <p>當 OAuth 取權杖或 <code>/organization</code> 驗證失敗，模組改走 DNS：把 7 字元 Agent ID 轉為大寫十六進位（<code>SFmLgQZ → 53466D4C67515A</code>），對 <code>cloudlanecdn[.]com</code> 發 AAAA 查詢，把回傳的 IPv6 位址當成 16-byte 資料容器（而非網路目的地）。這讓攻擊者能<strong>不重新投放惡意程式就修復雲端 C2 設定</strong>。</p>
+    <table class="data-table">
+      <thead><tr><th>查詢類型</th><th>格式</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td><code>.p.</code> 長度查詢</td><td><code>d.&lt;hex-id&gt;.&lt;field&gt;.p.&lt;host&gt;</code></td><td>取欄位總長度（丟棄前 2 bytes，取後 2 bytes 為 big-endian 長度）</td></tr>
+        <tr><td><code>.q.</code> 資料查詢</td><td><code>d.&lt;hex-id&gt;.&lt;field&gt;.&lt;offset&gt;.q.&lt;host&gt;</code></td><td>每次取最多 14 bytes，以 14-byte 位移逐段拼回 TenantId/ClientId/ClientSecret/UserEmail</td></tr>
+        <tr><td>Sentinel 失敗訊號</td><td><code>2001:4998:44:3507::8000</code></td><td>特定 IPv6（Yahoo 配額）代表未知 Agent／欄位不可用，模組拋例外</td></tr>
+      </tbody>
+    </table>
+    <p>DNS 回復只更新四個 Graph 設定欄位，<strong>不會</strong>替換 DNS 回復網域本身與 RSA 金鑰——是刻意的有限輪替。</p>
+  </div>
+</section>
+
+<!-- ─── 6. 入侵指標（IOC）─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">🔍</span> 入侵指標（IOC）</div>
+  <div class="section-body">
+    <table class="data-table">
+      <thead><tr><th>類型</th><th>指標</th></tr></thead>
+      <tbody>
+        <tr><td>MD5（AzureCommunication.dll）</td><td><code>CAF021DDA726B8BA049C2AA395E505A1</code></td></tr>
+        <tr><td>MD5（NewProject.dll）</td><td><code>C092B02FBC0FDF7EE9608DD016673806</code></td></tr>
+        <tr><td>MD5（AzureCommunication.dll）</td><td><code>29B2B8C5D99F05BFCDD0D8D976EB5678</code></td></tr>
+        <tr><td>DNS 回復網域</td><td><code>cloudlanecdn[.]com</code>（ns1–ns4）</td></tr>
+        <tr><td>相關網域</td><td><code>google.com[.]ayalon-print.co[.]il</code>、<code>clipeditskill[.]com</code>、<code>accesslinkssl[.]com</code></td></tr>
+        <tr><td>Nameserver IP（AS14956 RouterHosting）</td><td><code>216.126.237[.]197</code>、<code>144.172.108[.]205</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ─── 7. MITRE ATT&CK 對照 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">🗺️</span> MITRE ATT&CK 對照</div>
+  <div class="section-body">
+    <p>以下為依公開技術細節對映之技術，非廠商官方標註。</p>
+    <table class="data-table">
+      <thead><tr><th>技術 ID</th><th>技術名稱</th></tr></thead>
+      <tbody>
+        <tr><td>T1102</td><td>Web Service（以合法雲服務作 dead-drop）</td></tr>
+        <tr><td>T1071.001</td><td>Application Layer Protocol: Web Protocols（Graph over HTTPS）</td></tr>
+        <tr><td>T1071.004</td><td>Application Layer Protocol: DNS（AAAA 設定回復）</td></tr>
+        <tr><td>T1008</td><td>Fallback Channels（Graph 失敗改走 DNS）</td></tr>
+        <tr><td>T1550.001</td><td>Use Alternate Authentication Material: Application Access Tokens（OAuth app token）</td></tr>
+        <tr><td>T1573.002</td><td>Encrypted Channel: Asymmetric Cryptography（RSA + AES-256-GCM）</td></tr>
+        <tr><td>T1027</td><td>Obfuscated Files or Information（.NET Native AOT 去除中繼資料）</td></tr>
+        <tr><td>T1041</td><td>Exfiltration Over C2 Channel（結果經行事曆附件外傳）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ─── 8. 衝擊評估 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">⚠️</span> 衝擊評估</div>
+  <div class="section-body">
+    <p><strong>評為 HIGH 的理由：</strong>這是一支<strong>持續開發中</strong>的國家級間諜框架，其行事曆 C2 具備高度隱蔽與韌性——(1) 流量偽裝成合法 Graph 活動、(2) 事件排在 2050 年避開日常視圖、(3) DNS fallback 讓雲端 C2 可在不換 payload 下自我修復。更關鍵的是它<strong>不依賴任何漏洞</strong>，任何啟用 Microsoft 365 的組織都可能成為同一手法的目標，且傳統郵件／端點監控難以偵測。</p>
+    <ul>
+      <li><strong>偵測面塌陷：</strong>C2 目的地是 <code>graph.microsoft.com</code>，網域封鎖與 IOC 比對幾乎無效，偵測必須轉向「應用程式行為」與「身分異常」。</li>
+      <li><strong>無 patch 可修：</strong>屬信任與權限濫用，微軟無漏洞可補；責任落在租戶的身分治理設定。</li>
+      <li><strong>趨勢放大：</strong>這是 Graph-as-C2 趨勢的一環（FINALDRAFT、Havoc C2、SIESTAGRAPH 等皆屬同類），代表手法正被多個威脅行為者採用。</li>
+    </ul>
+    <p><strong>節制與範圍：</strong>目前觀察為<strong>高度針對性</strong>的間諜活動，鎖定以色列特定組織，受害數低（12 台、3 台活躍），非蠕蟲式擴散、非勒索。對台灣一般組織而言，直接受害風險低，但<strong>技術手法值得防守方預先建模</strong>。</p>
+  </div>
+</section>
+
+<!-- ─── 10. 爭議與未確認事項 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">⚖️</span> 爭議與未確認事項</div>
+  <div class="section-body">
+    <ul>
+      <li><strong>命名分歧：</strong>卡巴斯基稱框架為 <code>Project CAV3RN</code>、模組為 <code>AzureCommunication.dll</code>；Group-IB 稱 <code>HollowGraph</code> 並關聯 <code>Cavern C2</code>。三者高度指向同一活動叢集，但目前尚無官方統一命名。</li>
+      <li><strong>歸因分歧：</strong>OilRig/APT34（卡巴斯基）vs Lyceum（Group-IB），皆為伊朗系、皆低信心，且無直接程式碼或基礎設施重疊——尚不能確認為單一組織。</li>
+      <li><strong>替換角色為「評估」而非直接觀察：</strong>對應的更新版 controller 未被取得，故「新模組取代 HTTP/WebSocket 元件」是推斷，非直接證據。</li>
+      <li><strong>初始存取手法未明：</strong>公開資料未說明那些 Microsoft 365 信箱最初如何被入侵（釣魚、憑證外洩或其他）。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── 11. 防禦建議 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">🛡️</span> 防禦建議</div>
+  <div class="section-body">
+
+    <h3 class="sub">一、身分與應用治理（對映 Microsoft 官方偵測目錄）</h3>
+    <ul>
+      <li>啟用 <strong>Microsoft Entra ID Protection 的「Suspicious API Traffic」</strong>（<code>suspiciousAPITraffic</code>）與「Anomalous service principal activity」偵測——專門標記 service principal 的異常 Graph 流量與目錄列舉。</li>
+      <li>部署 <strong>Defender for Cloud Apps 的 app governance</strong>，開啟「App made anomalous Graph calls to Exchange workload」「Unusual addition of credentials to an OAuth app」等告警。</li>
+      <li>稽核 app 憑證異動：於 Entra 稽核日誌過濾 <code>ApplicationManagement → Update Application – Certificates and secrets management</code>，對<strong>非常規時段／非常規流程新增的 client secret</strong> 告警。</li>
+      <li>以 <strong>Managed Identity 或 X.509 憑證取代 client secret</strong>；用 Conditional Access 限制 client-credential 應用程式的來源與範圍。</li>
+    </ul>
+
+    <h3 class="sub">二、偵測行事曆 dead-drop 行為</h3>
+    <ul>
+      <li>監控 Graph / M365 稽核日誌中「<strong>應用程式驅動</strong>的行事曆活動」，特別是<strong>排程於遠期（如 2050）</strong>、主旨或附件異常的事件（Group-IB 明確建議）。</li>
+      <li>對 service principal 大量呼叫 <code>calendarView</code>／<code>events/attachments</code> 建立行為基線並告警。</li>
+    </ul>
+
+    <h3 class="sub">三、網路層</h3>
+    <ul>
+      <li>監測 <strong>DNS tunneling</strong> 特徵：AAAA 回應攜帶非路由資料、對單一網域高頻的 <code>.p.</code>／<code>.q.</code> 子網域查詢。</li>
+      <li>將本報告 IOC 網域與 nameserver IP 納入封鎖／偵測清單。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── 12. 資料來源 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📚</span> 資料來源</div>
+  <div class="section-body">
+    <div class="sources-grid">
+      <div class="source-card">
+        <div class="source-tag">威脅情報</div>
+        <a href="https://securelist.com/project-cav3rn-cyberespionage-framework-using-outlook-and-dns/120757/" target="_blank">New Project CAV3RN module abuses Outlook calendar events for C2 and DNS AAAA records</a>
+        <div class="source-meta">Securelist (Kaspersky GReAT) · 2026-07-21</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">事件報導</div>
+        <a href="https://www.bleepingcomputer.com/news/security/new-hollowgraph-malware-uses-microsoft-graph-for-stealthy-c2-comms/" target="_blank">New HollowGraph malware uses Microsoft Graph for stealthy C2 comms</a>
+        <div class="source-meta">BleepingComputer · 2026-07-20</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">事件報導</div>
+        <a href="https://thehackernews.com/2026/07/hollowgraph-malware-hides-c2-and-stolen.html" target="_blank">HollowGraph Malware Hides C2 and Stolen Files in Microsoft 365 Events Dated 2050</a>
+        <div class="source-meta">The Hacker News · 2026-07</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">中文媒體</div>
+        <a href="https://www.ithome.com.tw/news/177541" target="_blank">網路間諜框架 Project CAV3RN 濫用 Outlook 行事曆，打造隱蔽 C2 通道</a>
+        <div class="source-meta">iThome · 2026-07</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">威脅情報</div>
+        <a href="https://thehackernews.com/2025/02/finaldraft-malware-exploits-microsoft.html" target="_blank">FINALDRAFT Malware Exploits Microsoft Graph API for Espionage on Windows and Linux</a>
+        <div class="source-meta">The Hacker News · 2025-02</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">官方文件</div>
+        <a href="https://learn.microsoft.com/entra/id-protection/concept-workload-identity-risk" target="_blank">Securing workload identities — Suspicious API Traffic 等偵測</a>
+        <div class="source-meta">Microsoft Learn · 2026</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">官方文件</div>
+        <a href="https://learn.microsoft.com/defender-cloud-apps/app-governance-anomaly-detection-alerts" target="_blank">Investigate OAuth app threat detection alerts</a>
+        <div class="source-meta">Microsoft Learn · 2026</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">官方文件</div>
+        <a href="https://learn.microsoft.com/entra/architecture/security-operations-applications" target="_blank">Microsoft Entra security operations guide for applications</a>
+        <div class="source-meta">Microsoft Learn · 2026</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer class="report-footer">
+  Generated 2026-07-23 · SecondBrain Report System · suelife/reports
+</footer>
+
+</body>
+</html>
