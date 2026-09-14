@@ -209,8 +209,8 @@
   <h1>Reports</h1>
   <p>資安事件報告、深度研究簡報、比較分析 — 由 SecondBrain 生成</p>
   <div class="stats">
-    <div class="stat"><strong>14</strong>篇報告</div>
-    <div class="stat"><strong>12</strong>資安事件</div>
+    <div class="stat"><strong>15</strong>篇報告</div>
+    <div class="stat"><strong>13</strong>資安事件</div>
     <div class="stat"><strong>2</strong>工安 / 其他</div>
   </div>
 </header>
@@ -226,6 +226,26 @@
     <button class="filter-btn" onclick="filterCards('cve', this)">CVE</button>
     <button class="filter-btn" onclick="filterCards('phishing', this)">Phishing</button>
   </div>
+
+  <a class="report-card severity-high" href="2026-09-14-fortinet-cve-2025-25249-pivotc2-report.html" data-tags="incident cve">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-09-14</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Fortinet CVE-2025-25249 遭在野利用 — 攻擊者於 FortiGate 植入 Node.js 後滲透木馬 PivotC2</div>
+      <div class="card-desc">Fortinet 2026 年 1 月已修補的 CAPWAP 堆積緩衝區溢位漏洞，自 7 月起遭一個俄語系、財務動機的犯罪集團大規模利用：鎖定逾 30,000 個 IP，確認 178 臺 FortiGate 遭植入 PivotC2。該 RAT 直接借用 FortiOS 內建的 Node.js 執行，會自動收集設定檔並解密 VPN／SSL-VPN／LDAP 憑證，再以防火牆為跳板往內網橫向移動。CISA 於 9/9 列入 KEV 並給出 9/12 的三日修補期限。CVSS 三方分歧：NVD 9.8、Fortinet 於 NVD 8.1、PSIRT 頁面 7.4。</div>
+      <div class="tag-row">
+        <span class="tag red">在野利用</span>
+        <span class="tag red">CISA KEV</span>
+        <span class="tag amber">CVE-2025-25249</span>
+        <span class="tag amber">憑證竊取</span>
+        <span class="tag">FortiGate</span>
+        <span class="tag">PivotC2</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
 
   <a class="report-card severity-high" href="2026-07-23-project-cav3rn-outlook-c2-report.html" data-tags="incident apt">
     <div class="card-left">
