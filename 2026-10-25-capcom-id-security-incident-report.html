@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAPCOM ID 2026 年資安事件報告｜資料外洩與帳號遭改</title>
+<style>
+/* ════ 以下為內嵌樣式，整段照抄，勿改成外部 link ════
+   第一部分：SecondBrain Report Design System v1（原 ~/reports/design.css 全文，2026-10-17 內嵌）
+   第二部分：無障礙補充層 v1.1（對比 ≥ 4.5:1、跟隨系統深色模式、顏色以外的文字標籤、寬表捲動、中文標籤不轉大寫、列印）
+   validate.py 以本模板 <style> 定義的 class 為準檢查漂移。 */
+
+/* ════════════════════════════════════════════════════
+   SecondBrain Report Design System v1
+   共用元件：badge、timeline、chain、alert、kpi、table
+   ════════════════════════════════════════════════════ */
+
+:root {
+  --navy: #1a2744;
+  --navy-light: #2c3e6b;
+  --red: #c0392b;
+  --amber: #d68910;
+  --green: #1e8449;
+  --gray-bg: #f4f6f9;
+  --border: #dce3ee;
+  --text: #222831;
+  --text-muted: #5a6578;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+  background: var(--gray-bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* ── Back Navigation ── */
+.back-nav {
+  background: var(--navy);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 48px;
+  display: flex;
+  align-items: center;
+}
+.back-nav a {
+  color: #8aa4d0;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s;
+}
+.back-nav a:hover { color: #fff; }
+.back-nav a::before { content: '‹'; font-size: 16px; line-height: 1; }
+@media (max-width: 600px) { .back-nav { padding: 10px 20px; } }
+
+/* ── Header ── */
+.report-header { background: var(--navy); color: #fff; padding: 40px 48px 32px; }
+.report-header .label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #8aa4d0; margin-bottom: 8px; }
+.report-header h1 { font-size: 26px; font-weight: 700; margin-bottom: 10px; line-height: 1.3; }
+.report-header .meta { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 16px; font-size: 13px; color: #9bb3d4; }
+.report-header .meta span strong { color: #fff; }
+.severity-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; margin-bottom: 14px; }
+.severity-badge.high { background: var(--red); color: #fff; }
+.severity-badge.medium { background: var(--amber); color: #fff; }
+.severity-badge.low { background: var(--green); color: #fff; }
+.severity-badge.info { background: var(--navy-light); color: #fff; }
+
+/* ── Layout ── */
+.container { max-width: 1000px; margin: 0 auto; padding: 32px 24px 60px; }
+
+/* ── Section ── */
+.section { background: #fff; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 24px; overflow: hidden; }
+.section-header { background: var(--navy); color: #fff; padding: 12px 24px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.section-body { padding: 24px; }
+
+/* ── KPI Cards ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.kpi { border: 1px solid var(--border); border-radius: 5px; padding: 14px 16px; text-align: center; }
+.kpi .kpi-value { font-size: 28px; font-weight: 800; color: var(--navy); line-height: 1; margin-bottom: 4px; }
+.kpi .kpi-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi.red .kpi-value { color: var(--red); }
+.kpi.amber .kpi-value { color: var(--amber); }
+.kpi.green .kpi-value { color: var(--green); }
+
+/* ── Badges ── */
+.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 3px; white-space: nowrap; }
+.badge-confirmed { background: #d4efdf; color: var(--green); }
+.badge-claimed   { background: #fef9e7; color: var(--amber); border: 1px solid #f0c040; }
+.badge-denied    { background: #fadbd8; color: var(--red); }
+.badge-info      { background: #eef2fa; color: var(--navy); }
+
+/* ── Tables ── */
+table.data-table { width: 100%; border-collapse: collapse; }
+table.data-table th { text-align: left; padding: 9px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; background: #f0f3f8; border-bottom: 2px solid var(--border); color: var(--navy); }
+table.data-table td { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #edf0f5; vertical-align: top; }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:hover td { background: #f9fbff; }
+
+/* ── Verify Table (badge column) ── */
+.verify-table { width: 100%; border-collapse: collapse; }
+.verify-table th { text-align: left; padding: 10px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: #f0f3f8; border-bottom: 2px solid var(--border); color: var(--navy); }
+.verify-table td { padding: 11px 14px; font-size: 14px; border-bottom: 1px solid #edf0f5; vertical-align: top; }
+.verify-table tr:last-child td { border-bottom: none; }
+
+/* ── Timeline ── */
+.timeline { list-style: none; position: relative; }
+.timeline::before { content: ''; position: absolute; left: 18px; top: 0; bottom: 0; width: 2px; background: #dce3ee; }
+.timeline li { display: flex; gap: 18px; padding: 0 0 24px; position: relative; }
+.timeline li:last-child { padding-bottom: 0; }
+.tl-dot { width: 14px; height: 14px; background: var(--navy); border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 2px var(--navy); flex-shrink: 0; margin-top: 4px; position: relative; z-index: 1; margin-left: 12px; }
+.tl-dot.red   { background: var(--red);   box-shadow: 0 0 0 2px var(--red); }
+.tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
+.tl-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+.tl-content { flex: 1; }
+.tl-date { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+.tl-title { font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.tl-detail { font-size: 13px; color: var(--text-muted); }
+
+/* ── Process Chain ── */
+.chain { display: flex; overflow-x: auto; }
+.chain-step { flex: 1; min-width: 130px; background: #f0f3f8; border: 1px solid var(--border); border-right: none; padding: 14px 12px; text-align: center; position: relative; }
+.chain-step:last-child { border-right: 1px solid var(--border); border-radius: 0 5px 5px 0; }
+.chain-step:first-child { border-radius: 5px 0 0 5px; }
+.chain-step::after { content: '›'; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--navy); z-index: 1; font-weight: 700; }
+.chain-step:last-child::after { display: none; }
+.chain-step .step-num { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.chain-step .step-name { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.chain-step .step-detail { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+/* ── Alert Boxes ── */
+.alert { display: flex; gap: 12px; padding: 14px 16px; border-radius: 5px; margin-bottom: 16px; font-size: 14px; line-height: 1.6; }
+.alert-red   { background: #fdf2f0; border-left: 4px solid var(--red); }
+.alert-amber { background: #fef9e7; border-left: 4px solid var(--amber); }
+.alert-green { background: #eafaf1; border-left: 4px solid var(--green); }
+.alert-navy  { background: #eef2fa; border-left: 4px solid var(--navy); }
+.alert-icon { font-size: 18px; flex-shrink: 0; padding-top: 1px; }
+.alert strong { display: block; margin-bottom: 2px; }
+
+/* ── Code Block ── */
+.code-block { background: #1a2744; color: #a8d8ea; padding: 16px 20px; border-radius: 5px; font-family: "Cascadia Code", Consolas, Monaco, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; margin: 12px 0; }
+.code-block .comment { color: #6b8cba; }
+.code-block .highlight { color: #f0c040; }
+
+/* ── Sources ── */
+.sources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.source-card { border: 1px solid var(--border); border-radius: 5px; padding: 14px 16px; }
+.source-card .source-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.source-card a { font-size: 14px; font-weight: 600; color: var(--navy); text-decoration: none; display: block; margin-bottom: 4px; line-height: 1.4; }
+.source-card a:hover { color: #3b5bdb; text-decoration: underline; }
+.source-card .source-meta { font-size: 12px; color: var(--text-muted); }
+
+/* ── Footer ── */
+.report-footer { border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; font-size: 12px; color: var(--text-muted); background: #fff; }
+
+/* ── Utilities ── */
+p { margin-bottom: 10px; }
+p:last-child { margin-bottom: 0; }
+code { background: #f0f3f8; padding: 1px 5px; border-radius: 3px; font-size: 13px; font-family: Consolas, monospace; }
+h3.sub { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .report-header { padding: 28px 20px 24px; }
+  .section-body { padding: 16px; }
+  .chain { flex-direction: column; }
+  .chain-step { border-right: 1px solid var(--border) !important; border-bottom: none; border-radius: 0 !important; }
+  .chain-step:first-child { border-radius: 5px 5px 0 0 !important; }
+  .chain-step:last-child { border-bottom: 1px solid var(--border) !important; border-radius: 0 0 5px 5px !important; }
+  .chain-step::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -14px; transform: translateX(-50%); }
+}
+@media print {
+  body { background: #fff; }
+  .section { break-inside: avoid; }
+}
+
+/* ── Legacy aliases (for older reports before schema-fields v1) ── */
+.callout { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 5px; margin-bottom: 16px; font-size: 14px; line-height: 1.6; background: #eef2fa; border-left: 4px solid var(--navy); }
+.callout strong { font-weight: 700; color: var(--navy); }
+.callout.red { background: #fdf2f0; border-left-color: var(--red); }
+.callout.amber { background: #fef9e7; border-left-color: var(--amber); }
+.callout.green { background: #eafaf1; border-left-color: var(--green); }
+.callout.navy { background: #eef2fa; border-left-color: var(--navy); }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.body-list { padding-left: 20px; margin-bottom: 12px; }
+.body-list li { margin-bottom: 6px; }
+.sources-list { list-style: none; padding: 0; margin: 0; }
+.sources-list li { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; }
+.sources-list li:last-child { border-bottom: none; }
+.sources-list .src-num { background: var(--navy); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.matrix { width: 100%; border-collapse: collapse; }
+.matrix th, .matrix td { padding: 9px 14px; font-size: 13px; border-bottom: 1px solid #edf0f5; vertical-align: top; }
+.matrix th { background: #f0f3f8; text-align: left; font-weight: 700; color: var(--navy); text-transform: uppercase; font-size: 12px; }
+.kill-chain { display: flex; overflow-x: auto; gap: 0; }
+.kill-chain-step { flex: 1; min-width: 130px; background: #f0f3f8; border: 1px solid var(--border); padding: 14px 12px; text-align: center; }
+.footer { border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; font-size: 12px; color: var(--text-muted); background: #fff; }
+
+/* ── 無障礙補充層 v1.1（模板內建，照抄保留）── */
+:root { --amber: #8a5a00; --green: #17703d; --red: #b03024; --text-muted: #4f5a6c; --surface: #fff; --head-bg: #f0f3f8; --row-hover: #f9fbff; }
+.report-header .label, .section-header, .kpi .kpi-label, table.data-table th, .verify-table th,
+.tl-date, h3.sub, .source-card .source-tag, .chain-step .step-num { text-transform: none; letter-spacing: normal; }
+.report-header .label { color: #c9d6ee; }
+.report-header .meta { color: #c9d6ee; }
+.badge-claimed { border-color: #b58100; }
+.kpi .kpi-value::before, .tl-content .tl-date::after { font-size: 12px; font-weight: 700; }
+.kpi.red::before, .kpi.amber::before, .kpi.green::before { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.kpi.red::before { content: "▲ 已確認損害"; color: var(--red); }
+.kpi.amber::before { content: "◆ 聲稱未證實"; color: var(--amber); }
+.kpi.green::before { content: "✓ 已緩解"; color: var(--green); }
+.kpi.amber { border-style: dashed; }
+.kpi.green { border-style: double; border-width: 3px; }
+li:has(> .tl-dot.red) .tl-date::after { content: "　▲ 損害"; color: var(--red); }
+li:has(> .tl-dot.amber) .tl-date::after { content: "　◆ 未證實"; color: var(--amber); }
+li:has(> .tl-dot.green) .tl-date::after { content: "　✓ 緩解"; color: var(--green); }
+.tl-dot.red { border-radius: 2px; }
+.tl-dot.amber { border-radius: 2px; transform: rotate(45deg); }
+div[role="region"] { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+div[role="region"]:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 2px; }
+div[role="region"] > table { min-width: 520px; }
+.section-body code { overflow-wrap: anywhere; }
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: dark; --navy: #1a2744; --navy-light: #3a4f85; --red: #ff8a80; --amber: #f2c14e; --green: #6fdc9a;
+    --gray-bg: #0f131c; --border: #2b3447; --text: #e6e9f0; --text-muted: #a9b3c4; --surface: #171c27; --head-bg: #1e2533; --row-hover: #1c2230; }
+  .section, .report-footer, .kpi, .source-card { background: var(--surface); }
+  .section-header, .back-nav, .report-header { background: #111a2e; }
+  table.data-table th, .verify-table th, code, .chain-step { background: var(--head-bg); color: var(--text); }
+  table.data-table td, .verify-table td { border-bottom-color: var(--border); }
+  table.data-table tr:hover td { background: var(--row-hover); }
+  .kpi .kpi-value, .tl-title, h3.sub, .source-card a, .chain-step .step-name, .alert strong { color: var(--text); }
+  .source-card a:hover { color: #9db4ff; }
+  .timeline::before { background: var(--border); }
+  .tl-dot { border-color: var(--surface); background: #8aa4d0; box-shadow: 0 0 0 2px #8aa4d0; }
+  .tl-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+  .tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
+  .tl-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+  .badge-confirmed { background: #12301f; color: var(--green); }
+  .badge-claimed { background: #33290f; color: var(--amber); border-color: #8a6a1c; }
+  .badge-denied { background: #3a1c1a; color: var(--red); }
+  .badge-info { background: #1e2740; color: #c9d6ee; }
+  .alert-red { background: #2a1817; } .alert-amber { background: #2b2412; } .alert-green { background: #12251a; } .alert-navy { background: #172038; border-left-color: #8aa4d0; }
+  .severity-badge.high { background: #b03024; } .severity-badge.medium { background: #8a5a00; } .severity-badge.low { background: #17703d; }
+}
+@media print {
+  .back-nav { display: none; }
+  .report-header { padding: 20px 24px; }
+  div[role="region"] { overflow: visible; }
+  div[role="region"] > table { min-width: 0; }
+  table.data-table td, .verify-table td { overflow-wrap: anywhere; }
+  thead { display: table-header-group; }
+  tr, .kpi, .source-card, .timeline li { break-inside: avoid; }
+  .section { break-inside: auto; }
+  .section-header { break-after: avoid; }
+}
+@page { size: A4; margin: 14mm 12mm; }
+</style>
+</head>
+<body>
+<nav class="back-nav" aria-label="報告導覽"><a href="index.html">回報告列表</a></nav>
+<header class="report-header">
+  <div class="label">資安事件報告 · SecondBrain Investigation</div>
+  <span class="severity-badge high">HIGH</span>
+  <h1>CAPCOM ID 資安事件<br>資料外洩與帳號遭改</h1>
+  <p>CAPCOM 會員資料外洩，部分帳號也遭人改動；使用者應留意冒名通知與非本人操作。</p>
+  <div class="meta">
+    <span><strong>事件日期</strong>　未公開（10 月 19 日偵測）</span>
+    <span><strong>公告日期</strong>　2026-10-22</span>
+    <span><strong>報告日期</strong>　2026-10-25</span>
+    <span><strong>受害者</strong>　CAPCOM</span>
+    <span><strong>攻擊組織</strong>　未知</span>
+  </div>
+</header>
+<main class="container">
+<section class="section" id="summary">
+  <div class="section-header"><span class="icon" aria-hidden="true">📋</span> Executive Summary</div>
+  <div class="section-body">
+
+    <div class="alert alert-navy">
+      <div class="alert-icon" aria-hidden="true">◆</div>
+      <div><strong>這不只是電子郵件外洩，也是帳號遭改與跨服務個資暴露事件。</strong>
+      CAPCOM ID 是跨網站與部分遊戲使用的共用帳號。本案提醒：保護密碼、保護帳號控制權，以及盤點關聯服務的資料暴露，是不同的驗證問題。案情細節見下方核查矩陣。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi red"><div class="kpi-value">11,774,247 筆</div><div class="kpi-label">電子郵件與帳號資訊</div></div>
+      <div class="kpi red"><div class="kpi-value">43 筆</div><div class="kpi-label">額外個人資料</div></div>
+      <div class="kpi red"><div class="kpi-value">196 帳號</div><div class="kpi-label">未授權密碼變更</div></div>
+      <div class="kpi red"><div class="kpi-value">19 帳號</div><div class="kpi-label">日本商店資料外洩</div></div>
+    </div>
+    <p><strong>數字口徑：</strong>43 與 196 都包含在 11,774,247 之內，19 又包含在 196 之內；43 與 196 是否重疊未公開，不能相加成新的受害總數。「筆數」不等於已去重的自然人人數。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></p>
+    <div class="alert alert-amber">
+      <div class="alert-icon" aria-hidden="true">!</div>
+      <div><strong>未確認原密碼外洩，不代表帳號沒有受害。</strong>
+      不要將「未確認外洩」當成完整的帳號安全保證，也不要把影響範圍調查完成解讀為所有改善已結案。詳見事實與未確認事項。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></div>
+    </div>
+    <div class="alert alert-navy">
+      <div class="alert-icon" aria-hidden="true">→</div>
+      <div><strong>誰該行動？</strong>
+      CAPCOM ID 使用者應留意官方通知與非本人操作，避免透過突如其來的驗證連結登入；身分平台與資安團隊應檢查密碼異動能否關聯到後續會員資料存取。沒有使用此服務的組織，不應僅憑本案就判定自身遭入侵。</div>
+    </div>
+    <p>閱讀路徑：先看已確認事實與時間線；需要立即處置可跳至 <a class="badge badge-info" href="#defense">防禦建議</a>。本報告為公開來源研析，不是 CAPCOM 的獨立鑑識報告；案情更新至 2026-10-23 第二報，來源查核時間為 2026-10-25 10:27（台北時間，UTC+8）。</p>
+
+  </div>
+</section>
+<section class="section" id="facts">
+  <div class="section-header"><span class="icon" aria-hidden="true">✅</span> 事實核查矩陣</div>
+  <div class="section-body">
+<p>「已確認」指 CAPCOM 已公開確認，不表示本報告取得原始日誌或完成獨立鑑識。日文原文為核對基準，英文版是同一公司的翻譯，不算第二個獨立證據來源。</p><div role="region" tabindex="0" aria-label="事實核查矩陣，可左右捲動"><table class="verify-table"><thead><tr><th scope="col">聲明</th><th scope="col">狀態</th><th scope="col">佐證來源與限制</th></tr></thead><tbody><tr><td>電子郵件與帳號活動資訊外洩。</td><td><span class="badge badge-confirmed">已確認</span></td><td>全球筆數見上方指標；欄位為建立時間、最後登入時間、登入次數、最後登入 IP。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>額外個資群組。</td><td><span class="badge badge-confirmed">已確認</span></td><td>生日、性別、國家／地區與暱稱。群組筆數與包含關係見上方指標。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>密碼遭未授權變更。</td><td><span class="badge badge-confirmed">已確認</span></td><td>上列受影響帳號已重設密碼；這不等同原密碼外洩。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>日本 e-Capcom 會員頁遭第三方存取。</td><td><span class="badge badge-confirmed">已確認</span></td><td>姓名及假名、電話、郵遞區號、地址、性別、生日、購買紀錄、客服詢問紀錄及會員通訊錄外洩。其餘帳號未確認因這次密碼變更而額外外洩。<a class="badge badge-info" href="#source-2">來源 2</a></td></tr><tr><td>原設密碼已確認外洩。</td><td><span class="badge badge-info">未確認</span></td><td>不能將「未確認」改寫為已證明絕無外洩。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>信用卡資料屬於本次外洩範圍。</td><td><span class="badge badge-denied">已否定</span></td><td>官方排除信用卡資料，並表示服務可繼續使用、遊戲遊玩未受影響。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></td></tr><tr><td>10/23 之後仍在調查影響範圍。</td><td><span class="badge badge-info">已更新</span></td><td>影響範圍調查已完成；監控與再發防止工作持續。<a class="badge badge-info" href="#source-2">來源 2</a></td></tr><tr><td>已能確定攻擊者、初始進入點或特定漏洞。</td><td><span class="badge badge-info">未公開</span></td><td>兩份公告未提供可供核驗的技術細節，不能據此建立歸因或漏洞結論。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></td></tr></tbody></table></div>
+  </div>
+</section>
+<section class="section" id="timeline">
+  <div class="section-header"><span class="icon" aria-hidden="true">📅</span> 事件時間線</div>
+  <div class="section-body">
+<p>公告僅提供日期，未提供精確時刻或明示時區，因此以下保留官方所載日期，不把日本日期假換算為台北精確時間，也不推算攻擊者停留天數。</p><ul class="timeline"><li><span class="tl-dot" aria-hidden="true"></span><div class="tl-content"><div class="tl-date">2026-10-19 · 官方日期</div><div class="tl-title">偵測異常並封鎖存取</div><div class="tl-detail">發現異常、封鎖存取並確認入侵。 <a class="badge badge-info" href="#source-1">來源 1</a></div></div></li><li><span class="tl-dot red" aria-hidden="true"></span><div class="tl-content"><div class="tl-date">2026-10-20 · 官方日期</div><div class="tl-title">確認資料外洩與密碼異動</div><div class="tl-detail">成立應變總部，通報外部安全監督委員會。 <a class="badge badge-info" href="#source-1">來源 1</a></div></div></li><li><span class="tl-dot" aria-hidden="true"></span><div class="tl-content"><div class="tl-date">2026-10-21 · 官方日期</div><div class="tl-title">通報警方與主管機關</div><div class="tl-detail">通報警方及日本個人情報保護委員會。 <a class="badge badge-info" href="#source-1">來源 1</a></div></div></li><li><span class="tl-dot" aria-hidden="true"></span><div class="tl-content"><div class="tl-date">2026-10-22 · 官方日期</div><div class="tl-title">公布首報與緊急處置狀態</div><div class="tl-detail">公布首報，稱緊急措施及攻擊手段處理已完成。 <a class="badge badge-info" href="#source-1">來源 1</a></div></div></li><li><span class="tl-dot" aria-hidden="true"></span><div class="tl-content"><div class="tl-date">2026-10-23 · 官方日期</div><div class="tl-title">第二報補充商店帳號影響</div><div class="tl-detail">公布第二報，更新範圍與監控狀態。 <a class="badge badge-info" href="#source-2">來源 2</a></div></div></li></ul>
+  </div>
+</section>
+<section class="section" id="actor">
+  <div class="section-header"><span class="icon" aria-hidden="true">🎯</span> 攻擊者背景</div>
+  <div class="section-body">
+
+    <p><span class="badge badge-info">歸因未知</span> 官方將行為描述為第三方未授權存取，未公開組織名稱、地理來源、動機、勒索要求或責任聲明。本報告不將其他 CAPCOM 歷史事件的攻擊者移植到本案。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></p>
+    <p>現有證據足以分析「發生哪些損害」，不足以回答「誰做的、如何進入」。資料外洩也不自動等於勒索軟體事件。</p>
+
+  </div>
+</section>
+<section class="section" id="technical">
+  <div class="section-header"><span class="icon" aria-hidden="true">⚙️</span> 攻擊鏈技術分析</div>
+  <div class="section-body">
+
+    <h3 class="sub">以可觀察結果分層，不補寫攻擊路徑</h3>
+    <p>以下不是完整攻擊鏈，也不主張三種結果必然由同一技術步驟依序造成。它們分別對應資料機密性、帳號完整性與跨服務影響，應各自追查證據。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></p>
+    <div role="region" tabindex="0" aria-label="技術結果與證據邊界，可左右捲動"><table class="data-table"><thead><tr><th scope="col">觀察層面</th><th scope="col">分析意義</th><th scope="col">仍缺少的技術證據</th></tr></thead><tbody><tr><td>帳號資料暴露</td><td>資料機密性受到影響。</td><td>未知從哪個系統介面、權限或儲存層讀取，也未公開外傳方式。</td></tr><tr><td>帳號狀態遭改</td><td>帳號完整性受到影響。</td><td>未知使用既有登入權限、復原流程、管理權限或其他方式；不能反推已取得原密碼。</td></tr><tr><td>關聯服務存取</td><td>調查需涵蓋身分相依服務。</td><td>未公開內部驗證協定、權杖流向或權限架構，不足以重建完整存取路徑。</td></tr></tbody></table></div>
+    <h3 class="sub">可帶走的工程判斷</h3>
+    <ul class="body-list">
+      <li><strong>資料保密與帳號控制要分開驗證。</strong> 密碼沒有被確認外洩，不能抵銷密碼遭改的完整性損害；恢復登入後也應查驗復原資訊與既有工作階段。</li>
+      <li><strong>共用帳號的調查邊界不應停在登入系統。</strong> 應枚舉能透過該身分進入的商店、客服與其他服務，核對實際讀取的資料，而非只盤點主帳號資料庫。</li>
+      <li><strong>已處理攻擊手段與已公開根因是兩回事。</strong> 官方緊急措施聲明不能取代可獨立核驗的根因、修復範圍與有效性證據。</li>
+    </ul>
+    <p>上述為作者的防禦分析，不代表 CAPCOM 使用特定單一登入技術，也不表示其缺少某項控制。未公開可用的入侵指標（IOC，例如惡意網域或檔案雜湊），亦不足以建立 MITRE ATT&amp;CK（用來描述攻擊技術的知識框架）對照，因此不填入猜測的指標或技術編號。</p>
+
+  </div>
+</section>
+<section class="section" id="impact">
+  <div class="section-header"><span class="icon" aria-hidden="true">⚠️</span> 衝擊評估</div>
+  <div class="section-body">
+
+    <h3 class="sub">評為 HIGH 的理由</h3>
+    <p>本報告以事件衝擊評為 HIGH，理由是全球大量帳號資訊外洩，加上已確認的密碼異動與少數下游商店資料暴露。這是報告的分析分級，不是官方定級，也不是軟體漏洞的 CVSS 分數。</p>
+    <div role="region" tabindex="0" aria-label="分層衝擊評估，可左右捲動"><table class="data-table"><thead><tr><th scope="col">層面</th><th scope="col">作者風險分析</th><th scope="col">防禦含義與邊界</th></tr></thead><tbody><tr><td>一般帳號資料</td><td>資料內容可能被用來包裝可信通知。</td><td>留意冒名與釣魚；IP 位址可能與多人共用，不能直接等同實體地址。</td></tr><tr><td>額外個人資料</td><td>較容易建立個人輪廓。</td><td>依實際欄位分層通知，不把少量帳號的影響擴大到所有人。</td></tr><tr><td>帳號完整性</td><td>登入能力可能遭未授權控制。</td><td>檢查密碼以外的復原資訊及既有工作階段，不以單一重設動作代替完整復原驗證。</td></tr><tr><td>電商資料</td><td>訂單與往來紀錄可能讓冒名客服更逼真。</td><td>不要因對方能說出正確的交易背景，就將其視為可信聯絡人。</td></tr></tbody></table></div>
+    <p>表中的詐騙、釣魚等後果為可能風險，不是已發現二次攻擊的證據。資料欄位以核查矩陣為準。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></p>
+    <h3 class="sub">節制與範圍</h3>
+    <p>核查矩陣已列出公告排除項目與服務狀態。評估時應保留這些界線，但不能以可用性正常抵銷資料保密與帳號完整性問題。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></p>
+    <p>對一般企業而言，這不是要求全面停機或緊急修補某個已知 CVE 的通知。實際可借鏡的是身分異動監控、下游服務盤點與分層通知，不能憑本案推定自己的系統也受害。</p>
+
+  </div>
+</section>
+<section class="section" id="history">
+  <div class="section-header"><span class="icon" aria-hidden="true">📜</span> 受害者歷史紀錄</div>
+  <div class="section-body">
+
+    <p>CAPCOM 在 2021-04-13 公布的調查結果，描述的是 <strong>2020 年另一宗內部網路與勒索軟體事件</strong>，並交代舊備援 VPN（遠端連入企業網路的通道）等歷史因素。這些細節不構成 2026 年 CAPCOM ID 的根因或歸因證據。<a class="badge badge-info" href="#source-5">來源 5</a></p>
+    <p>本報告只以該歷史公告劃清事件邊界，不合併兩案受害數字、攻擊者、技術手法或時間線。</p>
+
+  </div>
+</section>
+<section class="section" id="unknowns">
+  <div class="section-header"><span class="icon" aria-hidden="true">⚖️</span> 爭議與未確認事項</div>
+  <div class="section-body">
+<div role="region" tabindex="0" aria-label="未確認事項，可左右捲動"><table class="data-table"><thead><tr><th scope="col">待查問題</th><th scope="col">截至第二報的證據邊界</th></tr></thead><tbody><tr><td>最初何時入侵、停留多久？</td><td>未公開。10/19 只是發現與確認日，不能拿來計算攻擊駐留時間。</td></tr><tr><td>如何進入與變更密碼？</td><td>未公開初始向量、弱點、具體 CVE、權限取得或密碼異動機制；不能直接定性為撞庫、SQL 注入、API 授權缺陷或復原流程漏洞。</td></tr><tr><td>額外個資群組與密碼異動群組是否重疊？</td><td>未交代。必須以帳號層級去重，不將子群組直接相加。</td></tr><tr><td>是否存在二次詐騙、資料販售或其他使用？</td><td>本次查閱公告未提供已發生的證據；官方提醒的是可能風險。</td></tr><tr><td>帳號復原是否撤銷所有既有存取？</td><td>公告確認密碼已重設，但未揭露工作階段、復原資訊、關聯服務授權的完整檢核結果。</td></tr><tr><td>調查完成是否代表所有改善都完成？</td><td>不是。第二報說的是影響範圍調查完成，並表示監控與再發防止工作持續。</td></tr></tbody></table></div><p>「未公開」不等於不存在、尚未調查或控制失效。若後續出現技術事後報告，應優先核對初始進入點、帳號異動機制、下游服務範圍及改善驗證結果。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></p>
+  </div>
+</section>
+<section class="section" id="defense">
+  <div class="section-header"><span class="icon" aria-hidden="true">🛡️</span> 防禦建議</div>
+  <div class="section-body">
+
+    <p>以下是供同類身分系統與使用者參考的控制建議，不是 CAPCOM 內部控制缺失的斷言，也不是本案根因結論。</p>
+    <h3 class="sub">帳號使用者：先確認，再操作</h3>
+    <ul class="body-list">
+      <li>收到「外洩補償」「安全驗證」或付款催促時，從自己已知的官方入口查證，不使用可疑郵件、簡訊的連結或附件，也不把驗證碼交給來電者。</li>
+      <li>若發現非本人密碼變更或其他異常，從官方入口進行復原並聯絡支援；保留通知時間與相關紀錄。官方公告列有各地支援管道。<a class="badge badge-info" href="#source-2">來源 2</a></li>
+      <li>各服務使用獨立密碼，檢查綁定服務與復原資訊。若服務支援多因素驗證（除了密碼，再以另一項證明確認身分），可評估啟用；本報告未驗證 CAPCOM ID 目前提供哪些驗證功能。</li>
+    </ul>
+    <h3 class="sub">資安監控團隊：先做能驗證的初查</h3>
+    <p>最便宜的起點是<strong>成功的密碼與復原設定異動</strong>，而不是蒐集未證實的攻擊 IP。下表可用來安排一次短時初查；查詢時間窗、門檻與例外應依自身業務基線設定，不是本案公開的攻擊參數。</p>
+    <div role="region" tabindex="0" aria-label="偵測到處置的實作清單，可左右捲動"><table class="data-table"><thead><tr><th scope="col">步驟</th><th scope="col">查什麼與怎麼做</th><th scope="col">必要限制</th></tr></thead><tbody><tr><td>第一步：找出異常密碼異動</td><td>從自己的身分平台稽核紀錄取出近期成功的密碼變更、密碼重設及復原方式變更；按操作主體、目標帳號、來源、時間與結果分組。先找同一主體短時間作用於多個帳號的情形。</td><td>先排除核准的客服復原與批次作業；不把共用 IP 或單一地理異常直接當成入侵。</td></tr><tr><td>第二步：關聯下游資料讀取</td><td>以同一目標帳號及可用的請求／工作階段識別碼，追查變更前後的登入、會員頁、地址簿、訂單與客服紀錄讀取。</td><td>只有登入日誌不足以證明資料未被讀取；缺少應用程式存取紀錄時，列為調查缺口。</td></tr><tr><td>第三步：核驗與止血</td><td>對已確認非本人操作的帳號，依應變流程保全證據、限制存取、重設驗證資料、撤銷相關工作階段與復原憑證，通知帳號持有人。</td><td>完成復原後，再驗證原登入狀態與關聯服務存取已失效；不要以一次密碼重設直接結案。</td></tr></tbody></table></div>
+    <p>必要日誌欄位至少包括時間、操作主體、目標帳號、事件類型、來源、結果與關聯識別碼；事件應涵蓋驗證、授權、帳號管理與敏感資料存取。日誌本身也要限制權限，避免記入密碼或完整存取權杖。此處依 OWASP 的紀錄原則提出欄位需求，並非聲稱 CAPCOM 或任何產品實際採用這些欄位名。<a class="badge badge-info" href="#source-7">來源 7</a></p>
+    <h3 class="sub">平台團隊：把復原設計成完整流程</h3>
+    <ul class="body-list">
+      <li><strong>預防：</strong>重設憑證應不可預測、單次有效且有期限；對復原請求設速率限制，使用一致的帳號存在性回應，避免可被濫用的枚舉或重設入口。<a class="badge badge-info" href="#source-6">來源 6</a></li>
+      <li><strong>圍堵與復原：</strong>對疑似遭接管帳號，檢查復原地址與驗證方式，撤銷既有工作階段及未使用的復原連結，透過既有安全管道通知使用者。<a class="badge badge-info" href="#source-6">來源 6</a></li>
+      <li><strong>驗證：</strong>用測試帳號演練密碼重設後舊工作階段是否仍有效、下游商店或客服服務是否仍可存取，以及告警能否把異動與資料讀取串起來。此為作者提出的驗證案例，並非本案漏洞重現。</li>
+      <li><strong>通知：</strong>分開建立一般帳號資訊、額外個資、帳號遭改與下游資料暴露清單；逐一標明證據與狀態，避免讓所有使用者收到相同但不精確的影響描述。</li>
+    </ul>
+    <p><strong>偵測限制：</strong>本案未公開實際日誌格式、惡意特徵或攻擊參數，因此不提供假裝能直接命中的特定產品查詢。部署前需先確認自己能取得哪些紀錄，並用已知正常與測試異常事件驗證規則。</p>
+
+  </div>
+</section>
+<section class="section" id="sources">
+  <div class="section-header"><span class="icon" aria-hidden="true">📚</span> 資料來源</div>
+  <div class="section-body">
+<div class="sources-grid"><div class="source-card" id="source-1"><div class="source-tag">官方文件</div><a href="https://www.capcom.co.jp/ir/news/html/261022.html" target="_blank" rel="noopener">1. CAPCOM ID 未授權存取與客戶資料外洩公告（日文首報）</a><div class="source-meta">CAPCOM · 2026-10-22</div></div><div class="source-card" id="source-2"><div class="source-tag">官方文件</div><a href="https://www.capcom.co.jp/ir/news/html/261023.html" target="_blank" rel="noopener">2. CAPCOM ID 資料外洩第二報（日文）</a><div class="source-meta">CAPCOM · 2026-10-23</div></div><div class="source-card" id="source-3"><div class="source-tag">官方文件</div><a href="https://www.capcom.co.jp/ir/english/news/html/e261022.html" target="_blank" rel="noopener">3. 首報英文版（翻譯核對）</a><div class="source-meta">CAPCOM · 2026-10-22</div></div><div class="source-card" id="source-4"><div class="source-tag">官方文件</div><a href="https://www.capcom.co.jp/ir/english/news/html/e261023.html" target="_blank" rel="noopener">4. 第二報英文版（翻譯核對）</a><div class="source-meta">CAPCOM · 2026-10-23</div></div><div class="source-card" id="source-5"><div class="source-tag">官方文件</div><a href="https://www.capcom.co.jp/ir/english/news/pdf/e210413.pdf" target="_blank" rel="noopener">5. 2020 年事件調查結果（僅用來區分歷史事件，PDF）</a><div class="source-meta">CAPCOM · 2021-04-13</div></div><div class="source-card" id="source-6"><div class="source-tag">官方文件</div><a href="https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html" target="_blank" rel="noopener">6. OWASP Forgot Password Cheat Sheet</a><div class="source-meta">OWASP · 2026-10-25（查閱日期）</div></div><div class="source-card" id="source-7"><div class="source-tag">官方文件</div><a href="https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html" target="_blank" rel="noopener">7. OWASP Logging Cheat Sheet</a><div class="source-meta">OWASP · 2026-10-25（查閱日期）</div></div></div><p><strong>方法與限制：</strong>以 CAPCOM 兩次日文原公告核對數字、日期及範圍，再對照英文翻譯；主要案情仍出自受害公司公開陳述，未取得原始鑑識證據。英文公告載明如有歧異以日文為準。OWASP 頁面未提供本報告可核定的發布日期，故標示查閱日期，僅作防禦指引，不作事件成因證據。</p>
+<p>分析者將官方事實、尚未公開事項與防禦推論分開呈現；本報告未檢驗 CAPCOM 系統、未接觸外洩資料集；公開研析不能用來判定個別帳號是否受影響。</p>
+  </div>
+</section>
+</main>
+<footer class="report-footer">Generated 2026-10-25 · SecondBrain Report System · suelife/reports</footer>
+</body>
+</html>

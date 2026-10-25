@@ -209,9 +209,9 @@
   <h1>Reports</h1>
   <p>資安事件報告、深度研究簡報、比較分析 — 由 SecondBrain 生成</p>
   <div class="stats">
-    <div class="stat"><strong>15</strong>篇報告</div>
-    <div class="stat"><strong>13</strong>資安事件</div>
-    <div class="stat"><strong>2</strong>工安 / 其他</div>
+    <div class="stat"><strong>16</strong>篇報告</div>
+    <div class="stat"><strong>15</strong>資安事件</div>
+    <div class="stat"><strong>1</strong>工安 / 其他</div>
   </div>
 </header>
 
@@ -226,6 +226,25 @@
     <button class="filter-btn" onclick="filterCards('cve', this)">CVE</button>
     <button class="filter-btn" onclick="filterCards('phishing', this)">Phishing</button>
   </div>
+
+  <a class="report-card severity-high" href="2026-10-25-capcom-id-security-incident-report.html" data-tags="incident">
+    <div class="card-left">
+      <span class="sev-badge high">HIGH</span>
+      <div class="card-date">2026-10-25</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">CAPCOM ID 資料外洩與帳號遭改：全球 11,774,247 筆資料受影響</div>
+      <div class="card-desc">官方確認電子郵件及帳號活動資訊外洩，196 個帳號密碼遭未授權變更，其中 19 個日本帳號的 e-Capcom 會員頁資料也外洩。納入 10/23 第二報，區分已確認事實、未公開技術根因與防禦建議，不將 2020 年勒索軟體事件混為一談。</div>
+      <div class="tag-row">
+        <span class="tag red">資料外洩</span>
+        <span class="tag red">帳號遭改</span>
+        <span class="tag">CAPCOM ID</span>
+        <span class="tag">e-Capcom</span>
+        <span class="tag">身分安全</span>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </a>
 
   <a class="report-card severity-high" href="2026-09-14-fortinet-cve-2025-25249-pivotc2-report.html" data-tags="incident cve">
     <div class="card-left">
@@ -541,3 +560,4 @@ function filterCards(tag, btn) {
 
 </body>
 </html>
+
