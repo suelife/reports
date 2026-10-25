@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHP2Shell：PHP 核心未驗證遠端程式碼執行漏洞（CVE-2026-109618／109619）事件研析</title>
+<link rel="stylesheet" href="design.css">
+</head>
+<body>
+
+<nav class="back-nav"><a href="index.html">回首頁 · All Reports</a></nav>
+
+<header class="report-header">
+  <div class="label">事件研析 · SecondBrain Incident Analysis</div>
+  <span class="severity-badge high">▲ CRITICAL · CVSS 4.0 9.2</span>
+  <h1>PHP2Shell：PHP 核心未驗證 RCE 漏洞<br>CVE-2026-109618 + CVE-2026-109619（另有未修補的 CVE-2026-115560）</h1>
+  <div class="meta">
+    <span><strong>報告日期</strong>　2026-10-25</span>
+    <span><strong>資料截止</strong>　2026-10-25 14:00（台北時間）</span>
+    <span><strong>嚴重度</strong>　▲ 嚴重（兩個主要 CVE 皆 CVSS 4.0 9.2）</span>
+    <span><strong>狀態</strong>　◐ 進行中：修補已發布；第三個 CVE 待下個例行版本；攻擊嘗試持續</span>
+    <span><strong>主要來源</strong>　32 份</span>
+    <span><strong>觸發來源</strong>　使用者提供的 AI 回答截圖（內容已逐項查證）</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ─── 1. Executive Summary ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <div class="section-body">
+    <div class="alert alert-navy">
+      <div class="alert-icon">◆</div>
+      <div><strong>先講答案：PHP 本身有兩個免登入就能遠端執行程式碼的漏洞，唯一完整解法是升級 PHP 並重啟服務。</strong> PHP 官方 2026-10-21（台北 22:00）發布 8.5.12、8.4.27、8.3.36、8.2.35。漏洞在 PHP 解析請求的階段發作，網站程式的登入檢查來不及擋，所以更新 WordPress、Laravel 等應用程式或外掛沒有用。截至 2026-10-25，多家機構看到數百萬次攻擊嘗試，也有修補前（10-17）的嘗試；但「大規模成功入侵」的證據仍有限，只有 Unit 42 單一廠商提到一起歐洲政府單位遭入侵（未獨立證實）。</div>
+    </div>
+    <div class="alert alert-red">
+      <div class="alert-icon">▲</div>
+      <div><strong>立即行動：盤點並升級對外的 PHP（Apache mod_php 優先），升級後重啟，並從 10-17 起回查日誌。</strong> 無法升級的對外系統，國際機關（CISA、NCSC-UK、TWCERT/CC）建議隔離或下線；台灣資安署口徑是先升級，不行再上 WAF，再不行才暫停服務。8.1 以下已停止維護，只能靠廠商回補或官方最小原始碼修補。</div>
+    </div>
+    <div class="alert alert-amber">
+      <div class="alert-icon">⚠</div>
+      <div><strong>第三個 CVE-2026-115560 尚未修補。</strong> PHP 官方 10-23 發資訊公告：條件罕見（需把 session.serialize_handler 在執行中從 php_binary／php_serialize 改回 php，且 upload progress 仍啟用），等下個例行版本修。即使已升到 8.5.12 也建議維持 <code>session.upload_progress.enabled=0</code>。</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi red"><div class="kpi-value">9.2</div><div class="kpi-label">▲ CVSS 4.0（兩個主要 CVE）</div></div>
+      <div class="kpi amber"><div class="kpi-value">2 + 1</div><div class="kpi-label">◐ 已修補 2 個；待修 1 個</div></div>
+      <div class="kpi red"><div class="kpi-value">10-17</div><div class="kpi-label">▲ 最早利用嘗試（AWS，揭露前 4 天）</div></div>
+      <div class="kpi amber"><div class="kpi-value">數百萬次</div><div class="kpi-label">⚠ 攻擊嘗試（Cloudflare，非成功數）</div></div>
+      <div class="kpi amber"><div class="kpi-value">約 2.8 萬</div><div class="kpi-label">◆ 台灣對外 PHP 網站（資安署盤點）</div></div>
+      <div class="kpi red"><div class="kpi-value">約 200 個</div><div class="kpi-label">▲ 台灣政府網站使用 PHP（實際受影響更少）</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── 2. 事件時間線 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📅</span> 事件時間線（台北時間，括號為 UTC）</div>
+  <div class="section-body">
+    <ul class="timeline">
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2004 至 2024</div>
+          <div class="tl-title">● 舊問題的伏筆</div>
+          <div class="tl-detail">2004 年 Stefan Esser 發現首個 PHP memory_limit 遠端漏洞；2020 年 bug #78876 回報「長變數造成記憶體不足」；2024 年 OSTIF／Quarkslab 稽核再度碰到相關 OOM，但當時未證明可利用，也沒修（Calif、PHP Foundation）。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-07-30 至 08-24</div>
+          <div class="tl-title">● 三方先後發現並回報</div>
+          <div class="tl-detail">07-30 Calif 在 OpenAI「Patch the Planet」計畫下開始審計 PHP；08-01 發現首批路徑；08-11 Calif 回報 PHP（08-14 提供 RCE PoC，08-15 PHP 確認可行）。OpenAI 獨立回報同一根因（PHP Foundation 未寫日期），另在 09-18 提供更多攻擊向量。Wiz 08-19 獨立發現、08-24 回報。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-10-17</div>
+          <div class="tl-title">▲ AWS 蜜罐記錄到首次利用嘗試</div>
+          <div class="tl-detail">AWS MadPot 看到來自商用匿名網路 IP 的嘗試，早於公開揭露 4 天。AWS 表示不清楚對方如何取得利用資訊（AWS 單一觀測）。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-10-20 23:00（15:00）</div>
+          <div class="tl-title">▲ CVE 編號外洩，PHP 提前公布時程</div>
+          <div class="tl-detail">兩個 CVE 編號在論壇與社群流傳，附錯誤的 CVSS 10.0；PHP 於 10-21 03:30 發預告，並把發布從 10-22 提前到 10-21。約 04:00 Calif 誤公開含 PoC 的影片，後來被複製流傳（PHP Foundation）。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-10-21 11:00 至 22:00</div>
+          <div class="tl-title">▲ 防護先行、官方修補發布</div>
+          <div class="tl-detail">11:02（03:02）Cloudflare 對含免費方案預設啟用 WAF 規則；15:41（07:41）Chainguard 提前發布含修補的映像，PHP Foundation 稱此舉破壞禁運；22:00（14:00）PHP 發布 8.5.12 等四版與公告，CISA、Wiz、OpenAI、Calif、Datadog 同日發文。台灣資安署當晚啟動緊急應變。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot red"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-10-22</div>
+          <div class="tl-title">▲ 台灣官方通報；各地機關下線網站</div>
+          <div class="tl-detail">TWCERT/CC 發漏洞警訊；資安署記者會稱國內約 2.8 萬個對外網站用 PHP、政府約 200 個。NCSC-NL 稱正在調查「初步成功利用跡象」。歐洲數國政府、學校、醫院網站在 10-21 前後預防性下線（SecurityWeek、NCSC-NL）。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot amber"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-10-23</div>
+          <div class="tl-title">⚠ 第三個 CVE 公告；情資各說各話</div>
+          <div class="tl-detail">PHP 發 CVE-2026-115560 資訊公告；CISA 更新警示並提供 SIGMA 規則；Unit 42 更新稱觀測到代理式 AI 攻擊平台的後滲透；Sophos 更正先前「成功入侵」說法；NCSC-NL 改稱大規模利用機率低於先前估計。</div>
+        </div>
+      </li>
+      <li>
+        <span class="tl-dot green"></span>
+        <div class="tl-content">
+          <div class="tl-date">2026-10-24 至 10-25</div>
+          <div class="tl-title">◐ 修補陸續落地，未見新修補版</div>
+          <div class="tl-detail">Palo Alto 10-25 更新：PAN-OS 部分 hotfix 已出、其餘預計 10-27 至 10-30；CISA KEV 我於 10-25 13:57 查詢，仍未收錄任何 PHP2Shell CVE（目錄版本 2026.10.23）。未查到台灣政府網站遭入侵的通報。</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── 3. 技術原理與 CVE 比較 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">⚙️</span> 技術原理（白話版）與 CVE 比較</div>
+  <div class="section-body">
+    <h3 class="sub">白話原理</h3>
+    <p><strong>像櫃台收件：</strong>PHP 收到一張超大或層層巢狀的表單，記憶體不夠，做到一半停了。但清理人員以為每張單都填完，照單處理，把「沒填完的半張單」當真。攻擊者事先把那塊記憶體塞好內容，清理時 PHP 就被誘導去執行系統指令（CVE-2026-109618）。</p>
+    <p><strong>上一個請求的殘影：</strong>同一個 PHP 工作行程（worker）處理完一個失敗請求後，仍留著指向「已釋放記憶體」的指標；下一個請求拿來用，就能被操控（CVE-2026-109619）。</p>
+    <p><strong>為什麼擋不住：</strong>這些事發生在 PHP 解析請求的階段，網站程式碼（含登入檢查）還沒開始跑，所以任何 PHP 應用程式，連只印一行字的頁面都可能中招。攻擊者還得突破記憶體位址隨機化（ASLR）；Wiz 與 Datadog 指出可借 PHPSESSID cookie 洩漏記憶體，降低難度。</p>
+    <div class="chain">
+      <div class="chain-step">
+        <div class="step-num">Step 1</div>
+        <div class="step-name">送特製表單</div>
+        <div class="step-detail">multipart 上傳，或層層巢狀的超長欄位名</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 2</div>
+        <div class="step-name">記憶體超限</div>
+        <div class="step-detail">PHP 在請求初始化中途中斷</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 3</div>
+        <div class="step-name">殘留半成品</div>
+        <div class="step-detail">內部資料只做一半，或指標指向已釋放記憶體</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 4</div>
+        <div class="step-name">清理誤信</div>
+        <div class="step-detail">收尾或下個請求把殘留當有效資料</div>
+      </div>
+      <div class="chain-step">
+        <div class="step-num">Step 5</div>
+        <div class="step-name">執行指令</div>
+        <div class="step-detail">worker 權限下啟動 shell（如 www-data）</div>
+      </div>
+    </div>
+    <p>官方修補的做法：記憶體「軟上限」改為延後到安全點才報錯；超過「硬上限」就直接結束該 worker（_exit(137)），不再跑清理；並在收尾時重設請求相關的全域狀態（Datadog 分析）。Datadog 提醒同類模式（先更新計數、後配置記憶體）可能還有其他變體。</p>
+
+    <h3 class="sub">三個 CVE 比較</h3>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+    <table class="data-table" style="min-width:640px">
+      <thead><tr><th>項目</th><th>CVE-2026-109618</th><th>CVE-2026-109619</th><th>CVE-2026-115560</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>官方描述</td>
+          <td>記憶體不足造成損毀致 RCE（OOM corruption）</td>
+          <td>殘留全域狀態致 RCE（stale global state）</td>
+          <td>session upload progress 的 RCE 路徑（完整公告待下個版本）</td>
+        </tr>
+        <tr>
+          <td>CVSS 4.0</td>
+          <td>9.2</td>
+          <td>9.2</td>
+          <td>尚無（cve.org 為 Reserved）</td>
+        </tr>
+        <tr>
+          <td>揭露日</td>
+          <td>2026-10-21</td>
+          <td>2026-10-21</td>
+          <td>2026-10-23（資訊公告）</td>
+        </tr>
+        <tr>
+          <td>修補狀態</td>
+          <td><span class="badge badge-confirmed">✔ 已修補</span></td>
+          <td><span class="badge badge-confirmed">✔ 已修補</span></td>
+          <td><span class="badge badge-denied">✖ 未修補</span>（8.5.12 亦受影響，Cloudflare 說明）</td>
+        </tr>
+        <tr>
+          <td>修補版本</td>
+          <td colspan="2">PHP 8.5.12、8.4.27、8.3.36、8.2.35；7.4／8.0／8.1 有官方最小原始碼回補；7.3 以下（含 5.x）無修補</td>
+          <td>下個例行 bugfix 版（日期未定）</td>
+        </tr>
+        <tr>
+          <td>影響範圍</td>
+          <td colspan="2">PHP 5.4 至 8.5.11；所有處理網頁請求的 SAPI（mod_php、PHP-FPM、php-cgi、FrankenPHP、LiteSpeed）。<strong>mod_php 風險最高</strong></td>
+          <td>已修補版也受影響，但僅限罕見組態</td>
+        </tr>
+        <tr>
+          <td>利用條件</td>
+          <td>送出能讓記憶體在特定時點耗盡的請求；mod_php 上免認證、應用程式碼執行前即觸發；FPM 需搭配應用程式的特定操作</td>
+          <td>失敗請求後，同一 worker 再處理下一個請求；多數攻擊走 session upload progress（<code>PHP_SESSION_UPLOAD_PROGRESS</code>）；PHP 8.5 另有 fatal 回溯路徑</td>
+          <td>程式須先把 serialize_handler 設為 php_binary／php_serialize，再用 <code>ini_set()</code> 在 session_start() 前改回 php，且 upload progress 啟用</td>
+        </tr>
+        <tr>
+          <td>在野利用</td>
+          <td colspan="2"><span class="badge badge-claimed">⚠ 有嘗試，成功案例有爭議</span>（見第 5、6 節）</td>
+          <td><span class="badge badge-info">? 未見報導</span></td>
+        </tr>
+        <tr>
+          <td>暫時緩解（不完整）</td>
+          <td>鎖定 <code>memory_limit=-1</code>（<code>php_admin_value</code>）；降低 <code>post_max_size</code>（不傳檔 8M、需傳檔 32M）；在代理層限制請求大小與欄位數；<strong>不要</strong>用 RLIMIT_AS／RLIMIT_DATA</td>
+          <td><code>session.upload_progress.enabled=0</code>（寫在 php.ini 或 FPM pool，<code>ini_set()</code> 與 <code>.user.ini</code> 無效）；PHP 8.5 加 <code>fatal_error_backtraces=0</code></td>
+          <td><code>session.upload_progress.enabled=0</code></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <p>官方原話：只有更新是完整解法，上述措施只降低特定路徑的風險。</p>
+  </div>
+</section>
+
+<!-- ─── 4. 風險判斷 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">💡</span> 風險判斷</div>
+  <div class="section-body">
+    <div class="alert alert-red">
+      <div class="alert-icon">1</div>
+      <div><strong>▲ 未修補的對外 PHP，風險高。</strong> 免認證、應用程式碼之前觸發、PHP 約占 70% 的網站。Palo Alto Xpanse 估計有 2,260 萬個對外實例可能受影響；Qualys 估計約 71% 的 PHP 實例跑 5.4 至 8.1（已停止維護），多數不會再有官方修補。</div>
+    </div>
+    <div class="alert alert-amber">
+      <div class="alert-icon">2</div>
+      <div><strong>◆ 「大規模成功入侵」目前證據有限，但不能當成安全。</strong> 多數公開 PoC 是無法 RCE 的 vibe-coded 版本（Mandiant），攻擊者實測的 11 個目標無一符合其工具條件（SOCRadar）。但 VulnCheck 已有可繞過 ASLR 的 exploit（僅供付費客戶），Mandiant 驗證過部分 PoC 可對預設 mod_php 成功，Unit 42 也記錄到一起後滲透。</div>
+    </div>
+    <div class="alert alert-navy">
+      <div class="alert-icon">3</div>
+      <div><strong>◆ 時間窗以小時計。</strong> 揭露前就有嘗試，修補後數小時內出現 PoC；AWS 建議關鍵漏洞的修補與緩解以小時計、調查從 10-17 起算。Wiz 認為 AI 讓「把複雜漏洞變成可用 exploit」的門檻大降；Calif 則強調這次主要靠研究者對 PHP 歷史的熟悉，AI 是輔助。</div>
+    </div>
+    <h3 class="sub">情境風險（本研析判斷，非來源原文）</h3>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+    <table class="verify-table" style="min-width:560px">
+      <thead><tr><th>情境</th><th>風險</th><th>理由</th></tr></thead>
+      <tbody>
+        <tr><td>未修補、對外、Apache mod_php</td><td><span class="badge badge-denied">▲ 高</span></td><td>官方列為風險最高；已有可用的公開 PoC 對預設 mod_php 成功（Mandiant）</td></tr>
+        <tr><td>8.1 以下或 7.3 以下，無廠商回補</td><td><span class="badge badge-denied">▲ 高</span></td><td>沒有修補，且 71% 實例落在 EOL 版本（Qualys）</td></tr>
+        <tr><td>未修補、對外、PHP-FPM</td><td><span class="badge badge-claimed">◆ 中高</span></td><td>多需應用程式特定操作；Mandiant 驗證的 PoC 對 FPM 無效；但 Calif 已示範 FPM 上的應用相依 RCE</td></tr>
+        <tr><td>內嵌 PHP 的設備，管理介面暴露網際網路</td><td><span class="badge badge-denied">▲ 高</span></td><td>Palo Alto 稱 PAN-OS 管理介面對外暴露時風險最高</td></tr>
+        <tr><td>未修補、僅內網</td><td><span class="badge badge-claimed">◆ 中</span></td><td>需先有內部立足點，但可作橫向移動</td></tr>
+        <tr><td>已升級到修補版並重啟，且關閉 upload progress</td><td><span class="badge badge-confirmed">● 低</span></td><td>官方稱目前無修補版被利用的證據；CVE-2026-115560 條件罕見</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ─── 5. 深度分析 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📊</span> 深度分析</div>
+  <div class="section-body">
+    <h3 class="sub">關鍵聲明核查</h3>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+    <table class="verify-table" style="min-width:600px">
+      <thead><tr><th>聲明</th><th>狀態</th><th>佐證來源</th></tr></thead>
+      <tbody>
+        <tr><td>兩個 CVE，CVSS 4.0 皆 9.2；10-21 修補於 8.5.12／8.4.27／8.3.36／8.2.35</td><td><span class="badge badge-confirmed">✔ 已確認</span></td><td>php.net、CISA、Datadog、TWCERT/CC、watchTowr</td></tr>
+        <tr><td>影響 PHP 5.4 至 8.5.11，mod_php 風險最高</td><td><span class="badge badge-confirmed">✔ 已確認</span></td><td>php.net、Calif、Wiz、Vercel（Calif：首條路徑需 PHP 7.3 以上）</td></tr>
+        <tr><td>10-17 起有利用嘗試</td><td><span class="badge badge-claimed">⚠ 單一來源</span></td><td>AWS MadPot（Datadog、TechCrunch 轉述）；來源不明的匿名 IP，成功與否 AWS 稱不清楚</td></tr>
+        <tr><td>修補後出現數百萬次攻擊嘗試</td><td><span class="badge badge-confirmed">✔ 已確認（為嘗試數）</span></td><td>Cloudflare（10-22 達百萬級，經 ICSDA、TechCrunch 轉述）、The Register、SecurityWeek</td></tr>
+        <tr><td>已有確認的成功入侵</td><td><span class="badge badge-claimed">⚠ 各說各話</span></td><td>否：PHP Foundation（10-23）、CISA（10-21）、SecurityWeek（10-23）、Sophos 已更正。是：Unit 42（10-23 更新，歐洲政府單位，未具名）。NCSC-NL 稱有一則境外通報但未確認成功</td></tr>
+        <tr><td>CISA KEV 是否收錄</td><td><span class="badge badge-denied">✖ 未收錄</span></td><td>我於 2026-10-25 13:57（台北）查 KEV JSON：版本 2026.10.23，三個 CVE 皆不在內</td></tr>
+        <tr><td>CVE-2026-115560 存在且尚未修補</td><td><span class="badge badge-confirmed">✔ 已確認</span></td><td>php.net（10-23）、The Register、Cloudflare、cve.org（Reserved）</td></tr>
+        <tr><td>「AI 發現了這些漏洞」</td><td><span class="badge badge-claimed">⚠ 部分成立</span></td><td>OpenAI 稱 Calif 用 GPT-5.6 Sol；Wiz 用 Gemini 4 Argon 與 GPT-5.6 Sol；Calif 稱未用特殊模型，主要靠對 PHP 漏洞歷史的熟悉</td></tr>
+        <tr><td>台灣約 2.8 萬對外 PHP 網站、約 200 個政府網站</td><td><span class="badge badge-confirmed">✔ 官方說法</span></td><td>資安署（中央社、iThome、聯合報）；資安署稱實際受影響版本會更少，未公布確切數字</td></tr>
+        <tr><td>公開 PoC 多數無效</td><td><span class="badge badge-claimed">⚠ 部分成立</span></td><td>Mandiant、VulnCheck、Sansec 同意；但 Datadog 與 Mandiant 都指出部分可用</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 class="sub">偵測指標</h3>
+    <p>沒有任何單一訊號能下定論，請交叉比對；成功的利用<strong>不一定讓 worker 當掉，HTTP 狀態也可能是 200</strong>（Datadog）。</p>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+    <table class="data-table" style="min-width:560px">
+      <thead><tr><th>層次</th><th>要找什麼</th></tr></thead>
+      <tbody>
+        <tr><td>請求（WAF、反向代理、存取日誌）</td><td>你的應用平常不用的 <code>PHP_SESSION_UPLOAD_PROGRESS</code> 欄位；一個請求內數百個 multipart 區段、或 <code>files[R00001][a][a]</code> 式的深層巢狀欄位名；數 MB 的單一欄位名；檔名含 <code>&lt;?php</code> 或 <code>|O:</code>；宣告很大 Content-Length 卻慢傳或不傳完；回應的 <code>Set-Cookie: PHPSESSID=</code> 異常長、百分比編碼或含二進位內容（可能是記憶體洩漏）</td></tr>
+        <tr><td>PHP／Apache 錯誤日誌</td><td><code>Allowed memory size ... exhausted</code> 且位置為 <code>Unknown on line 0</code>（代表發生在請求初始化）；Apache <code>AH00052 ... Segmentation fault (11)</code>；短時間內同一 worker 幾次記憶體耗盡後歸於平靜；重複 HTTP 500、worker 異常重啟</td></tr>
+        <tr><td>主機程序</td><td>php-fpm、php-cgi、httpd／apache2、lsphp、frankenphp 的子行程出現 sh、bash、cmd、powershell、python、perl；curl、wget、nc、<code>/dev/tcp/</code>、mkfifo；whoami、id、uname 偵察；網站目錄新增 PHP 檔、新排程或新帳號</td></tr>
+        <tr><td>代理式攻擊特徵</td><td>Unit 42 記錄到指令批次以 <code>==SHELLUSER==</code>、<code>==PASSWD==</code> 之類分隔字樣包起來，利於 AI 解析輸出；任務短而連續、失敗後快速換招</td></tr>
+        <tr><td>回查起點與現成規則</td><td>從 <strong>2026-10-17</strong> 起查（AWS），不是從 10-21；CISA 提供 SIGMA 規則；Datadog、Unit 42、Wiz、Palo Alto 各有偵測；AWS 公布 6 個觀測 IP（含共用匿名基礎設施，建議調查而非直接封鎖）</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 class="sub">防護層對照</h3>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+    <table class="data-table" style="min-width:560px">
+      <thead><tr><th>防護層</th><th>措施</th><th>局限</th></tr></thead>
+      <tbody>
+        <tr><td>官方修補</td><td>升級到修補版並重啟 worker；發行版看 changelog 是否含兩個 CVE 編號；容器重建映像</td><td>不能清除升級前已植入的後門</td></tr>
+        <tr><td>WAF／CDN</td><td>Cloudflare（含免費方案，預設啟用）、AWS WAF、Google Cloud Armor（啟用 managed rules 並加限制請求本文大小的規則）、Vercel、Fastly、Palo Alto 威脅防護</td><td>屬緩解。Cloudflare 自述攻擊者會依被擋結果變形載荷；WAF 看不到被截斷、被丟棄或分塊傳輸的內容（Datadog）；Cloudflare 規則對改過 <code>session.upload_progress.name</code> 者無效</td></tr>
+        <tr><td>暫時組態</td><td>見第 3 節比較表最後一列</td><td>官方明言不能使系統安全；<code>memory_limit=-1</code> 還會提高記憶體耗盡風險</td></tr>
+        <tr><td>隔離或下線</td><td>對外系統暫停服務，或只開 VPN／內網</td><td>影響服務；是最保守也最有效的暫行手段</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 class="sub">產品與平台因應</h3>
+    <ul>
+      <li><strong>WordPress：</strong>WordPress.org 稱不需、也不會出 WordPress 更新，要更新的是 PHP；自管主機無法升級者應考慮下線。</li>
+      <li><strong>Drupal：</strong>安全團隊 PSA-2026-10-20 事前預告 10-21 的 PHP 更新，建議自行更新 PHP 或依主機商指示（僅讀到搜尋摘要）。</li>
+      <li><strong>Laravel：</strong>Laravel Cloud 已就地修補；Forge 需逐台按「Update PHP」（支援 5.6 至 8.5，Ubuntu 20.04 以下無法更新，建議新建主機）；Vapor 需重新部署；PHP 8.0／8.1 無修補。</li>
+      <li><strong>Magento：</strong>Calif 已在 Magento 2.4.9 測試環境確認免認證 RCE；Adobe 官方公告我<strong>未查到</strong>（未證實）。二手整理稱 Magento 2.4.4／2.4.5 只支援 PHP 8.1，沒有官方修補版，需取得廠商回補或升級。</li>
+      <li><strong>內嵌 PHP 的設備：</strong>Palo Alto PAN-OS 僅管理介面受影響（GlobalProtect 與 Captive Portal 不受影響），hotfix 10-27 至 10-30 陸續釋出，期間應限制管理介面只對內網；QNAP、Cisco（Expressway、URWB）、Synology 也有公告（僅讀到搜尋摘要，未逐一核對）。</li>
+      <li><strong>雲端與 CDN：</strong>Vercel 於揭露前部署 WAF，但仍要求升級 PHP；Cloudflare、AWS、Google Cloud 同樣提供規則，皆強調不能取代修補。</li>
+    </ul>
+
+    <h3 class="sub">台灣狀況</h3>
+    <ul>
+      <li><strong>資安署（數發部）：</strong>10-21 晚間約 22 時收到 PHP 修補後啟動緊急應變並成立專案小組，經 N-ISAC、TWCERT/CC 等管道通知；原則是優先修補，無法修補先設 WAF，仍不行才暫停服務。iThome 報導資安署尚未收到被駭通報，也未要求機關限期完成。</li>
+      <li><strong>TWCERT/CC：</strong>10-22 發兩則公告（漏洞警訊、國際機構示警），建議委外或代管單位主動向廠商確認版本，並檢視更新前的存取紀錄。</li>
+      <li><strong>國家資通安全研究院（NICS）：</strong>已發布警訊（頁面內容我讀不到，僅確認標題存在）。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── 6. 未解問題 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">⚖️</span> 爭議與未解問題</div>
+  <div class="section-body">
+    <ul>
+      <li><strong>是否已有成功入侵：</strong>Unit 42 稱觀測到歐洲政府單位被入侵，兩小時內取得密碼雜湊與 MFA 密鑰，並嘗試取得網域管理員；但 Unit 42 頁面沒有明講此案是經由哪個 CVE 進入。NCSC-NL（10-23）稱有一則境外通報、尚未證實成功。TechCrunch（10-24）說 Palo Alto 與 Trail of Bits 都確認了入侵，我<strong>查不到 Trail of Bits 的公開說法</strong>（未證實）。</li>
+      <li><strong>揭露前的利用從何而來：</strong>AWS 看到 10-17 的嘗試，不清楚對方怎麼取得資訊。可能是洩漏、獨立發現，或其他，皆無證據（未證實）。</li>
+      <li><strong>CVE 與漏洞的對應各家不一：</strong>PHP 官方把 109618 定義為 OOM 損毀、109619 為殘留全域狀態；Wiz 把 upload-progress 反序列化 UAF 與記憶體洩漏歸在 109618，把 fatal 回溯與 OPcache 型別混淆歸在 109619；Datadog 則把 upload progress 路徑歸在 109619。本文以官方分類為準。</li>
+      <li><strong>曝險規模差距很大：</strong>VulnCheck 約 260 萬台對外主機；Palo Alto 2,260 萬實例；Censys 約 3,440 萬服務（以版本號判斷，忽略發行版回補）；Qualys 約 1.1 億實例、71% 為 EOL。計算方式不同，只能說量非常大。</li>
+      <li><strong>CVE-2026-115560 的修補日期與完整影響：</strong>未公布，官方稱下個例行版本；NCSC-NL 與 PHP 都認為難以達成 RCE，但尚無完整公告。</li>
+      <li><strong>是否會進 CISA KEV：</strong>目前未收錄，隨時可能變動。</li>
+      <li><strong>其他變體：</strong>Wiz 與 Datadog 都認為同一類缺陷還有其他實例；官方補丁號稱從根本處理，是否完全涵蓋有待觀察。</li>
+      <li><strong>台灣實際受影響政府網站數與修補進度：</strong>資安署只公布「約 200 個使用 PHP」，未公布實際受影響數與進度。另外我<strong>找不到名為「TWNCERT」的單位或其通報</strong>，台灣的對應單位是資安署、NICS、TWCERT/CC、N-ISAC。</li>
+      <li><strong>時間細節的出入：</strong>資安署發警訊的時間，iThome 寫「1 小時內」，中央社與聯合報寫「3 小時內」；本文未採用其中任一數字。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── 7. 結論與行動建議 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">🎯</span> 結論與行動建議（企業該做什麼）</div>
+  <div class="section-body">
+    <div class="alert alert-red">
+      <div class="alert-icon">▲</div>
+      <div><strong>立即（今天，以小時計）</strong></div>
+    </div>
+    <ul>
+      <li><strong>盤點實際對外服務的 PHP：</strong>看的是跑網站的 php-fpm、mod_php、容器與廠商設備內建 PHP，不是只看命令列的 <code>php -v</code>。優先處理對外、Apache mod_php。</li>
+      <li><strong>升級並重啟：</strong>升到 8.5.12、8.4.27、8.3.36、8.2.35，或確認發行版套件含兩個 CVE 的修補；重啟 php-fpm／Apache，容器重建映像；再次確認「執行中」的版本與 worker 啟動時間。</li>
+      <li><strong>全域關閉 upload progress：</strong>在 php.ini 或 FPM pool 設 <code>session.upload_progress.enabled=0</code> 並重啟；升級後也保留，直到下個例行版本。確認 <code>display_errors=Off</code>。</li>
+      <li><strong>無法立即升級的對外系統：</strong>國際機關建議隔離或下線；若選擇留線，至少上 WAF（block 模式）、限制請求大小，並限縮來源 IP。</li>
+      <li><strong>從 10-17 起回查日誌：</strong>用上一節的偵測指標，重點看 web worker 衍生 shell、網站目錄新增 PHP 檔。</li>
+    </ul>
+    <div class="alert alert-amber">
+      <div class="alert-icon">◆</div>
+      <div><strong>本週</strong></div>
+    </div>
+    <ul>
+      <li><strong>舊版本處置：</strong>PHP 7.4／8.0／8.1 取廠商回補，或用官方最小原始碼修補，測試後上線；7.3 以下無修補，移出網際網路，只開 VPN 或內網。</li>
+      <li><strong>委外與代管業者書面確認：</strong>跑的是哪個 PHP 版本與 SAPI、修補證據、worker 重啟時間、同帳號下其他 pool 與測試站是否涵蓋。</li>
+      <li><strong>內嵌 PHP 的設備：</strong>PAN-OS 等待 10-27 至 10-30 的 hotfix 期間，管理介面限內網；追蹤 QNAP、Cisco、Synology 等供應商公告。</li>
+      <li><strong>建立偵測：</strong>對 web server 或 PHP 行程衍生 shell、下載工具設告警；匯入 CISA SIGMA 規則。</li>
+      <li><strong>若有入侵跡象：</strong>先隔離並保留日誌，不要急著重灌；輪換該主機上的密碼、API 金鑰與憑證（Wiz 指出記憶體洩漏可能含這些）；通報 TWCERT/CC（int_report@cert.org.tw）或資安署。</li>
+    </ul>
+    <div class="alert alert-navy">
+      <div class="alert-icon">●</div>
+      <div><strong>後續（本月起）</strong></div>
+    </div>
+    <ul>
+      <li><strong>追蹤下個 PHP 例行版本：</strong>修補 CVE-2026-115560；在那之前保持 upload progress 關閉。</li>
+      <li><strong>規劃升級：</strong>PHP 8.2 於 2026-12-31 結束支援，8.1 以下立即排期汰換。</li>
+      <li><strong>修補 SLA 改以小時計：</strong>對外關鍵漏洞不再用 7 天或 30 天的窗口（AWS 建議）。</li>
+      <li><strong>建立含內嵌 PHP 的資產清冊：</strong>CISA 與 NCSC-UK 都提醒 PHP 常是其他軟體的元件，不易從外部看出。</li>
+      <li><strong>架構考量（本研析建議，非官方）：</strong>評估由 mod_php 遷到 PHP-FPM 並加上隔離，因為官方與 Mandiant 都指出 mod_php 風險最高。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─── 8. 資料來源 ─── -->
+<section class="section">
+  <div class="section-header"><span class="icon">📚</span> 資料來源</div>
+  <div class="section-body">
+    <div class="sources-grid">
+      <div class="source-card">
+        <div class="source-tag">官方・PHP</div>
+        <a href="https://www.php.net/archive/2026.php" target="_blank">PHP News Archive 2026：預告、安全公告、8.5.12 等版本、第三個 CVE 資訊公告</a>
+        <div class="source-meta">php.net · 2026-10-20 至 10-23</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">官方・PHP</div>
+        <a href="https://thephp.foundation/blog/2026/10/21/todays-php-security-release-and-how-were-strengthening-php-security/" target="_blank">Today's PHP Security Release, and How We're Strengthening PHP Security</a>
+        <div class="source-meta">The PHP Foundation · 2026-10-21</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">發現者</div>
+        <a href="https://calif.io/php2shell/" target="_blank">PHP2Shell: A tale of two PHP remote vulnerabilities</a>
+        <div class="source-meta">Calif · 2026-10-21</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">發現者</div>
+        <a href="https://www.wiz.io/blog/php2shell-php-rce" target="_blank">PHP2Shell: AI uncovers critical RCE vulnerabilities affecting 70% of the Internet</a>
+        <div class="source-meta">Wiz · 2026-10-21</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">發現者</div>
+        <a href="https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities" target="_blank">Patch the Planet: global response coordination as agents uncover critical vulnerabilities</a>
+        <div class="source-meta">OpenAI · 2026-10-21</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">國際機關</div>
+        <a href="https://www.cisa.gov/news-events/alerts/2026/10/21/critical-vulnerabilities-php-require-immediate-patching" target="_blank">Critical Vulnerabilities in PHP Require Immediate Patching</a>
+        <div class="source-meta">CISA · 2026-10-21，10-23 更新</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">國際機關</div>
+        <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank">CISA Known Exploited Vulnerabilities Catalog（JSON 於 10-25 13:57 台北時間查詢）</a>
+        <div class="source-meta">CISA · 目錄版本 2026.10.23</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">國際機關</div>
+        <a href="https://www.ncsc.nl/en/alerts/update-php-vulnerabilities-remain-a-reason-for-immediate-patching" target="_blank">Update: PHP vulnerabilities remain a reason for immediate patching</a>
+        <div class="source-meta">NCSC-NL · 2026-10-21，10-23 更新</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">國際機關</div>
+        <a href="https://www.cyber.gc.ca/en/alerts-advisories/al26-026-critical-vulnerabilities-impacting-php-cve-2026-109618-cve-2026-109619?utm=" target="_blank">AL26-026 Critical vulnerabilities impacting PHP（Update 1）</a>
+        <div class="source-meta">加拿大 Cyber Centre · 日期未核對，僅讀到搜尋摘要</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">台灣官方</div>
+        <a href="https://www.twcert.org.tw/tw/cp-169-11303-1d68a-1.html" target="_blank">PHP 存在2個重大資安漏洞（CVE-2026-109618 和 CVE-2026-109619）</a>
+        <div class="source-meta">TWCERT/CC · 2026-10-22</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">台灣官方</div>
+        <a href="https://www.twcert.org.tw/tw/cp-104-11308-ed8b8-1.html" target="_blank">PHP發布安全性更新修補2項可導致遠端程式碼執行之嚴重漏洞，國際資安機構籲儘速更新</a>
+        <div class="source-meta">TWCERT/CC · 2026-10-22</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">台灣官方</div>
+        <a href="https://moda.gov.tw/ACS/press/news/press/21134" target="_blank">網站開發程式語言PHP釋出緊急安全更新 資安署呼籲儘速完成修補</a>
+        <div class="source-meta">數發部資通安全署 · 2026-10-22</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">台灣官方</div>
+        <a href="https://www.nics.nat.gov.tw/core_business/information_security_information_sharing/Vulnerability_Alert_Announcements/5c4e9af1-4275-44ef-a277-c692786b5a2c/" target="_blank">PHP存在高風險安全漏洞(CVE-2026-109618與CVE-2026-109619)，請儘速確認並進行處置</a>
+        <div class="source-meta">國家資通安全研究院 · 日期未核對，僅確認標題</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">台灣媒體</div>
+        <a href="https://www.cna.com.tw/news/afe/202610220172.aspx" target="_blank">PHP爆安全漏洞　資安署：修補無效才建議下架網頁</a>
+        <div class="source-meta">中央社 · 2026-10-22</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">台灣媒體</div>
+        <a href="https://www.ithome.com.tw/news/179891" target="_blank">數發部：PHP重大漏洞影響約2.8萬個國內網站，約200個政府機關網站受影響</a>
+        <div class="source-meta">iThome · 2026-10-22</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">台灣媒體</div>
+        <a href="https://udn.com/news/story/7314/9830998" target="_blank">200個政府網站使用的PHP爆安全漏洞 資安署：應儘速修補或下架網站</a>
+        <div class="source-meta">聯合新聞網 · 2026-10-22</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">台灣社群彙整</div>
+        <a href="https://icsda.org.tw/php2shell-cve-2026-109618-109619/" target="_blank">PHP2Shell 攻擊已開始：請立即更新到 8.5.12／8.4.27／8.3.36／8.2.35</a>
+        <div class="source-meta">ICSDA · 2026-10-21，10-25 更新（二手彙整，已與一手來源比對）</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">威脅情資</div>
+        <a href="https://securitylabs.datadoghq.com/articles/php2shell-critical-vulnerabilities-in-php/" target="_blank">PHP2Shell：detection, analysis, and remediation</a>
+        <div class="source-meta">Datadog Security Labs · 2026-10-21，10-23 更新</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">威脅情資</div>
+        <a href="https://aws.amazon.com/blogs/security/amazon-threat-intelligence-identifies-php2shell-exploitation-prior-to-public-disclosure-in-madpot/" target="_blank">Amazon Threat Intelligence identifies PHP2Shell exploitation prior to public disclosure in MadPot</a>
+        <div class="source-meta">AWS Security Blog · 2026-10-21</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">威脅情資</div>
+        <a href="https://unit42.paloaltonetworks.com/cve-2026-109618-cve-2026-109619/" target="_blank">Threat Brief: Critical Vulnerabilities in PHP</a>
+        <div class="source-meta">Palo Alto Unit 42 · 2026-10-21，10-23 更新</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">威脅情資</div>
+        <a href="https://watchtowr.com/intelligence/php-cve-2026-109618-faq/" target="_blank">PHP2Shell FAQ</a>
+        <div class="source-meta">watchTowr · 2026-10-20，10-23 更新</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">廠商公告</div>
+        <a href="https://blog.cloudflare.com/php-vulnerabilities-waf-protection/" target="_blank">Cloudflare deploys protections against php2shell vulnerability</a>
+        <div class="source-meta">Cloudflare · 2026-10-21，10-23 更新</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">廠商公告</div>
+        <a href="https://cloud.google.com/blog/products/identity-security/responding-to-core-php-vulnerabilities-cve-2026-109618-cve-2026-109619" target="_blank">Responding to core PHP vulnerabilities</a>
+        <div class="source-meta">Google Cloud · 日期未核對，僅讀到搜尋摘要</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">廠商公告</div>
+        <a href="https://vercel.com/kb/bulletin/php2shell-security-bulletin" target="_blank">PHP security advisory: php2shell</a>
+        <div class="source-meta">Vercel · 日期未標示（含 10-21 之後內容）</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">廠商公告</div>
+        <a href="https://security.paloaltonetworks.com/CVE-2026-109618" target="_blank">Impact of Critical Vulnerabilities in PHP on Palo Alto Networks Products</a>
+        <div class="source-meta">Palo Alto Networks · 2026-10-21，10-25 更新</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">平台因應</div>
+        <a href="https://wordpress.org/news/2026/10/critical-php-security-release/" target="_blank">Critical PHP Security Release</a>
+        <div class="source-meta">WordPress.org · 2026-10-21</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">平台因應</div>
+        <a href="https://laravel.com/blog/php-critical-vulnerability-response-updates" target="_blank">PHP critical vulnerability response updates</a>
+        <div class="source-meta">Laravel · 日期未標示（持續更新）</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">平台因應</div>
+        <a href="https://www.drupal.org/psa-2026-10-20" target="_blank">Critical PHP update on Wednesday, October 21, 2026 (14:00 UTC) - PSA-2026-10-20</a>
+        <div class="source-meta">Drupal.org · 2026-10-20，僅讀到搜尋摘要</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">事件報導</div>
+        <a href="https://www.theregister.com/security/2026/10/23/theres-a-third-php2shell-bug-but-it-wont-get-an-emergency-fix/5305208" target="_blank">There's a third PHP2Shell bug, but it won't get an emergency fix</a>
+        <div class="source-meta">The Register · 2026-10-23</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">事件報導</div>
+        <a href="https://www.securityweek.com/mirai-botnet-operators-join-php2shell-attacks-as-aslr-bypass-exploits-emerge/" target="_blank">Mirai Botnet Operators Join PHP2Shell Attacks as ASLR Bypass Exploits Emerge</a>
+        <div class="source-meta">SecurityWeek · 2026-10-23</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">事件報導</div>
+        <a href="https://techcrunch.com/2026/10/24/php-ocalypse-how-two-critical-web-bugs-almost-broke-the-internet/" target="_blank">PHP-ocalypse: How two critical web bugs almost broke the internet</a>
+        <div class="source-meta">TechCrunch · 2026-10-24</div>
+      </div>
+      <div class="source-card">
+        <div class="source-tag">CVE 記錄</div>
+        <a href="https://www.cve.org/CVERecord?id=CVE-2026-115560" target="_blank">CVE-2026-115560（Reserved）</a>
+        <div class="source-meta">cve.org · 2026-10-25 查詢</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer class="report-footer">
+  Generated 2026-10-25 · SecondBrain Report System · suelife/reports · 草稿，尚未發布
+</footer>
+
+</body>
+</html>
