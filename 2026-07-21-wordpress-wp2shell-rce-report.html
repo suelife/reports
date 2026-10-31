@@ -7,13 +7,14 @@
 <link rel="stylesheet" href="design.css">
 </head>
 <body>
+<nav class="home-nav" aria-label="主要導覽" style="margin:0;padding:8px clamp(20px,4vw,48px);background:#1a2744;text-align:left"><a href="index.html" style="display:inline-block;padding:10px 4px;color:#fff;font:600 14px/1.7 'Segoe UI','Microsoft JhengHei',sans-serif;text-decoration:underline;text-underline-offset:4px">← 回首頁</a></nav>
 
-<nav class="back-nav"><a href="index.html">All Reports</a></nav>
+
 
 <header class="report-header">
-  <div class="label">研究簡報 · SecondBrain Research</div>
-  <span class="severity-badge high">HIGH</span>
-  <h1>WP2Shell：WordPress 核心 Pre-Auth RCE 漏洞鏈<br>CVE-2026-63030 + CVE-2026-60137 遭大規模利用</h1>
+  <div class="label">研究簡報 · SecondBrain 研究整理</div>
+  <span class="severity-badge high">高</span>
+  <h1>WP2Shell：WordPress 核心未經驗證的遠端程式碼執行漏洞鏈<br>CVE-2026-63030 + CVE-2026-60137 遭大規模利用</h1>
   <div class="meta">
     <span><strong>研究日期</strong>　2026-07-21</span>
     <span><strong>資料截止</strong>　2026-07-21</span>
@@ -26,7 +27,7 @@
 
 <!-- ─── 1. Executive Summary ─── -->
 <section class="section">
-  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <div class="section-header"><span class="icon">📋</span> 重點摘要</div>
   <div class="section-body">
     <div class="alert alert-navy">
       <div class="alert-icon">◆</div>
@@ -95,34 +96,34 @@
     <h3 class="sub">攻擊鏈五階段</h3>
     <div class="chain">
       <div class="chain-step">
-        <div class="step-num">Step 1</div>
+        <div class="step-num">步驟 1</div>
         <div class="step-name">REST 批次路由混淆</div>
         <div class="step-detail">serve_batch_request_v1() 讓未驗證請求送達不該存取的處理器</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 2</div>
+        <div class="step-num">步驟 2</div>
         <div class="step-name">繞過權限檢查</div>
         <div class="step-detail">請求以未驗證狀態抵達 posts handler</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 3</div>
+        <div class="step-num">步驟 3</div>
         <div class="step-name">SQL 注入抽雜湊</div>
         <div class="step-detail">author__not_in 參數注入 WP_Query，導出使用者密碼雜湊</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 4</div>
+        <div class="step-num">步驟 4</div>
         <div class="step-name">偽造管理員</div>
-        <div class="step-detail">透過 object hydration、oEmbed 快取與巢狀存檔臨時以管理員身份執行</div>
+        <div class="step-detail">透過 object hydration、oEmbed 快取與巢狀存檔臨時以管理員身分執行</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 5</div>
-        <div class="step-name">RCE / Webshell</div>
+        <div class="step-num">步驟 5</div>
+        <div class="step-name">遠端程式碼執行／網頁後門</div>
         <div class="step-detail">取得完整遠端程式碼執行，植入後門</div>
       </div>
     </div>
     <h3 class="sub">漏洞明細</h3>
     <table class="data-table">
-      <thead><tr><th>CVE</th><th>類型</th><th>CVSS</th><th>受影響版本</th><th>修補版本</th></tr></thead>
+      <thead><tr><th>CVE 編號</th><th>類型</th><th>CVSS 評分</th><th>受影響版本</th><th>修補版本</th></tr></thead>
       <tbody>
         <tr>
           <td><code>CVE-2026-63030</code></td>
@@ -140,7 +141,7 @@
         </tr>
       </tbody>
     </table>
-    <p>兩者單獨風險有限——SQLi 需身分驗證、批次端點缺陷屬邏輯層；但一旦串鏈，路由混淆讓 SQLi 得以在「未驗證」狀態下觸發，門檻從「需帳號」降到「零憑證」，這正是 WP2Shell 被評為關鍵的原因。</p>
+    <p>兩者單獨風險有限，SQLi 需身分驗證、批次端點缺陷屬邏輯層；但一旦串鏈，路由混淆讓 SQLi 得以在「未驗證」狀態下觸發，門檻從「需帳號」降到「零憑證」，這正是 WP2Shell 被評為關鍵的原因。</p>
   </div>
 </section>
 
@@ -158,7 +159,7 @@
     </div>
     <div class="alert alert-navy">
       <div class="alert-icon">3</div>
-      <div><strong>修補已備，時間才是敵人。</strong> 官方修補與強制自動更新同日到位，勝負取決於站方多快套用——後門帳號一旦植入，單純升級無法清除既有立足點。</div>
+      <div><strong>修補已備，時間才是敵人。</strong> 官方修補與強制自動更新同日到位，勝負取決於站方多快套用，後門帳號一旦植入，單純升級無法清除既有立足點。</div>
     </div>
   </div>
 </section>
@@ -253,7 +254,7 @@
 </div>
 
 <footer class="report-footer">
-  Generated 2026-07-21 · SecondBrain Report System · suelife/reports
+  產製日期：2026-07-21 · SecondBrain 報告系統 · suelife/reports
 </footer>
 
 </body>

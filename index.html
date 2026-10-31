@@ -1,582 +1,174 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SecondBrain Reports</title>
-<style>
-  :root {
-    --navy: #1a2744;
-    --navy-light: #2c3e6b;
-    --red: #c0392b;
-    --amber: #d68910;
-    --green: #1e8449;
-    --gray-bg: #f4f6f9;
-    --border: #dce3ee;
-    --text: #222831;
-    --muted: #5a6578;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
-    background: var(--gray-bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-
-  /* Header */
-  .site-header {
-    background: var(--navy);
-    color: #fff;
-    padding: 40px 48px 32px;
-  }
-  .site-header .label {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #8aa4d0;
-    margin-bottom: 10px;
-  }
-  .site-header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-  .site-header p {
-    font-size: 14px;
-    color: #9bb3d4;
-  }
-  .stats {
-    display: flex;
-    gap: 24px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
-  .stat {
-    font-size: 13px;
-    color: #8aa4d0;
-  }
-  .stat strong {
-    color: #fff;
-    font-size: 20px;
-    display: block;
-    line-height: 1;
-    margin-bottom: 2px;
-  }
-
-  /* Main */
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 36px 24px 60px;
-  }
-
-  /* Filter tabs */
-  .filter-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-  .filter-btn {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .filter-btn:hover, .filter-btn.active {
-    background: var(--navy);
-    color: #fff;
-    border-color: var(--navy);
-  }
-
-  /* Cards */
-  .report-card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px 24px;
-    margin-bottom: 14px;
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-    text-decoration: none;
-    color: inherit;
-    transition: box-shadow 0.15s, border-color 0.15s;
-    border-left: 4px solid transparent;
-  }
-  .report-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    border-left-color: var(--navy);
-  }
-  .report-card.severity-high  { border-left-color: var(--red); }
-  .report-card.severity-medium { border-left-color: var(--amber); }
-  .report-card.severity-low   { border-left-color: var(--green); }
-  .report-card.severity-info  { border-left-color: var(--navy-light); }
-
-  .card-left {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    min-width: 60px;
-  }
-  .sev-badge {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 3px;
-    white-space: nowrap;
-  }
-  .sev-badge.high   { background: var(--red);        color: #fff; }
-  .sev-badge.medium { background: var(--amber);      color: #fff; }
-  .sev-badge.low    { background: var(--green);      color: #fff; }
-  .sev-badge.info   { background: var(--navy-light); color: #fff; }
-
-  .card-date {
-    font-size: 11px;
-    color: var(--muted);
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .card-body { flex: 1; }
-  .card-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--navy);
-    line-height: 1.4;
-    margin-bottom: 6px;
-  }
-  .report-card:hover .card-title { color: #3b5bdb; }
-  .card-desc {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 10px;
-  }
-  .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
-  .tag {
-    background: #eef2fa;
-    color: var(--navy);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 10px;
-  }
-  .tag.red    { background: #fdf2f0; color: var(--red); }
-  .tag.amber  { background: #fef9e7; color: var(--amber); }
-
-  .card-arrow {
-    font-size: 20px;
-    color: #c5d0e0;
-    align-self: center;
-    flex-shrink: 0;
-  }
-  .report-card:hover .card-arrow { color: var(--navy); }
-
-  /* Footer */
-  .site-footer {
-    text-align: center;
-    font-size: 12px;
-    color: var(--muted);
-    padding: 24px;
-    border-top: 1px solid var(--border);
-    background: #fff;
-  }
-
-  @media (max-width: 600px) {
-    .site-header { padding: 28px 20px 24px; }
-    .report-card { flex-direction: column; gap: 12px; }
-    .card-left { flex-direction: row; min-width: auto; }
-  }
-</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>情報簡報與事件研析 | SecondBrain</title>
+<link rel="stylesheet" href="design.css">
 </head>
-<body>
-
-<header class="site-header">
-  <div class="label">SecondBrain Investigation</div>
-  <h1>Reports</h1>
-  <p>資安事件報告、深度研究簡報、比較分析 — 由 SecondBrain 生成</p>
-  <div class="stats">
-    <div class="stat"><strong>16</strong>篇報告</div>
-    <div class="stat"><strong>15</strong>資安事件</div>
-    <div class="stat"><strong>1</strong>工安 / 其他</div>
-  </div>
+<body class="report-index">
+<a class="skip-link" href="#main-content">跳至報告內容</a>
+<header class="site-header shell">
+  <p class="eyebrow">SECONDBRAIN / REPORTS</p>
+  <h1>情報簡報與事件研析</h1>
+  <p class="intro">每週掌握 AI 與資安動態，深入閱讀事件脈絡。</p>
 </header>
-
-<div class="container">
-
-  <div class="filter-row">
-    <button class="filter-btn active" onclick="filterCards('all', this)">全部</button>
-    <button class="filter-btn" onclick="filterCards('incident', this)">資安事件</button>
-    <button class="filter-btn" onclick="filterCards('apt', this)">APT</button>
-    <button class="filter-btn" onclick="filterCards('supply-chain', this)">供應鏈</button>
-    <button class="filter-btn" onclick="filterCards('lpe', this)">LPE</button>
-    <button class="filter-btn" onclick="filterCards('cve', this)">CVE</button>
-    <button class="filter-btn" onclick="filterCards('phishing', this)">Phishing</button>
+<nav class="index-nav" aria-label="報告分類導覽">
+<div class="shell">
+  <div class="tabs" role="tablist" aria-label="報告分類" aria-describedby="tab-help">
+    <button type="button" id="tab-intel" role="tab" aria-controls="intel" aria-selected="true" tabindex="0"><span class="tab-mark" aria-hidden="true">✓</span>情報簡報<small>02</small></button>
+    <button type="button" id="tab-incident" role="tab" aria-controls="incident" aria-selected="false" tabindex="-1"><span class="tab-mark" aria-hidden="true">○</span>事件研析<small>17</small></button>
   </div>
-
-  <a class="report-card severity-high" href="2026-10-25-php2shell-incident-report.html" data-tags="incident cve">
-    <div class="card-left">
-      <span class="sev-badge high">CRITICAL</span>
-      <div class="card-date">2026-10-25</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">PHP2Shell：PHP 核心未驗證遠端程式碼執行漏洞（CVE-2026-109618／109619）</div>
-      <div class="card-desc">PHP 於 10/21 緊急修補兩個 CVSS 9.2 的核心 RCE，10/23 又揭露尚未修補的第三個 CVE-2026-115560，需保留 session.upload_progress.enabled=0。整理時間線、三個 CVE 比較、成功入侵說法的爭議、台灣官方口徑與分急迫度的行動清單。</div>
-      <div class="tag-row">
-        <span class="tag red">RCE</span>
-        <span class="tag red">PHP 核心</span>
-        <span class="tag">CVE-2026-109618</span>
-        <span class="tag">CVE-2026-109619</span>
-        <span class="tag">CVE-2026-115560</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-10-25-capcom-id-security-incident-report.html" data-tags="incident">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-10-25</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">CAPCOM ID 資料外洩與帳號遭改：全球 11,774,247 筆資料受影響</div>
-      <div class="card-desc">官方確認電子郵件及帳號活動資訊外洩，196 個帳號密碼遭未授權變更，其中 19 個日本帳號的 e-Capcom 會員頁資料也外洩。納入 10/23 第二報，區分已確認事實、未公開技術根因與防禦建議，不將 2020 年勒索軟體事件混為一談。</div>
-      <div class="tag-row">
-        <span class="tag red">資料外洩</span>
-        <span class="tag red">帳號遭改</span>
-        <span class="tag">CAPCOM ID</span>
-        <span class="tag">e-Capcom</span>
-        <span class="tag">身分安全</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-09-14-fortinet-cve-2025-25249-pivotc2-report.html" data-tags="incident cve">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-09-14</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">Fortinet CVE-2025-25249 遭在野利用 — 攻擊者於 FortiGate 植入 Node.js 後滲透木馬 PivotC2</div>
-      <div class="card-desc">Fortinet 2026 年 1 月已修補的 CAPWAP 堆積緩衝區溢位漏洞，自 7 月起遭一個俄語系、財務動機的犯罪集團大規模利用：鎖定逾 30,000 個 IP，確認 178 臺 FortiGate 遭植入 PivotC2。該 RAT 直接借用 FortiOS 內建的 Node.js 執行，會自動收集設定檔並解密 VPN／SSL-VPN／LDAP 憑證，再以防火牆為跳板往內網橫向移動。CISA 於 9/9 列入 KEV 並給出 9/12 的三日修補期限。CVSS 三方分歧：NVD 9.8、Fortinet 於 NVD 8.1、PSIRT 頁面 7.4。</div>
-      <div class="tag-row">
-        <span class="tag red">在野利用</span>
-        <span class="tag red">CISA KEV</span>
-        <span class="tag amber">CVE-2025-25249</span>
-        <span class="tag amber">憑證竊取</span>
-        <span class="tag">FortiGate</span>
-        <span class="tag">PivotC2</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-07-23-project-cav3rn-outlook-c2-report.html" data-tags="incident apt">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-07-23</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">Project CAV3RN / HollowGraph — 濫用 Microsoft Graph 與 Outlook 行事曆的隱蔽 C2 框架</div>
-      <div class="card-desc">伊朗系間諜框架把遭入侵的 Microsoft 365 信箱行事曆變成 C2：加密指令藏在排程於 2050 年的 Outlook 事件附件，經 Microsoft Graph 收發；Graph 認證失敗時改以 DNS AAAA 記錄回復連線設定。卡巴斯基（CAV3RN）與 Group-IB（HollowGraph）同週各自揭露，歸因 OilRig/APT34 或 Lyceum，皆低信心。非漏洞、無 patch 可修。</div>
-      <div class="tag-row">
-        <span class="tag red">行事曆 C2</span>
-        <span class="tag red">Microsoft Graph 濫用</span>
-        <span class="tag amber">DNS 設定回復</span>
-        <span class="tag">OilRig / APT34</span>
-        <span class="tag">以色列</span>
-        <span class="tag">間諜</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-07-21-wordpress-wp2shell-rce-report.html" data-tags="cve incident supply-chain">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-07-21</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">WP2Shell — WordPress 核心 Pre-Auth RCE 漏洞鏈：CVE-2026-63030 + CVE-2026-60137 遭大規模利用</div>
-      <div class="card-desc">未持憑證的攻擊者串鏈 REST 批次路由混淆（CVSS 9.8）與 author__not_in SQL 注入，於預設安裝的 WordPress 取得完整 RCE。7/17 揭露即修補，PoC 數小時內出現；watchTowr 蜜罐累計數萬次嘗試、逾 100 個後門帳號。發現者稱以 AI 於 10 小時內開發攻擊鏈。</div>
-      <div class="tag-row">
-        <span class="tag red">Pre-Auth RCE</span>
-        <span class="tag red">在野利用</span>
-        <span class="tag amber">AI 武器化</span>
-        <span class="tag">WordPress</span>
-        <span class="tag">CVE-2026-63030</span>
-        <span class="tag">CVE-2026-60137</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-medium" href="2026-06-03-ai-edr-evasion-toolkit-report.html" data-tags="incident apt">
-    <div class="card-left">
-      <span class="sev-badge medium">MED</span>
-      <div class="card-date">2026-06-03</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">威脅行為者用 AI 打造 EDR 繞過工具 — Sophos 揭露 Cursor + Claude Opus 4.5 多代理惡意程式開發工作流</div>
-      <div class="card-desc">攻擊者以 Cursor 搭配分工 AI 代理量產近 80 個模組、70+ 規避技術，借用 Cobalt Strike／Sliver。Sophos 強調惡意程式未內嵌 AI、工作流非自主，且「幾乎都能繞過 EDR」的自稱未獲實測支持；已關聯至勒索軟體與資料竊取行動。</div>
-      <div class="tag-row">
-        <span class="tag red">AI 濫用</span>
-        <span class="tag red">EDR 繞過</span>
-        <span class="tag amber">勒索軟體關聯</span>
-        <span class="tag">Cursor / Claude</span>
-        <span class="tag">Cobalt Strike</span>
-        <span class="tag">Sliver</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-05-25-apex-one-cve-2026-34926-report.html" data-tags="incident cve">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-05-25</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">CVE-2026-34926 — Trend Micro Apex One 零日漏洞：企業 EDR 管理端變身惡意程式投遞平台</div>
-      <div class="card-desc">Directory Traversal 漏洞允許取得管理員憑證的攻擊者改寫伺服器關鍵資料表，將惡意程式推送至全組織端點。CISA 列入 KEV，聯邦機構修補期限 2026-06-04。CVSS 6.7，Scope Changed。</div>
-      <div class="tag-row">
-        <span class="tag red">在野利用</span>
-        <span class="tag red">CISA KEV</span>
-        <span class="tag">CVE-2026-34926</span>
-        <span class="tag">Apex One</span>
-        <span class="tag amber">EDR 武器化</span>
-        <span class="tag">Directory Traversal</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-05-25-grafana-tanstack-supply-chain-breach-report.html" data-tags="incident supply-chain">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-05-25</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">Grafana Labs 原始碼外洩事件 — TanStack 供應鏈攻擊延伸：Token 漏輪換導致勒索</div>
-      <div class="card-desc">TeamPCP TanStack 攻擊後，Grafana Labs 誤判一個 workflow token 未受影響，攻擊者持續存取 GitHub 環境下載原始碼，5/16 發出勒索要求遭拒。</div>
-      <div class="tag-row">
-        <span class="tag red">供應鏈</span>
-        <span class="tag red">原始碼外洩</span>
-        <span class="tag">勒索拒付</span>
-        <span class="tag">Token 輪換</span>
-        <span class="tag">TeamPCP</span>
-        <span class="tag">Grafana Labs</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-05-25-laravel-lang-php-credential-stealer-report.html" data-tags="incident supply-chain">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-05-25</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">Laravel-Lang 供應鏈攻擊 — GitHub Tag 劫持植入 15 模組 PHP 憑證竊取器</div>
-      <div class="card-desc">攻擊者劫持 laravel-lang 三個套件 GitHub tag，植入 5,900 行 PHP 竊取器，15 個模組涵蓋 AWS/GCP/Azure 金鑰、17 款 Chromium 瀏覽器、加密錢包，C2：flipboxstudio[.]info。</div>
-      <div class="tag-row">
-        <span class="tag red">供應鏈</span>
-        <span class="tag red">憑證竊取</span>
-        <span class="tag">PHP</span>
-        <span class="tag">GitHub Tag 劫持</span>
-        <span class="tag amber">Cloud 金鑰外洩</span>
-        <span class="tag">Packagist</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-medium" href="2026-05-25-packagist-8-packages-linux-dropper-report.html" data-tags="incident supply-chain">
-    <div class="card-left">
-      <span class="sev-badge medium">MED</span>
-      <div class="card-date">2026-05-25</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">Packagist 8 套件供應鏈攻擊 — package.json Linux Binary Dropper</div>
-      <div class="card-desc">攻擊者在 8 個 PHP 套件的 package.json 植入惡意 postinstall，藉 npm install 從 GitHub 下載並執行 Linux binary（/tmp/.sshd），利用 PHP/JS 跨生態系盲區規避掃描。</div>
-      <div class="tag-row">
-        <span class="tag">供應鏈</span>
-        <span class="tag">PHP</span>
-        <span class="tag">Linux Binary</span>
-        <span class="tag">Packagist</span>
-        <span class="tag amber">跨生態系攻擊</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-05-21-github-teampcp-supply-chain-report.html" data-tags="incident supply-chain">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-05-21</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">GitHub × TeamPCP — Nx Console VSCode 供應鏈攻擊：3,800 個內部 Repo 外洩</div>
-      <div class="card-desc">Mini Shai-Hulud 蠕蟲經 AntV → TanStack → Nx Console 18 分鐘惡意擴展竊取 GitHub 員工全部憑證，首個明確竊取 Claude Code 配置的供應鏈攻擊。</div>
-      <div class="tag-row">
-        <span class="tag red">供應鏈</span>
-        <span class="tag red">VSCode 擴展</span>
-        <span class="tag">npm 蠕蟲</span>
-        <span class="tag">TeamPCP</span>
-        <span class="tag">LAPSUS$</span>
-        <span class="tag amber">Claude Code 憑證</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-05-19-windows-miniplasma-cve-2020-17103-report.html" data-tags="incident lpe">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-05-19</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">Windows MiniPlasma — CVE-2020-17103 修補回歸事件，Google 原始 PoC 仍可取得 SYSTEM</div>
-      <div class="card-desc">六年前 Google Project Zero 通報、微軟聲稱已修補的 LPE 漏洞，原始 PoC 在 Win11 25H2/26H1 未修改即取得 SYSTEM 權限。</div>
-      <div class="tag-row">
-        <span class="tag red">LPE</span>
-        <span class="tag">Windows</span>
-        <span class="tag">Patch Regression</span>
-        <span class="tag">cldflt.sys</span>
-        <span class="tag">CVE-2020-17103</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-05-19-cve-2026-31431-copy-fail-ubuntu-ddos-report.html" data-tags="incident lpe">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-05-19</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">Copy Fail（CVE-2026-31431）與 Canonical DDoS — Linux 核心提權同日疊加基礎設施癱瘓</div>
-      <div class="card-desc">algif_aead Linux 核心提權漏洞 PoC 公開，同日 Canonical 基礎設施遭 313 Team DDoS 導致 Ubuntu apt 倉庫中斷。</div>
-      <div class="tag-row">
-        <span class="tag red">LPE</span>
-        <span class="tag">Linux Kernel</span>
-        <span class="tag">DDoS</span>
-        <span class="tag">algif_aead</span>
-        <span class="tag">CVE-2026-31431</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="2026-05-18-device-code-phishing-eviltokens-report.html" data-tags="incident phishing">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-05-18</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">Device Code Phishing 新基礎架構 — EvilTokens 與 Tycoon 2FA 鎖定 Microsoft 365</div>
-      <div class="card-desc">EvilTokens PhaaS 於 Telegram 上架，繞過 15 分鐘 device code 窗口限制，340+ M365 組織受害，TA4903 已觀察使用。</div>
-      <div class="tag-row">
-        <span class="tag red">Phishing</span>
-        <span class="tag red">MFA Bypass</span>
-        <span class="tag">Device Code Flow</span>
-        <span class="tag">M365</span>
-        <span class="tag">EvilTokens</span>
-        <span class="tag">Tycoon 2FA</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-high" href="muddywater-seedworm-korea-electronics-report.html" data-tags="incident apt">
-    <div class="card-left">
-      <span class="sev-badge high">HIGH</span>
-      <div class="card-date">2026-05-15</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">MuddyWater（Seedworm）2026 Q1 全球間諜行動 — 韓國電子製造商入侵深度分析</div>
-      <div class="card-desc">伊朗 MOIS 關聯 APT 組織入侵韓國電子製造商，DLL 側載 SentinelOne、ChromElevator 竊取憑證，2026 Q1 全球多國目標。</div>
-      <div class="tag-row">
-        <span class="tag red">APT</span>
-        <span class="tag">伊朗 MOIS</span>
-        <span class="tag">DLL Sideloading</span>
-        <span class="tag">SentinelOne 濫用</span>
-        <span class="tag">韓國製造業</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-medium" href="taiwan-gov-solar-domain-hijack-report.html" data-tags="incident">
-    <div class="card-left">
-      <span class="sev-badge medium">MED</span>
-      <div class="card-date">2026-05-14</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">台灣政府網站太陽光電連結植入事件調查報告</div>
-      <div class="card-desc">BAD IIS / UAT-8099 針對台灣政府網站進行域名劫持與 SEO 注入，植入太陽光電詐騙頁面連結。</div>
-      <div class="tag-row">
-        <span class="tag">域名劫持</span>
-        <span class="tag">SEO 注入</span>
-        <span class="tag">台灣政府</span>
-        <span class="tag">BAD IIS</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
-  <a class="report-card severity-info" href="foxconn-nitrogen-incident-report.html" data-tags="">
-    <div class="card-left">
-      <span class="sev-badge info">INFO</span>
-      <div class="card-date">2026-05-13</div>
-    </div>
-    <div class="card-body">
-      <div class="card-title">富士康鄭州廠氮氣洩漏事件分析報告</div>
-      <div class="card-desc">富士康鄭州廠區氮氣洩漏工安事故，供應鏈影響與現場處置分析。</div>
-      <div class="tag-row">
-        <span class="tag">工安事故</span>
-        <span class="tag">供應鏈</span>
-        <span class="tag">富士康</span>
-      </div>
-    </div>
-    <div class="card-arrow">›</div>
-  </a>
-
+  <p class="tab-help" id="tab-help">← → 切換分類 · Tab 進入報告</p>
 </div>
-
-<footer class="site-footer">
-  SecondBrain Report System · <a href="https://github.com/suelife/reports" style="color:#1a2744">suelife/reports</a>
-</footer>
-
+</nav>
+<main class="shell" id="main-content" tabindex="-1">
+  <section id="intel" role="tabpanel" aria-labelledby="tab-intel" tabindex="-1">
+    <div class="section-heading"><h2>情報簡報</h2><p class="section-note">2026 第 44 週 · 10/26 至 10/30</p></div>
+    <ul class="digest-list">
+      <li><a class="digest-card" href="2026-10-30-weekly-ai-digest.html">
+        <div class="digest-meta"><span>○ AI 情報</span><time datetime="2026-10-30">2026-10-30</time></div>
+        <h3>AI 週報</h3><p>10/26 至 10/30<br>本週 AI 動態、逐則情報與觀察。</p>
+        <span class="card-action">閱讀 AI 週報 <span aria-hidden="true">↗</span></span>
+      </a></li>
+      <li><a class="digest-card" href="2026-10-30-weekly-security-digest.html">
+        <div class="digest-meta"><span>◇ 資安情報</span><time datetime="2026-10-30">2026-10-30</time></div>
+        <h3>資安週報</h3><p>10/26 至 10/30<br>本週資安動態、逐則情報與觀察。</p>
+        <span class="card-action">閱讀資安週報 <span aria-hidden="true">↗</span></span>
+      </a></li>
+    </ul>
+  </section>
+  <section id="incident" role="tabpanel" aria-labelledby="tab-incident" tabindex="-1" hidden>
+    <div class="section-heading"><h2>事件研析</h2><p class="section-note">17 份報告 · 依檔名日期由新到舊，未標日期置底</p></div>
+    <ul class="report-list">
+        <li><a class="report-link" href="2026-10-25-capcom-id-security-incident-report.html">
+          <span class="report-date"><time datetime="2026-10-25">2026-10-25</time></span>
+          <h3>CAPCOM ID 2026 年資安事件報告｜資料外洩與帳號遭改</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-10-25-php2shell-incident-report.html">
+          <span class="report-date"><time datetime="2026-10-25">2026-10-25</time></span>
+          <h3>PHP2Shell：PHP 核心未驗證遠端程式碼執行漏洞（CVE-2026-109618／109619）事件研析</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-09-14-fortinet-cve-2025-25249-pivotc2-report.html">
+          <span class="report-date"><time datetime="2026-09-14">2026-09-14</time></span>
+          <h3>Fortinet CVE-2025-25249 × PivotC2：FortiGate 邊界設備遭鎖定的入侵事件分析</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-07-23-project-cav3rn-outlook-c2-report.html">
+          <span class="report-date"><time datetime="2026-07-23">2026-07-23</time></span>
+          <h3>Project CAV3RN / HollowGraph：濫用 Microsoft Graph 與 Outlook 行事曆的隱蔽 C2</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-07-21-wordpress-wp2shell-rce-report.html">
+          <span class="report-date"><time datetime="2026-07-21">2026-07-21</time></span>
+          <h3>WP2Shell：WordPress 核心 Pre-Auth RCE 漏洞鏈遭大規模利用</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-06-03-ai-edr-evasion-toolkit-report.html">
+          <span class="report-date"><time datetime="2026-06-03">2026-06-03</time></span>
+          <h3>威脅行為者用 AI 打造 EDR 繞過工具：Sophos X-Ops 揭露 Cursor + Claude Opus 4.5 多代理惡意程式開發工作流程</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-05-25-apex-one-cve-2026-34926-report.html">
+          <span class="report-date"><time datetime="2026-05-25">2026-05-25</time></span>
+          <h3>CVE-2026-34926：Trend Micro Apex One 零日漏洞：安全軟體變身惡意程式投遞平台</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-05-25-grafana-tanstack-supply-chain-breach-report.html">
+          <span class="report-date"><time datetime="2026-05-25">2026-05-25</time></span>
+          <h3>Grafana Labs 原始碼外洩事件：TanStack 供應鏈攻擊延伸：Token 漏輪換導致勒索</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-05-25-laravel-lang-php-credential-stealer-report.html">
+          <span class="report-date"><time datetime="2026-05-25">2026-05-25</time></span>
+          <h3>Laravel-Lang 供應鏈攻擊：GitHub Tag 劫持植入 PHP 憑證竊取器</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-05-25-packagist-8-packages-linux-dropper-report.html">
+          <span class="report-date"><time datetime="2026-05-25">2026-05-25</time></span>
+          <h3>Packagist 8 套件供應鏈攻擊：package.json Linux Binary Dropper</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-05-21-github-teampcp-supply-chain-report.html">
+          <span class="report-date"><time datetime="2026-05-21">2026-05-21</time></span>
+          <h3>GitHub × TeamPCP：VSCode 供應鏈攻擊事件報告</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-05-19-cve-2026-31431-copy-fail-ubuntu-ddos-report.html">
+          <span class="report-date"><time datetime="2026-05-19">2026-05-19</time></span>
+          <h3>Copy Fail（CVE-2026-31431）與 Canonical DDoS：Linux 核心提權同日疊加基礎設施癱瘓</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-05-19-windows-miniplasma-cve-2020-17103-report.html">
+          <span class="report-date"><time datetime="2026-05-19">2026-05-19</time></span>
+          <h3>Windows MiniPlasma：六年前修補的 CVE-2020-17103 復活，原始 PoC 仍可取得 SYSTEM</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="2026-05-18-device-code-phishing-eviltokens-report.html">
+          <span class="report-date"><time datetime="2026-05-18">2026-05-18</time></span>
+          <h3>Device Code Phishing 新基礎架構：EvilTokens / Tycoon PhaaS 與 M365 權杖竊取</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="foxconn-nitrogen-incident-report.html">
+          <span class="report-date"><span>檔名未標日期</span></span>
+          <h3>資安事件報告：鴻海 × Nitrogen Ransomware（2026-05-12）</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="muddywater-seedworm-korea-electronics-report.html">
+          <span class="report-date"><span>檔名未標日期</span></span>
+          <h3>資安事件報告：MuddyWater（Seedworm）2026 Q1 全球間諜行動：韓國電子製造商入侵事件深度分析</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+        <li><a class="report-link" href="taiwan-gov-solar-domain-hijack-report.html">
+          <span class="report-date"><span>檔名未標日期</span></span>
+          <h3>資安事件報告：台灣政府網站「太陽光電單一服務窗口」網域劫持事件（2026-05-14）</h3>
+          <span class="report-kind">○ 事件研析 <span aria-hidden="true">↗</span></span>
+        </a></li>
+    </ul>
+  </section>
+</main>
+<footer class="site-footer"><div class="shell"><p>SecondBrain · 情報簡報 / 事件研析</p></div></footer>
 <script>
-function filterCards(tag, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.report-card').forEach(card => {
-    if (tag === 'all') {
-      card.style.display = 'flex';
-    } else {
-      const tags = card.dataset.tags || '';
-      card.style.display = tags.includes(tag) ? 'flex' : 'none';
-    }
+(function () {
+  'use strict';
+  var tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  function activate(id, focus) {
+    tabs.forEach(function (tab) {
+      var selected = tab.getAttribute('aria-controls') === id;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      tab.querySelector('.tab-mark').textContent = selected ? '✓' : '○';
+      document.getElementById(tab.getAttribute('aria-controls')).hidden = !selected;
+      if (selected && focus) tab.focus();
+    });
+  }
+  function fromHash() {
+    activate(location.hash === '#incident' ? 'incident' : 'intel', false);
+  }
+  tabs.forEach(function (tab, index) {
+    tab.addEventListener('click', function () {
+      var id = tab.getAttribute('aria-controls');
+      activate(id, false);
+      if (location.hash !== '#' + id) history.pushState(null, '', '#' + id);
+    });
+    tab.addEventListener('keydown', function (event) {
+      var next;
+      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      else if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = tabs.length - 1;
+      else return;
+      event.preventDefault();
+      tabs[next].focus();
+      tabs[next].click();
+    });
   });
-}
+  window.addEventListener('hashchange', fromHash);
+  window.addEventListener('popstate', fromHash);
+  fromHash();
+})();
 </script>
-
 </body>
 </html>
-

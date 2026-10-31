@@ -7,13 +7,14 @@
 <link rel="stylesheet" href="design.css">
 </head>
 <body>
+<nav class="home-nav" aria-label="主要導覽" style="margin:0;padding:8px clamp(20px,4vw,48px);background:#1a2744;text-align:left"><a href="index.html" style="display:inline-block;padding:10px 4px;color:#fff;font:600 14px/1.7 'Segoe UI','Microsoft JhengHei',sans-serif;text-decoration:underline;text-underline-offset:4px">← 回首頁</a></nav>
 
-<nav class="back-nav"><a href="index.html">回首頁 · All Reports</a></nav>
+
 
 <header class="report-header">
-  <div class="label">事件研析 · SecondBrain Incident Analysis</div>
-  <span class="severity-badge high">▲ CRITICAL · CVSS 4.0 9.2</span>
-  <h1>PHP2Shell：PHP 核心未驗證 RCE 漏洞<br>CVE-2026-109618 + CVE-2026-109619（另有未修補的 CVE-2026-115560）</h1>
+  <div class="label">事件研析 · SecondBrain 事件分析</div>
+  <span class="severity-badge high">▲ 嚴重 · CVSS 4.0 9.2</span>
+  <h1>PHP2Shell：PHP 核心未經驗證的遠端程式碼執行漏洞<br>CVE-2026-109618 + CVE-2026-109619（另有未修補的 CVE-2026-115560）</h1>
   <div class="meta">
     <span><strong>報告日期</strong>　2026-10-25</span>
     <span><strong>資料截止</strong>　2026-10-25 14:00（台北時間）</span>
@@ -28,7 +29,7 @@
 
 <!-- ─── 1. Executive Summary ─── -->
 <section class="section">
-  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <div class="section-header"><span class="icon">📋</span> 重點摘要</div>
   <div class="section-body">
     <div class="alert alert-navy">
       <div class="alert-icon">◆</div>
@@ -36,7 +37,7 @@
     </div>
     <div class="alert alert-red">
       <div class="alert-icon">▲</div>
-      <div><strong>立即行動：盤點並升級對外的 PHP（Apache mod_php 優先），升級後重啟，並從 10-17 起回查日誌。</strong> 無法升級的對外系統，國際機關（CISA、NCSC-UK、TWCERT/CC）建議隔離或下線；台灣資安署口徑是先升級，不行再上 WAF，再不行才暫停服務。8.1 以下已停止維護，只能靠廠商回補或官方最小原始碼修補。</div>
+      <div><strong>立即行動：盤點並升級對外的 PHP（Apache mod_php 優先），升級後重啟，並從 10-17 起回查紀錄。</strong> 無法升級的對外系統，國際機關（CISA、NCSC-UK、TWCERT/CC）建議隔離或下線；台灣資安署口徑是先升級，不行再上 WAF，再不行才暫停服務。8.1 以下已停止維護，只能靠廠商回補或官方最小原始碼修補。</div>
     </div>
     <div class="alert alert-amber">
       <div class="alert-icon">⚠</div>
@@ -136,27 +137,27 @@
     <p><strong>為什麼擋不住：</strong>這些事發生在 PHP 解析請求的階段，網站程式碼（含登入檢查）還沒開始跑，所以任何 PHP 應用程式，連只印一行字的頁面都可能中招。攻擊者還得突破記憶體位址隨機化（ASLR）；Wiz 與 Datadog 指出可借 PHPSESSID cookie 洩漏記憶體，降低難度。</p>
     <div class="chain">
       <div class="chain-step">
-        <div class="step-num">Step 1</div>
+        <div class="step-num">步驟 1</div>
         <div class="step-name">送特製表單</div>
         <div class="step-detail">multipart 上傳，或層層巢狀的超長欄位名</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 2</div>
+        <div class="step-num">步驟 2</div>
         <div class="step-name">記憶體超限</div>
         <div class="step-detail">PHP 在請求初始化中途中斷</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 3</div>
+        <div class="step-num">步驟 3</div>
         <div class="step-name">殘留半成品</div>
         <div class="step-detail">內部資料只做一半，或指標指向已釋放記憶體</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 4</div>
+        <div class="step-num">步驟 4</div>
         <div class="step-name">清理誤信</div>
         <div class="step-detail">收尾或下個請求把殘留當有效資料</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 5</div>
+        <div class="step-num">步驟 5</div>
         <div class="step-name">執行指令</div>
         <div class="step-detail">worker 權限下啟動 shell（如 www-data）</div>
       </div>
@@ -288,9 +289,9 @@
     <table class="data-table" style="min-width:560px">
       <thead><tr><th>層次</th><th>要找什麼</th></tr></thead>
       <tbody>
-        <tr><td>請求（WAF、反向代理、存取日誌）</td><td>你的應用平常不用的 <code>PHP_SESSION_UPLOAD_PROGRESS</code> 欄位；一個請求內數百個 multipart 區段、或 <code>files[R00001][a][a]</code> 式的深層巢狀欄位名；數 MB 的單一欄位名；檔名含 <code>&lt;?php</code> 或 <code>|O:</code>；宣告很大 Content-Length 卻慢傳或不傳完；回應的 <code>Set-Cookie: PHPSESSID=</code> 異常長、百分比編碼或含二進位內容（可能是記憶體洩漏）</td></tr>
-        <tr><td>PHP／Apache 錯誤日誌</td><td><code>Allowed memory size ... exhausted</code> 且位置為 <code>Unknown on line 0</code>（代表發生在請求初始化）；Apache <code>AH00052 ... Segmentation fault (11)</code>；短時間內同一 worker 幾次記憶體耗盡後歸於平靜；重複 HTTP 500、worker 異常重啟</td></tr>
-        <tr><td>主機程序</td><td>php-fpm、php-cgi、httpd／apache2、lsphp、frankenphp 的子行程出現 sh、bash、cmd、powershell、python、perl；curl、wget、nc、<code>/dev/tcp/</code>、mkfifo；whoami、id、uname 偵察；網站目錄新增 PHP 檔、新排程或新帳號</td></tr>
+        <tr><td>請求（WAF、反向代理、存取紀錄）</td><td>你的應用平常不用的 <code>PHP_SESSION_UPLOAD_PROGRESS</code> 欄位；一個請求內數百個 multipart 區段、或 <code>files[R00001][a][a]</code> 式的深層巢狀欄位名；數 MB 的單一欄位名；檔名含 <code>&lt;?php</code> 或 <code>|O:</code>；宣告很大 Content-Length 卻慢傳或不傳完；回應的 <code>Set-Cookie: PHPSESSID=</code> 異常長、百分比編碼或含二進位內容（可能是記憶體洩漏）</td></tr>
+        <tr><td>PHP／Apache 錯誤紀錄</td><td><code>Allowed memory size ... exhausted</code> 且位置為 <code>Unknown on line 0</code>（代表發生在請求初始化）；Apache <code>AH00052 ... Segmentation fault (11)</code>；短時間內同一 worker 幾次記憶體耗盡後歸於平靜；重複 HTTP 500、worker 異常重啟</td></tr>
+        <tr><td>主機處理程序</td><td>php-fpm、php-cgi、httpd／apache2、lsphp、frankenphp 的子行程出現 sh、bash、cmd、powershell、python、perl；curl、wget、nc、<code>/dev/tcp/</code>、mkfifo；whoami、id、uname 偵察；網站目錄新增 PHP 檔、新排程或新帳號</td></tr>
         <tr><td>代理式攻擊特徵</td><td>Unit 42 記錄到指令批次以 <code>==SHELLUSER==</code>、<code>==PASSWD==</code> 之類分隔字樣包起來，利於 AI 解析輸出；任務短而連續、失敗後快速換招</td></tr>
         <tr><td>回查起點與現成規則</td><td>從 <strong>2026-10-17</strong> 起查（AWS），不是從 10-21；CISA 提供 SIGMA 規則；Datadog、Unit 42、Wiz、Palo Alto 各有偵測；AWS 公布 6 個觀測 IP（含共用匿名基礎設施，建議調查而非直接封鎖）</td></tr>
       </tbody>
@@ -303,7 +304,7 @@
       <thead><tr><th>防護層</th><th>措施</th><th>局限</th></tr></thead>
       <tbody>
         <tr><td>官方修補</td><td>升級到修補版並重啟 worker；發行版看 changelog 是否含兩個 CVE 編號；容器重建映像</td><td>不能清除升級前已植入的後門</td></tr>
-        <tr><td>WAF／CDN</td><td>Cloudflare（含免費方案，預設啟用）、AWS WAF、Google Cloud Armor（啟用 managed rules 並加限制請求本文大小的規則）、Vercel、Fastly、Palo Alto 威脅防護</td><td>屬緩解。Cloudflare 自述攻擊者會依被擋結果變形載荷；WAF 看不到被截斷、被丟棄或分塊傳輸的內容（Datadog）；Cloudflare 規則對改過 <code>session.upload_progress.name</code> 者無效</td></tr>
+        <tr><td>WAF／CDN</td><td>Cloudflare（含免費方案，預設啟用）、AWS WAF、Google Cloud Armor（啟用 managed rules 並加限制請求本文大小的規則）、Vercel、Fastly、Palo Alto 威脅防護</td><td>屬緩解。Cloudflare 自述攻擊者會依被擋結果變形酬載；WAF 看不到被截斷、被丟棄或分塊傳輸的內容（Datadog）；Cloudflare 規則對改過 <code>session.upload_progress.name</code> 者無效</td></tr>
         <tr><td>暫時組態</td><td>見第 3 節比較表最後一列</td><td>官方明言不能使系統安全；<code>memory_limit=-1</code> 還會提高記憶體耗盡風險</td></tr>
         <tr><td>隔離或下線</td><td>對外系統暫停服務，或只開 VPN／內網</td><td>影響服務；是最保守也最有效的暫行手段</td></tr>
       </tbody>
@@ -360,7 +361,7 @@
       <li><strong>升級並重啟：</strong>升到 8.5.12、8.4.27、8.3.36、8.2.35，或確認發行版套件含兩個 CVE 的修補；重啟 php-fpm／Apache，容器重建映像；再次確認「執行中」的版本與 worker 啟動時間。</li>
       <li><strong>全域關閉 upload progress：</strong>在 php.ini 或 FPM pool 設 <code>session.upload_progress.enabled=0</code> 並重啟；升級後也保留，直到下個例行版本。確認 <code>display_errors=Off</code>。</li>
       <li><strong>無法立即升級的對外系統：</strong>國際機關建議隔離或下線；若選擇留線，至少上 WAF（block 模式）、限制請求大小，並限縮來源 IP。</li>
-      <li><strong>從 10-17 起回查日誌：</strong>用上一節的偵測指標，重點看 web worker 衍生 shell、網站目錄新增 PHP 檔。</li>
+      <li><strong>從 10-17 起回查紀錄：</strong>用上一節的偵測指標，重點看 web worker 衍生 shell、網站目錄新增 PHP 檔。</li>
     </ul>
     <div class="alert alert-amber">
       <div class="alert-icon">◆</div>
@@ -371,7 +372,7 @@
       <li><strong>委外與代管業者書面確認：</strong>跑的是哪個 PHP 版本與 SAPI、修補證據、worker 重啟時間、同帳號下其他 pool 與測試站是否涵蓋。</li>
       <li><strong>內嵌 PHP 的設備：</strong>PAN-OS 等待 10-27 至 10-30 的 hotfix 期間，管理介面限內網；追蹤 QNAP、Cisco、Synology 等供應商公告。</li>
       <li><strong>建立偵測：</strong>對 web server 或 PHP 行程衍生 shell、下載工具設告警；匯入 CISA SIGMA 規則。</li>
-      <li><strong>若有入侵跡象：</strong>先隔離並保留日誌，不要急著重灌；輪換該主機上的密碼、API 金鑰與憑證（Wiz 指出記憶體洩漏可能含這些）；通報 TWCERT/CC（int_report@cert.org.tw）或資安署。</li>
+      <li><strong>若有入侵跡象：</strong>先隔離並保留紀錄，不要急著重灌；輪換該主機上的密碼、API 金鑰與憑證（Wiz 指出記憶體洩漏可能含這些）；通報 TWCERT/CC（int_report@cert.org.tw）或資安署。</li>
     </ul>
     <div class="alert alert-navy">
       <div class="alert-icon">●</div>
@@ -559,7 +560,7 @@
 </div>
 
 <footer class="report-footer">
-  Generated 2026-10-25 · SecondBrain Report System · suelife/reports · 草稿，尚未發布
+  產製日期：2026-10-25 · SecondBrain 報告系統 · suelife/reports · 草稿，尚未發布
 </footer>
 
 </body>

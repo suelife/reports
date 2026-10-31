@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GitHub × TeamPCP — VSCode 供應鏈攻擊事件報告</title>
+<title>GitHub × TeamPCP：VSCode 供應鏈攻擊事件報告</title>
 <link rel="stylesheet" href="design.css">
 </head>
 <body>
+<nav class="home-nav" aria-label="主要導覽" style="margin:0;padding:8px clamp(20px,4vw,48px);background:#1a2744;text-align:left"><a href="index.html" style="display:inline-block;padding:10px 4px;color:#fff;font:600 14px/1.7 'Segoe UI','Microsoft JhengHei',sans-serif;text-decoration:underline;text-underline-offset:4px">← 回首頁</a></nav>
 
-<nav class="back-nav"><a href="index.html">All Reports</a></nav>
+
 
 <header class="report-header">
-  <div class="label">資安事件報告 · SecondBrain Investigation</div>
-  <span class="severity-badge high">HIGH</span>
-  <h1>GitHub × TeamPCP（Mini Shai-Hulud）<br>Nx Console VSCode 擴展供應鏈攻擊：3,800 個內部 Repo 外洩</h1>
+  <div class="label">資安事件報告 · SecondBrain 事件調查</div>
+  <span class="severity-badge high">高</span>
+  <h1>GitHub × TeamPCP（Mini Shai-Hulud）<br>Nx Console VSCode 擴充套件供應鏈攻擊：3,800 個內部儲存庫外洩</h1>
   <div class="meta">
     <span><strong>事件日期</strong>　2026-05-18</span>
     <span><strong>公告日期</strong>　2026-05-19</span>
@@ -27,26 +28,26 @@
 
 <!-- Executive Summary -->
 <section class="section">
-  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <div class="section-header"><span class="icon">📋</span> 重點摘要</div>
   <div class="section-body">
     <div class="alert alert-red">
       <div class="alert-icon">🔴</div>
       <div>
-        <strong>史上首個明確竊取 Claude Code 配置的供應鏈攻擊</strong>
-        TeamPCP 的惡意 Nx Console VSCode 擴展在上架僅 18 分鐘內，即竊取至少一名 GitHub 員工的全部開發憑證，導致 3,800 個 GitHub 內部 repository 被克隆。payload 明確鎖定 Anthropic Claude Code 配置文件（<code>~/.claude/settings.json</code>），標誌著供應鏈攻擊正式將 AI coding assistant 列入高價值目標。
+        <strong>史上首個明確竊取 Claude Code 設定的供應鏈攻擊</strong>
+        TeamPCP 的惡意 Nx Console VSCode 擴充套件在上架僅 18 分鐘內，即竊取至少一名 GitHub 員工的全部開發憑證，導致 3,800 個 GitHub 內部 repository 被複製。payload 明確鎖定 Anthropic Claude Code 設定檔案（<code>~/.claude/settings.json</code>），標誌著供應鏈攻擊正式將 AI coding assistant 列入高價值目標。
       </div>
     </div>
     <div class="kpi-grid">
-      <div class="kpi red"><div class="kpi-value">3,800 個</div><div class="kpi-label">外洩 repo 數</div></div>
-      <div class="kpi red"><div class="kpi-value">18 分鐘</div><div class="kpi-label">惡意擴展存活時間</div></div>
+      <div class="kpi red"><div class="kpi-value">3,800 個</div><div class="kpi-label">外洩儲存庫數</div></div>
+      <div class="kpi red"><div class="kpi-value">18 分鐘</div><div class="kpi-label">惡意擴充套件存活時間</div></div>
       <div class="kpi red"><div class="kpi-value">2.2M 裝置</div><div class="kpi-label">Nx Console 安裝量</div></div>
       <div class="kpi amber"><div class="kpi-value">6,000+ 人</div><div class="kpi-label">受影響開發者</div></div>
       <div class="kpi amber"><div class="kpi-value">$95,000</div><div class="kpi-label">暗網標售價格</div></div>
       <div class="kpi amber"><div class="kpi-value">16M 次/週</div><div class="kpi-label">AntV npm 波及下載量</div></div>
     </div>
-    <p>2026 年 5 月 18 日，攻擊組織 TeamPCP（又名 Mini Shai-Hulud）向 Visual Studio Code Marketplace 注入惡意版本的 Nx Console 擴展（v18.95.0）。該擴展擁有超過 220 萬裝置安裝量，由合法的 Nrwl 帳號發布，帳號本身已透過前置的 TanStack npm 供應鏈攻擊遭竊取。</p>
-    <p>惡意版本在上架後僅 <strong>18 分鐘</strong>即被下架，但短暫窗口已足以竊取至少一名 GitHub 員工的所有開發憑證。攻擊者利用該憑證克隆了 GitHub 約 3,800 個內部私有 repository，涵蓋 Copilot、CodeQL、Dependabot、Codespaces 等核心產品的原始碼及基礎設施配置。</p>
-    <p>此事件屬於 TeamPCP 自 2025 年 9 月起持續運作的「Mini Shai-Hulud」供應鏈蠕蟲活動之一波，攻擊路徑為 AntV npm → TanStack npm → Nx Console VSCode 擴展 → GitHub 員工機器 → GitHub 內部基礎設施，展現出高度自動化的多層橫向移動能力。</p>
+    <p>2026 年 5 月 18 日，攻擊組織 TeamPCP（又名 Mini Shai-Hulud）向 Visual Studio Code Marketplace 注入惡意版本的 Nx Console 擴充套件（v18.95.0）。該擴充套件擁有超過 220 萬裝置安裝量，由合法的 Nrwl 帳號發布，帳號本身已透過前置的 TanStack npm 供應鏈攻擊遭竊取。</p>
+    <p>惡意版本在上架後僅 <strong>18 分鐘</strong>即被下架，但短暫窗口已足以竊取至少一名 GitHub 員工的所有開發憑證。攻擊者利用該憑證複製了 GitHub 約 3,800 個內部私有 repository，涵蓋 Copilot、CodeQL、Dependabot、Codespaces 等核心產品的原始碼及基礎設施設定。</p>
+    <p>此事件屬於 TeamPCP 自 2025 年 9 月起持續運作的「Mini Shai-Hulud」供應鏈蠕蟲活動之一波，攻擊路徑為 AntV npm → TanStack npm → Nx Console VSCode 擴充套件 → GitHub 員工機器 → GitHub 內部基礎設施，展現出高度自動化的多層橫向移動能力。</p>
   </div>
 </section>
 
@@ -75,7 +76,7 @@
           <td><span class="badge badge-confirmed">已確認</span></td>
         </tr>
         <tr>
-          <td>約 3,800 個 GitHub 內部 repository 遭克隆</td>
+          <td>約 3,800 個 GitHub 內部 repository 遭複製</td>
           <td>GitHub 確認（與攻擊者聲稱約 4,000「方向一致」）</td>
           <td><span class="badge badge-confirmed">已確認</span></td>
         </tr>
@@ -85,7 +86,7 @@
           <td><span class="badge badge-claimed">聲稱未驗證</span></td>
         </tr>
         <tr>
-          <td>客戶 enterprise 和用戶 repository 未受影響</td>
+          <td>客戶 enterprise 和使用者 repository 未受影響</td>
           <td>GitHub 官方聲明（調查仍進行）</td>
           <td><span class="badge badge-info">暫時確認（調查中）</span></td>
         </tr>
@@ -95,7 +96,7 @@
           <td><span class="badge badge-claimed">聲稱未驗證</span></td>
         </tr>
         <tr>
-          <td>超過 6,000 名開發者受惡意擴展影響</td>
+          <td>超過 6,000 名開發者受惡意擴充套件影響</td>
           <td>The Hacker News 引用研究員估算</td>
           <td><span class="badge badge-claimed">聲稱未驗證</span></td>
         </tr>
@@ -105,7 +106,7 @@
           <td><span class="badge badge-confirmed">已確認</span></td>
         </tr>
         <tr>
-          <td>payload 明確竊取 ~/.claude/settings.json（Claude Code 配置）</td>
+          <td>payload 明確竊取 ~/.claude/settings.json（Claude Code 設定）</td>
           <td>The Hacker News、StepSecurity 技術分析</td>
           <td><span class="badge badge-confirmed">已確認</span></td>
         </tr>
@@ -132,7 +133,7 @@
         <div class="tl-content">
           <div class="tl-date">2026-05-19 01:39–02:18 UTC</div>
           <div class="tl-title">AntV npm 供應鏈攻擊（22 分鐘爆發）</div>
-          <div class="tl-detail">透過入侵的 <code>atool</code> npm 維護者帳號（管理 547 個套件），在 22 分鐘內自動發布 300+ 個惡意套件版本。@antv 命名空間週下載量達 1,600 萬次，主要用於 Alibaba 旗下數據視覺化產品。竊取的 npm OIDC token 用於繼續橫向擴散。</div>
+          <div class="tl-detail">透過入侵的 <code>atool</code> npm 維護者帳號（管理 547 個套件），在 22 分鐘內自動發布 300+ 個惡意套件版本。@antv 命名空間週下載量達 1,600 萬次，主要用於 Alibaba 旗下資料視覺化產品。竊取的 npm OIDC token 用於繼續橫向擴散。</div>
         </div>
       </li>
       <li>
@@ -155,7 +156,7 @@
         <span class="tl-dot amber"></span>
         <div class="tl-content">
           <div class="tl-date">2026-05-18 14:54 CEST（18 分鐘後）</div>
-          <div class="tl-title">惡意擴展下架</div>
+          <div class="tl-title">惡意擴充套件下架</div>
           <div class="tl-detail">VS Code Marketplace 將 Nx Console v18.95.0 下架。但至少一名 GitHub 員工已在此窗口內安裝更新，機器上的所有憑證遭竊取並外洩至攻擊者控制的基礎設施。</div>
         </div>
       </li>
@@ -163,8 +164,8 @@
         <span class="tl-dot red"></span>
         <div class="tl-content">
           <div class="tl-date">2026-05-18～19</div>
-          <div class="tl-title">GitHub 內部 repo 大規模克隆</div>
-          <div class="tl-detail">攻擊者以竊取的 GitHub 員工 token 克隆約 3,800 個內部私有 repository，含核心產品原始碼（Copilot、CodeQL、Dependabot、Codespaces）、基礎設施腳本及內部配置。</div>
+          <div class="tl-title">GitHub 內部 repo 大規模複製</div>
+          <div class="tl-detail">攻擊者以竊取的 GitHub 員工 token 複製約 3,800 個內部私有 repository，含核心產品原始碼（Copilot、CodeQL、Dependabot、Codespaces）、基礎設施腳本及內部設定。</div>
         </div>
       </li>
       <li>
@@ -180,7 +181,7 @@
         <div class="tl-content">
           <div class="tl-date">2026-05-19～20</div>
           <div class="tl-title">GitHub 官方確認事件</div>
-          <div class="tl-detail">GitHub 承認約 3,800 個內部 repository 被克隆，表示目前無客戶資料受影響跡象，已輪換關鍵憑證，並承諾發布完整事件報告。調查仍在進行中。</div>
+          <div class="tl-detail">GitHub 承認約 3,800 個內部 repository 被複製，表示目前無客戶資料受影響跡象，已輪換關鍵憑證，並承諾發布完整事件報告。調查仍在進行中。</div>
         </div>
       </li>
       <li>
@@ -188,7 +189,7 @@
         <div class="tl-content">
           <div class="tl-date">2026-05-21</div>
           <div class="tl-title">Nx 官方聲明 + 本報告發布</div>
-          <div class="tl-detail">Nx 確認開發者帳號因 TanStack 供應鏈攻擊遭入侵，導致 GitHub 憑證洩露，使攻擊者能以貢獻者身份在官方 repo 執行 workflows，完成 Nx Console 惡意版本發布。</div>
+          <div class="tl-detail">Nx 確認開發者帳號因 TanStack 供應鏈攻擊遭入侵，導致 GitHub 憑證洩露，使攻擊者能以貢獻者身分在官方 repo 執行 workflows，完成 Nx Console 惡意版本發布。</div>
         </div>
       </li>
     </ul>
@@ -230,46 +231,46 @@
   <div class="section-body">
     <div class="chain">
       <div class="chain-step">
-        <div class="step-num">Step 1</div>
+        <div class="step-num">步驟 1</div>
         <div class="step-name">AntV npm</div>
         <div class="step-detail">入侵維護者帳號 → 300+ 惡意套件</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 2</div>
+        <div class="step-num">步驟 2</div>
         <div class="step-name">TanStack npm</div>
         <div class="step-detail">蠕蟲擴散 → 竊取 Nx 開發者 GitHub token</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 3</div>
+        <div class="step-num">步驟 3</div>
         <div class="step-name">Nx Console</div>
-        <div class="step-detail">植入惡意擴展 → 上架 18 分鐘</div>
+        <div class="step-detail">植入惡意擴充套件 → 上架 18 分鐘</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 4</div>
+        <div class="step-num">步驟 4</div>
         <div class="step-name">GitHub 員工</div>
         <div class="step-detail">全部開發憑證遭竊（含 Claude Code）</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 5</div>
+        <div class="step-num">步驟 5</div>
         <div class="step-name">GitHub 內部</div>
-        <div class="step-detail">3,800 個 repo 克隆外洩</div>
+        <div class="step-detail">3,800 個 repo 複製外洩</div>
       </div>
     </div>
 
-    <h3 class="sub" style="margin-top:24px">惡意 payload 技術細節</h3>
-    <p><strong>載入機制</strong>：payload（498KB 混淆）不直接嵌入 VSIX 擴展檔案，而是在執行時從 nrwl/nx 官方 repo 的 <strong>孤立 commit（orphan commit）</strong>動態拉取，偽裝成例行 MCP 設定任務。此設計使靜態掃描幾乎無法在上架審查時發現惡意行為。</p>
+    <h3 class="sub" style="margin-top:24px">惡意酬載技術細節</h3>
+    <p><strong>載入機制</strong>：payload（498KB 混淆）不直接嵌入 VSIX 擴充套件檔案，而是在執行時從 nrwl/nx 官方 repo 的 <strong>孤立 commit（orphan commit）</strong>動態拉取，偽裝成例行 MCP 設定任務。此設計使靜態掃描幾乎無法在上架審查時發現惡意行為。</p>
 
     <p><strong>竊取目標清單</strong>：</p>
     <div class="alert alert-navy">
       <div class="alert-icon">🎯</div>
       <div>
-        GitHub PAT / OAuth Token / SSH Key · npm OIDC Token · AWS Access Key + Secret · 1Password 保管庫 · HashiCorp Vault Token · Kubernetes Config（~/.kube/config） · <strong>Anthropic Claude Code 配置（~/.claude/settings.json）</strong>
+        GitHub PAT / OAuth Token / SSH Key · npm OIDC Token · AWS Access Key + Secret · 1Password 保管庫 · HashiCorp Vault Token · Kubernetes Config（~/.kube/config） · <strong>Anthropic Claude Code 設定（~/.claude/settings.json）</strong>
       </div>
     </div>
 
     <p><strong>三重外洩通道</strong>：HTTPS 直接上傳 / GitHub REST API / DNS tunneling。即使其中一個通道被封鎖，仍可透過其他通道完成外洩，提供攻擊韌性。</p>
 
-    <p><strong>Sigstore 濫用</strong>：payload 整合 Fulcio 憑證發行和 SLSA provenance 生成，結合竊取的 npm OIDC token，可發布具有合法密碼學簽名的惡意下游套件——使攻擊者的套件看起來是通過驗證的合規構建，繞過基於 Sigstore 的供應鏈完整性驗證。</p>
+    <p><strong>Sigstore 濫用</strong>：payload 整合 Fulcio 憑證發行和 SLSA provenance 生成，結合竊取的 npm OIDC token，可發布具有合法密碼學簽名的惡意下游套件，使攻擊者的套件看起來是通過驗證的合規建置，繞過基於 Sigstore 的供應鏈完整性驗證。</p>
 
     <p><strong>C2 機制</strong>：在 macOS 安裝 Python 後門（<code>cat.py</code>），透過 LaunchAgent 開機自啟。使用 GitHub Search API 以關鍵字 <code>firedalazer</code> 輪詢 C2 指令（RSA-4096 簽名）。資料暫存於公開 GitHub repo，描述欄位為反轉字串 <code>niagA oG eW ereH :duluH-iahS</code>（正讀：Shai-Hulud: Here We Go Again）。</p>
 
@@ -285,19 +286,19 @@
     <table class="data-table">
       <thead><tr><th>類型</th><th>路徑</th><th>說明</th></tr></thead>
       <tbody>
-        <tr><td>File</td><td><code>~/.local/share/kitty/cat.py</code></td><td>Python C2 後門</td></tr>
-        <tr><td>File</td><td><code>~/Library/LaunchAgents/com.user.kitty-monitor.plist</code></td><td>macOS 持久化（開機自啟）</td></tr>
-        <tr><td>File</td><td><code>/var/tmp/.gh_update_state</code></td><td>狀態暫存檔</td></tr>
-        <tr><td>File</td><td><code>/tmp/kitty-*</code></td><td>暫存 payload 解壓路徑</td></tr>
+        <tr><td>檔案</td><td><code>~/.local/share/kitty/cat.py</code></td><td>Python C2 後門</td></tr>
+        <tr><td>檔案</td><td><code>~/Library/LaunchAgents/com.user.kitty-monitor.plist</code></td><td>macOS 持久化（開機自啟）</td></tr>
+        <tr><td>檔案</td><td><code>/var/tmp/.gh_update_state</code></td><td>狀態暫存檔</td></tr>
+        <tr><td>檔案</td><td><code>/tmp/kitty-*</code></td><td>暫存 payload 解壓路徑</td></tr>
       </tbody>
     </table>
 
-    <h3 class="sub" style="margin-top:16px">惡意進程</h3>
+    <h3 class="sub" style="margin-top:16px">惡意處理程序</h3>
     <table class="data-table">
       <thead><tr><th>類型</th><th>特徵</th></tr></thead>
       <tbody>
-        <tr><td>Process</td><td>Python 進程執行 <code>cat.py</code></td></tr>
-        <tr><td>Process</td><td>任何環境變數包含 <code>__DAEMONIZED=1</code> 的進程</td></tr>
+        <tr><td>處理程序</td><td>Python 處理程序執行 <code>cat.py</code></td></tr>
+        <tr><td>處理程序</td><td>任何環境變數包含 <code>__DAEMONIZED=1</code> 的處理程序</td></tr>
       </tbody>
     </table>
 
@@ -306,7 +307,7 @@
       <thead><tr><th>類型</th><th>特徵</th></tr></thead>
       <tbody>
         <tr><td>GitHub API</td><td>搜尋關鍵字包含 <code>firedalazer</code>（C2 dead-drop 指令）</td></tr>
-        <tr><td>GitHub Repo</td><td>公開 repo 描述含 <code>niagA oG eW ereH :duluH-iahS</code>（資料暫存）</td></tr>
+        <tr><td>GitHub 儲存庫</td><td>公開 repo 描述含 <code>niagA oG eW ereH :duluH-iahS</code>（資料暫存）</td></tr>
         <tr><td>DNS</td><td>異常高頻 DNS 查詢，尤其來自開發者工作站（外洩備援通道）</td></tr>
       </tbody>
     </table>
@@ -314,7 +315,7 @@
     <h3 class="sub" style="margin-top:16px">惡意套件版本</h3>
     <div class="alert alert-red">
       <div class="alert-icon">⚠️</div>
-      <div><strong><code>nrwl.angular-console</code> v18.95.0</strong> — 已從 VS Code Marketplace 下架，但已安裝的版本仍需手動更新至 v18.96.0 以上並清除殘留後門。</div>
+      <div><strong><code>nrwl.angular-console</code> v18.95.0</strong>，已從 VS Code Marketplace 下架，但已安裝的版本仍需手動更新至 v18.96.0 以上並清除殘留後門。</div>
     </div>
   </div>
 </section>
@@ -324,10 +325,10 @@
   <div class="section-header"><span class="icon">🗺️</span> MITRE ATT&CK 對照</div>
   <div class="section-body">
     <table class="data-table">
-      <thead><tr><th>技術 ID</th><th>技術名稱</th><th>應用場景</th></tr></thead>
+      <thead><tr><th>技術編號</th><th>技術名稱</th><th>應用場景</th></tr></thead>
       <tbody>
         <tr><td>T1195.001</td><td>Supply Chain Compromise: Software Dependencies</td><td>AntV → TanStack → Nx Console 逐層供應鏈滲透</td></tr>
-        <tr><td>T1554</td><td>Compromise Client Software Binary</td><td>植入惡意 Nx Console 擴展（VSIX）</td></tr>
+        <tr><td>T1554</td><td>Compromise Client Software Binary</td><td>植入惡意 Nx Console 擴充套件（VSIX）</td></tr>
         <tr><td>T1552.001</td><td>Unsecured Credentials: Credentials In Files</td><td>讀取 ~/.claude/settings.json、~/.kube/config 等憑證檔</td></tr>
         <tr><td>T1567.001</td><td>Exfiltration Over Web Service: Code Repository</td><td>竊取資料上傳至攻擊者控制的公開 GitHub repo</td></tr>
         <tr><td>T1071.004</td><td>Application Layer Protocol: DNS</td><td>DNS tunneling 作為備援外洩通道</td></tr>
@@ -351,16 +352,16 @@
       <div>3,800 個內部 repo 若包含基礎設施部署腳本或 secrets 的明文提交，攻擊者可能對 GitHub 自身的生產基礎設施進行進一步滲透，且調查仍在進行中。</div>
     </div>
     <ul style="padding-left:20px; margin-bottom:16px">
-      <li>Copilot、CodeQL 等核心產品原始碼外洩，競爭對手可獲取重要技術優勢</li>
-      <li>GitHub 作為全球最大代碼托管平台，其自身遭供應鏈攻擊具有強烈示範效應，影響開發者生態信任</li>
+      <li>Copilot、CodeQL 等核心產品原始碼外洩，競爭對手可取得重要技術優勢</li>
+      <li>GitHub 作為全球最大程式碼託管平台，其自身遭供應鏈攻擊具有強烈示範效應，影響開發者生態信任</li>
     </ul>
 
-    <h3 class="sub">對 Claude Code 用戶的衝擊（首要關注）</h3>
+    <h3 class="sub">對 Claude Code 使用者的衝擊（首要關注）</h3>
     <div class="alert alert-amber">
       <div class="alert-icon">⚠️</div>
       <div>
-        <strong>此為已知第一個明確竊取 Claude Code 配置的供應鏈攻擊。</strong>
-        在 2026-05-18 14:36–14:54 CEST 窗口內開啟任何 VSCode workspace 的開發者，若安裝了 Nx Console，其 <code>~/.claude/settings.json</code>（含 Anthropic API key 及工作流配置）已可能遭竊取。建議立即輪換 Anthropic API key。
+        <strong>此為已知第一個明確竊取 Claude Code 設定的供應鏈攻擊。</strong>
+        在 2026-05-18 14:36–14:54 CEST 窗口內開啟任何 VSCode workspace 的開發者，若安裝了 Nx Console，其 <code>~/.claude/settings.json</code>（含 Anthropic API key 及工作流程設定）已可能遭竊取。建議立即輪換 Anthropic API key。
       </div>
     </div>
 
@@ -372,7 +373,7 @@
     </ul>
 
     <h3 class="sub">EDR 防護的根本盲區</h3>
-    <p>傳統 EDR 無法偵測 JavaScript / Python 的解釋型擴展，因為它們不是二進制檔案，無簽名驗證機制。VSCode 的 18 分鐘窗口揭示現有 Marketplace 審查流程不足以攔截針對合法發布者帳號的供應鏈攻擊。</p>
+    <p>傳統 EDR 無法偵測 JavaScript / Python 的解釋型擴充套件，因為它們不是二進位檔案，無簽名驗證機制。VSCode 的 18 分鐘窗口揭示現有 Marketplace 審查流程不足以攔截針對合法發布者帳號的供應鏈攻擊。</p>
   </div>
 </section>
 
@@ -404,15 +405,15 @@
       </div>
     </div>
     <ol style="padding-left:20px; margin-bottom:16px">
-      <li>掃描 IOC：<code>~/.local/share/kitty/cat.py</code>、LaunchAgent plist、<code>/tmp/kitty-*</code>，搜尋含 <code>__DAEMONIZED=1</code> 的進程</li>
-      <li>終止 cat.py 進程，刪除所有 IOC 檔案</li>
-      <li>全面輪換憑證：GitHub PAT / SSH Key、npm token、AWS Access Key、1Password 密碼、Kubernetes service account、<strong>Anthropic API Key（Claude Code 用戶必做）</strong></li>
-      <li>稽核 CI/CD pipeline secrets：若 runner 環境曾安裝過受影響擴展，視同所有 secrets 已外洩</li>
+      <li>掃描 IOC：<code>~/.local/share/kitty/cat.py</code>、LaunchAgent plist、<code>/tmp/kitty-*</code>，搜尋含 <code>__DAEMONIZED=1</code> 的處理程序</li>
+      <li>終止 cat.py 處理程序，刪除所有 IOC 檔案</li>
+      <li>全面輪換憑證：GitHub PAT / SSH Key、npm token、AWS Access Key、1Password 密碼、Kubernetes service account、<strong>Anthropic API Key（Claude Code 使用者必做）</strong></li>
+      <li>稽核 CI/CD pipeline secrets：若 runner 環境曾安裝過受影響擴充套件，視同所有 secrets 已外洩</li>
     </ol>
 
     <h3 class="sub">中期防禦強化</h3>
     <ol style="padding-left:20px; margin-bottom:16px">
-      <li><strong>VSCode 擴展安裝策略</strong>：採用 Aikido 建議的最低上線年限規則（≥ 48 小時），防止剛發布的版本自動安裝；稽核現有已安裝擴展的發布時間異常</li>
+      <li><strong>VSCode 擴充套件安裝策略</strong>：採用 Aikido 建議的最低上線年限規則（≥ 48 小時），防止剛發布的版本自動安裝；稽核現有已安裝擴充套件的發布時間異常</li>
       <li><strong>npm 版本凍結</strong>：CI/CD 環境使用 lockfile（package-lock.json / yarn.lock），禁止非預期版本更新</li>
       <li><strong>GitHub API 監控</strong>：告警含 <code>firedalazer</code> 等非業務關鍵字的 GitHub Search API 查詢</li>
       <li><strong>DNS 異常監控</strong>：偵測高頻 DNS 查詢模式（DNS tunneling 特徵），尤其來自開發者工作站</li>
@@ -422,7 +423,7 @@
     <h3 class="sub">結構性建議</h3>
     <div class="alert alert-navy">
       <div class="alert-icon">◆</div>
-      <div>VS Code Marketplace 的 18 分鐘攻擊窗口揭示現有審查機制的根本不足：已驗證發布者（verified publisher badge）的帳號一旦遭入侵，新版本幾乎無摩擦地通過。Microsoft 應對所有發布者（包括已驗證帳號）的擴展更新施加延遲發布（delayed rollout）與異常行為偵測。</div>
+      <div>VS Code Marketplace 的 18 分鐘攻擊窗口揭示現有審查機制的根本不足：已驗證發布者（verified publisher badge）的帳號一旦遭入侵，新版本幾乎無摩擦地通過。Microsoft 應對所有發布者（包括已驗證帳號）的擴充套件更新施加延遲發布（delayed rollout）與異常行為偵測。</div>
     </div>
   </div>
 </section>
@@ -512,7 +513,7 @@
 
     <div class="source-card">
       <div class="source-tag">事件報導</div>
-      <a href="https://www.aikido.dev/blog/github-breached-vs-code-extension" target="_blank">GitHub Breached via VS Code Extension — Developer Supply Chain Attack 2026</a>
+      <a href="https://www.aikido.dev/blog/github-breached-vs-code-extension" target="_blank">GitHub Breached via VS Code Extension：Developer Supply Chain Attack 2026</a>
       <div class="source-meta">Aikido Security · 2026-05-20</div>
     </div>
 
@@ -534,7 +535,7 @@
 </div>
 
 <footer class="report-footer">
-  Generated 2026-05-21 · SecondBrain Report System · suelife/reports
+  產製日期：2026-05-21 · SecondBrain 報告系統 · suelife/reports
 </footer>
 
 </body>

@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Device Code Phishing 新基礎架構 — EvilTokens / Tycoon PhaaS 與 M365 權杖竊取</title>
+<title>Device Code Phishing 新基礎架構：EvilTokens / Tycoon PhaaS 與 M365 權杖竊取</title>
 <link rel="stylesheet" href="design.css">
 </head>
 <body>
+<nav class="home-nav" aria-label="主要導覽" style="margin:0;padding:8px clamp(20px,4vw,48px);background:#1a2744;text-align:left"><a href="index.html" style="display:inline-block;padding:10px 4px;color:#fff;font:600 14px/1.7 'Segoe UI','Microsoft JhengHei',sans-serif;text-decoration:underline;text-underline-offset:4px">← 回首頁</a></nav>
 
-<nav class="back-nav"><a href="index.html">All Reports</a></nav>
+
 
 <header class="report-header">
-  <div class="label">研究簡報 · SecondBrain Research</div>
-  <span class="severity-badge high">HIGH</span>
-  <h1>Device Code Phishing 新基礎架構：EvilTokens / Tycoon PhaaS 與 Microsoft 365 權杖竊取</h1>
+  <div class="label">研究簡報 · SecondBrain 研究整理</div>
+  <span class="severity-badge high">高</span>
+  <h1>裝置代碼網路釣魚新基礎架構：EvilTokens / Tycoon PhaaS 與 Microsoft 365 權杖竊取</h1>
   <div class="meta">
     <span><strong>研究日期</strong>　2026-05-18</span>
     <span><strong>資料截止</strong>　2026-05-18</span>
@@ -25,7 +26,7 @@
 <div class="container">
 
 <section class="section">
-  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <div class="section-header"><span class="icon">📋</span> 重點摘要</div>
   <div class="section-body">
     <div class="alert alert-navy">
       <div class="alert-icon">◆</div>
@@ -112,32 +113,32 @@
   <div class="section-body">
     <div class="chain">
       <div class="chain-step">
-        <div class="step-num">Step 1</div>
+        <div class="step-num">步驟 1</div>
         <div class="step-name">社交工程誘餌</div>
         <div class="step-detail">寄送 Email / 檔案 / QR Code，內含釣魚連結</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 2</div>
+        <div class="step-num">步驟 2</div>
         <div class="step-name">點擊觸發</div>
         <div class="step-detail">攻擊者後端動態向微軟請求 Device Code</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 3</div>
+        <div class="step-num">步驟 3</div>
         <div class="step-name">假冒登入頁</div>
         <div class="step-detail">「Continue to Microsoft」彈出真正的 microsoft.com 裝置登入頁</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 4</div>
-        <div class="step-name">受害者輸入 Code</div>
+        <div class="step-num">步驟 4</div>
+        <div class="step-name">受害者輸入代碼</div>
         <div class="step-detail">微軟伺服器完成驗證，含 MFA</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 5</div>
-        <div class="step-name">Token 落入攻擊者</div>
+        <div class="step-num">步驟 5</div>
+        <div class="step-name">權杖落入攻擊者手中</div>
         <div class="step-detail">access token / refresh token 直送 C2，繞過 MFA 後續存取</div>
       </div>
       <div class="chain-step">
-        <div class="step-num">Step 6</div>
+        <div class="step-num">步驟 6</div>
         <div class="step-name">帳號接管 → BEC</div>
         <div class="step-detail">完整存取 M365 / Outlook，導致 BEC、資料外洩、橫向移動</div>
       </div>
@@ -168,7 +169,7 @@
     <div class="alert alert-amber">
       <div class="alert-icon">●</div>
       <div>
-        <strong>EvilTokens 疑為 vibe-coded（AI 生成代碼）</strong>
+        <strong>EvilTokens 疑為 vibe-coded（AI 產生程式碼）</strong>
         Proofpoint 研究人員判斷 EvilTokens 平台是以「vibe coding」AI 生成技術建立與維護；iThome 原文未揭露 Proofpoint 的具體推論依據。<span class="badge badge-claimed">聲稱未獨立驗證</span>
       </div>
     </div>
@@ -177,7 +178,7 @@
       <div class="alert-icon">●</div>
       <div>
         <strong>Portal Browser 是 BEC 規模化的關鍵加購</strong>
-        EvilTokens 的 affiliate 可加購 Portal Browser，用於同時存取與管理多個被駭 M365 帳號 — 把單一 token 竊取轉換為「跨組織自動化 BEC 工廠」。<span class="badge badge-confirmed">Proofpoint / The Hacker News 確認</span>
+        EvilTokens 的 affiliate 可加購 Portal Browser，用於同時存取與管理多個被駭 M365 帳號，把單一 token 竊取轉換為「跨組織自動化 BEC 工廠」。<span class="badge badge-confirmed">Proofpoint / The Hacker News 確認</span>
       </div>
     </div>
 
@@ -206,13 +207,13 @@
         <tr><td>過期窗口壓力</td><td>高（15 分鐘必須上鉤）</td><td>幾乎消失（每次點擊都新鮮）</td></tr>
         <tr><td>誘餌通路</td><td>Email 為主</td><td>Email + 檔案 + QR Code（QR 為新增）</td></tr>
         <tr><td>自動化程度</td><td>需人工或腳本配合</td><td>完全 PhaaS 化，affiliate 模式</td></tr>
-        <tr><td>身份冒充頁面</td><td>單一 Microsoft</td><td>Microsoft / Adobe / DocuSign 多選</td></tr>
+        <tr><td>身分冒充頁面</td><td>單一 Microsoft</td><td>Microsoft / Adobe / DocuSign 多選</td></tr>
         <tr><td>後端 Token 處理</td><td>需攻擊者手動</td><td>Portal Browser 自動聚合多帳號</td></tr>
         <tr><td>變種速度</td><td>低</td><td>4 月十日 7 變種，疑 AI 生成</td></tr>
       </tbody>
     </table>
 
-    <h3 class="sub" style="margin-top:24px;">EvilTokens vs Tycoon 2FA</h3>
+    <h3 class="sub" style="margin-top:24px;">EvilTokens 與 Tycoon 2FA 比較</h3>
     <table class="data-table">
       <thead>
         <tr><th>項目</th><th>EvilTokens</th><th>Tycoon 2FA</th></tr>
@@ -244,7 +245,7 @@
       <div class="alert-icon">⚠</div>
       <div>
         <strong>EvilTokens ↔ Tycoon 2FA 是否同源</strong>
-        Landing page 視覺幾乎一致，但目前公開資訊不足以判定 fork、抄襲、購買代碼或共用 AI 生成 prompt。<span class="badge badge-claimed">公開資訊不足</span>
+        Landing page 視覺幾乎一致，但目前公開資訊不足以判定 fork、抄襲、購買程式碼或共用 AI 生成 prompt。<span class="badge badge-claimed">公開資訊不足</span>
       </div>
     </div>
     <div class="alert alert-amber">
@@ -320,7 +321,7 @@ New-MgIdentityConditionalAccessPolicy -BodyParameter $params
       <div class="alert-icon">④</div>
       <div>
         <strong>使用者教育</strong>
-        對全公司宣導：「任何要你『輸入此代碼到微軟頁面』的 Email / QR / 連結 = 釣魚」。網址正確（microsoft.com）不代表動作安全，重點是「為什麼此時要輸入這個代碼」。
+        對全公司宣導：「任何要你『輸入此驗證碼到微軟頁面』的 Email / QR / 連結 = 釣魚」。網址正確（microsoft.com）不代表動作安全，重點是「為什麼此時要輸入這個驗證碼」。
       </div>
     </div>
 
@@ -390,7 +391,7 @@ New-MgIdentityConditionalAccessPolicy -BodyParameter $params
 
       <div class="source-card">
         <div class="source-tag">產業研究</div>
-        <a href="https://labs.cloudsecurityalliance.org/research/csa-research-note-oauth-device-code-phishing-m365-20260325-c/" target="_blank">CSA Research Note — OAuth Device Code Phishing M365</a>
+        <a href="https://labs.cloudsecurityalliance.org/research/csa-research-note-oauth-device-code-phishing-m365-20260325-c/" target="_blank">CSA Research Note：OAuth Device Code Phishing M365</a>
         <div class="source-meta">Cloud Security Alliance · 2026-03</div>
       </div>
 
@@ -401,7 +402,7 @@ New-MgIdentityConditionalAccessPolicy -BodyParameter $params
 </div>
 
 <footer class="report-footer">
-  Generated 2026-05-18 · SecondBrain Report System · suelife/reports
+  產製日期：2026-05-18 · SecondBrain 報告系統 · suelife/reports
 </footer>
 
 </body>

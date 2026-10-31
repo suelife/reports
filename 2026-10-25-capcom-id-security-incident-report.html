@@ -261,10 +261,11 @@ div[role="region"] > table { min-width: 520px; }
 </style>
 </head>
 <body>
-<nav class="back-nav" aria-label="報告導覽"><a href="index.html">回報告列表</a></nav>
+<nav class="home-nav" aria-label="主要導覽" style="margin:0;padding:8px clamp(20px,4vw,48px);background:#1a2744;text-align:left"><a href="index.html" style="display:inline-block;padding:10px 4px;color:#fff;font:600 14px/1.7 'Segoe UI','Microsoft JhengHei',sans-serif;text-decoration:underline;text-underline-offset:4px">← 回首頁</a></nav>
+
 <header class="report-header">
-  <div class="label">資安事件報告 · SecondBrain Investigation</div>
-  <span class="severity-badge high">HIGH</span>
+  <div class="label">資安事件報告 · SecondBrain 事件調查</div>
+  <span class="severity-badge high">高</span>
   <h1>CAPCOM ID 資安事件<br>資料外洩與帳號遭改</h1>
   <p>CAPCOM 會員資料外洩，部分帳號也遭人改動；使用者應留意冒名通知與非本人操作。</p>
   <div class="meta">
@@ -277,7 +278,7 @@ div[role="region"] > table { min-width: 520px; }
 </header>
 <main class="container">
 <section class="section" id="summary">
-  <div class="section-header"><span class="icon" aria-hidden="true">📋</span> Executive Summary</div>
+  <div class="section-header"><span class="icon" aria-hidden="true">📋</span> 重點摘要</div>
   <div class="section-body">
 
     <div class="alert alert-navy">
@@ -309,7 +310,7 @@ div[role="region"] > table { min-width: 520px; }
 <section class="section" id="facts">
   <div class="section-header"><span class="icon" aria-hidden="true">✅</span> 事實核查矩陣</div>
   <div class="section-body">
-<p>「已確認」指 CAPCOM 已公開確認，不表示本報告取得原始日誌或完成獨立鑑識。日文原文為核對基準，英文版是同一公司的翻譯，不算第二個獨立證據來源。</p><div role="region" tabindex="0" aria-label="事實核查矩陣，可左右捲動"><table class="verify-table"><thead><tr><th scope="col">聲明</th><th scope="col">狀態</th><th scope="col">佐證來源與限制</th></tr></thead><tbody><tr><td>電子郵件與帳號活動資訊外洩。</td><td><span class="badge badge-confirmed">已確認</span></td><td>全球筆數見上方指標；欄位為建立時間、最後登入時間、登入次數、最後登入 IP。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>額外個資群組。</td><td><span class="badge badge-confirmed">已確認</span></td><td>生日、性別、國家／地區與暱稱。群組筆數與包含關係見上方指標。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>密碼遭未授權變更。</td><td><span class="badge badge-confirmed">已確認</span></td><td>上列受影響帳號已重設密碼；這不等同原密碼外洩。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>日本 e-Capcom 會員頁遭第三方存取。</td><td><span class="badge badge-confirmed">已確認</span></td><td>姓名及假名、電話、郵遞區號、地址、性別、生日、購買紀錄、客服詢問紀錄及會員通訊錄外洩。其餘帳號未確認因這次密碼變更而額外外洩。<a class="badge badge-info" href="#source-2">來源 2</a></td></tr><tr><td>原設密碼已確認外洩。</td><td><span class="badge badge-info">未確認</span></td><td>不能將「未確認」改寫為已證明絕無外洩。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>信用卡資料屬於本次外洩範圍。</td><td><span class="badge badge-denied">已否定</span></td><td>官方排除信用卡資料，並表示服務可繼續使用、遊戲遊玩未受影響。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></td></tr><tr><td>10/23 之後仍在調查影響範圍。</td><td><span class="badge badge-info">已更新</span></td><td>影響範圍調查已完成；監控與再發防止工作持續。<a class="badge badge-info" href="#source-2">來源 2</a></td></tr><tr><td>已能確定攻擊者、初始進入點或特定漏洞。</td><td><span class="badge badge-info">未公開</span></td><td>兩份公告未提供可供核驗的技術細節，不能據此建立歸因或漏洞結論。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></td></tr></tbody></table></div>
+<p>「已確認」指 CAPCOM 已公開確認，不表示本報告取得原始紀錄或完成獨立鑑識。日文原文為核對基準，英文版是同一公司的翻譯，不算第二個獨立證據來源。</p><div role="region" tabindex="0" aria-label="事實核查矩陣，可左右捲動"><table class="verify-table"><thead><tr><th scope="col">聲明</th><th scope="col">狀態</th><th scope="col">佐證來源與限制</th></tr></thead><tbody><tr><td>電子郵件與帳號活動資訊外洩。</td><td><span class="badge badge-confirmed">已確認</span></td><td>全球筆數見上方指標；欄位為建立時間、最後登入時間、登入次數、最後登入 IP。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>額外個資群組。</td><td><span class="badge badge-confirmed">已確認</span></td><td>生日、性別、國家／地區與暱稱。群組筆數與包含關係見上方指標。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>密碼遭未授權變更。</td><td><span class="badge badge-confirmed">已確認</span></td><td>上列受影響帳號已重設密碼；這不等同原密碼外洩。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>日本 e-Capcom 會員頁遭第三方存取。</td><td><span class="badge badge-confirmed">已確認</span></td><td>姓名及假名、電話、郵遞區號、地址、性別、生日、購買紀錄、客服詢問紀錄及會員通訊錄外洩。其餘帳號未確認因這次密碼變更而額外外洩。<a class="badge badge-info" href="#source-2">來源 2</a></td></tr><tr><td>原設密碼已確認外洩。</td><td><span class="badge badge-info">未確認</span></td><td>不能將「未確認」改寫為已證明絕無外洩。<a class="badge badge-info" href="#source-1">來源 1</a></td></tr><tr><td>信用卡資料屬於本次外洩範圍。</td><td><span class="badge badge-denied">已否定</span></td><td>官方排除信用卡資料，並表示服務可繼續使用、遊戲遊玩未受影響。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></td></tr><tr><td>10/23 之後仍在調查影響範圍。</td><td><span class="badge badge-info">已更新</span></td><td>影響範圍調查已完成；監控與再發防止工作持續。<a class="badge badge-info" href="#source-2">來源 2</a></td></tr><tr><td>已能確定攻擊者、初始進入點或特定漏洞。</td><td><span class="badge badge-info">未公開</span></td><td>兩份公告未提供可供核驗的技術細節，不能據此建立歸因或漏洞結論。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></td></tr></tbody></table></div>
   </div>
 </section>
 <section class="section" id="timeline">
@@ -348,7 +349,7 @@ div[role="region"] > table { min-width: 520px; }
   <div class="section-header"><span class="icon" aria-hidden="true">⚠️</span> 衝擊評估</div>
   <div class="section-body">
 
-    <h3 class="sub">評為 HIGH 的理由</h3>
+    <h3 class="sub">評為高嚴重度的理由</h3>
     <p>本報告以事件衝擊評為 HIGH，理由是全球大量帳號資訊外洩，加上已確認的密碼異動與少數下游商店資料暴露。這是報告的分析分級，不是官方定級，也不是軟體漏洞的 CVSS 分數。</p>
     <div role="region" tabindex="0" aria-label="分層衝擊評估，可左右捲動"><table class="data-table"><thead><tr><th scope="col">層面</th><th scope="col">作者風險分析</th><th scope="col">防禦含義與邊界</th></tr></thead><tbody><tr><td>一般帳號資料</td><td>資料內容可能被用來包裝可信通知。</td><td>留意冒名與釣魚；IP 位址可能與多人共用，不能直接等同實體地址。</td></tr><tr><td>額外個人資料</td><td>較容易建立個人輪廓。</td><td>依實際欄位分層通知，不把少量帳號的影響擴大到所有人。</td></tr><tr><td>帳號完整性</td><td>登入能力可能遭未授權控制。</td><td>檢查密碼以外的復原資訊及既有工作階段，不以單一重設動作代替完整復原驗證。</td></tr><tr><td>電商資料</td><td>訂單與往來紀錄可能讓冒名客服更逼真。</td><td>不要因對方能說出正確的交易背景，就將其視為可信聯絡人。</td></tr></tbody></table></div>
     <p>表中的詐騙、釣魚等後果為可能風險，不是已發現二次攻擊的證據。資料欄位以核查矩陣為準。<a class="badge badge-info" href="#source-1">來源 1</a> <a class="badge badge-info" href="#source-2">來源 2</a></p>
@@ -386,8 +387,8 @@ div[role="region"] > table { min-width: 520px; }
     </ul>
     <h3 class="sub">資安監控團隊：先做能驗證的初查</h3>
     <p>最便宜的起點是<strong>成功的密碼與復原設定異動</strong>，而不是蒐集未證實的攻擊 IP。下表可用來安排一次短時初查；查詢時間窗、門檻與例外應依自身業務基線設定，不是本案公開的攻擊參數。</p>
-    <div role="region" tabindex="0" aria-label="偵測到處置的實作清單，可左右捲動"><table class="data-table"><thead><tr><th scope="col">步驟</th><th scope="col">查什麼與怎麼做</th><th scope="col">必要限制</th></tr></thead><tbody><tr><td>第一步：找出異常密碼異動</td><td>從自己的身分平台稽核紀錄取出近期成功的密碼變更、密碼重設及復原方式變更；按操作主體、目標帳號、來源、時間與結果分組。先找同一主體短時間作用於多個帳號的情形。</td><td>先排除核准的客服復原與批次作業；不把共用 IP 或單一地理異常直接當成入侵。</td></tr><tr><td>第二步：關聯下游資料讀取</td><td>以同一目標帳號及可用的請求／工作階段識別碼，追查變更前後的登入、會員頁、地址簿、訂單與客服紀錄讀取。</td><td>只有登入日誌不足以證明資料未被讀取；缺少應用程式存取紀錄時，列為調查缺口。</td></tr><tr><td>第三步：核驗與止血</td><td>對已確認非本人操作的帳號，依應變流程保全證據、限制存取、重設驗證資料、撤銷相關工作階段與復原憑證，通知帳號持有人。</td><td>完成復原後，再驗證原登入狀態與關聯服務存取已失效；不要以一次密碼重設直接結案。</td></tr></tbody></table></div>
-    <p>必要日誌欄位至少包括時間、操作主體、目標帳號、事件類型、來源、結果與關聯識別碼；事件應涵蓋驗證、授權、帳號管理與敏感資料存取。日誌本身也要限制權限，避免記入密碼或完整存取權杖。此處依 OWASP 的紀錄原則提出欄位需求，並非聲稱 CAPCOM 或任何產品實際採用這些欄位名。<a class="badge badge-info" href="#source-7">來源 7</a></p>
+    <div role="region" tabindex="0" aria-label="偵測到處置的實作清單，可左右捲動"><table class="data-table"><thead><tr><th scope="col">步驟</th><th scope="col">查什麼與怎麼做</th><th scope="col">必要限制</th></tr></thead><tbody><tr><td>第一步：找出異常密碼異動</td><td>從自己的身分平台稽核紀錄取出近期成功的密碼變更、密碼重設及復原方式變更；按操作主體、目標帳號、來源、時間與結果分組。先找同一主體短時間作用於多個帳號的情形。</td><td>先排除核准的客服復原與批次作業；不把共用 IP 或單一地理異常直接當成入侵。</td></tr><tr><td>第二步：關聯下游資料讀取</td><td>以同一目標帳號及可用的請求／工作階段識別碼，追查變更前後的登入、會員頁、地址簿、訂單與客服紀錄讀取。</td><td>只有登入紀錄不足以證明資料未被讀取；缺少應用程式存取紀錄時，列為調查缺口。</td></tr><tr><td>第三步：核驗與止血</td><td>對已確認非本人操作的帳號，依應變流程保全證據、限制存取、重設驗證資料、撤銷相關工作階段與復原憑證，通知帳號持有人。</td><td>完成復原後，再驗證原登入狀態與關聯服務存取已失效；不要以一次密碼重設直接結案。</td></tr></tbody></table></div>
+    <p>必要紀錄欄位至少包括時間、操作主體、目標帳號、事件類型、來源、結果與關聯識別碼；事件應涵蓋驗證、授權、帳號管理與敏感資料存取。紀錄本身也要限制權限，避免記入密碼或完整存取權杖。此處依 OWASP 的紀錄原則提出欄位需求，並非聲稱 CAPCOM 或任何產品實際採用這些欄位名。<a class="badge badge-info" href="#source-7">來源 7</a></p>
     <h3 class="sub">平台團隊：把復原設計成完整流程</h3>
     <ul class="body-list">
       <li><strong>預防：</strong>重設憑證應不可預測、單次有效且有期限；對復原請求設速率限制，使用一致的帳號存在性回應，避免可被濫用的枚舉或重設入口。<a class="badge badge-info" href="#source-6">來源 6</a></li>
@@ -395,7 +396,7 @@ div[role="region"] > table { min-width: 520px; }
       <li><strong>驗證：</strong>用測試帳號演練密碼重設後舊工作階段是否仍有效、下游商店或客服服務是否仍可存取，以及告警能否把異動與資料讀取串起來。此為作者提出的驗證案例，並非本案漏洞重現。</li>
       <li><strong>通知：</strong>分開建立一般帳號資訊、額外個資、帳號遭改與下游資料暴露清單；逐一標明證據與狀態，避免讓所有使用者收到相同但不精確的影響描述。</li>
     </ul>
-    <p><strong>偵測限制：</strong>本案未公開實際日誌格式、惡意特徵或攻擊參數，因此不提供假裝能直接命中的特定產品查詢。部署前需先確認自己能取得哪些紀錄，並用已知正常與測試異常事件驗證規則。</p>
+    <p><strong>偵測限制：</strong>本案未公開實際紀錄格式、惡意特徵或攻擊參數，因此不提供假裝能直接命中的特定產品查詢。部署前需先確認自己能取得哪些紀錄，並用已知正常與測試異常事件驗證規則。</p>
 
   </div>
 </section>
@@ -407,6 +408,6 @@ div[role="region"] > table { min-width: 520px; }
   </div>
 </section>
 </main>
-<footer class="report-footer">Generated 2026-10-25 · SecondBrain Report System · suelife/reports</footer>
+<footer class="report-footer">產製日期：2026-10-25 · SecondBrain 報告系統 · suelife/reports</footer>
 </body>
 </html>

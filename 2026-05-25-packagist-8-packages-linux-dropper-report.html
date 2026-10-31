@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Packagist 8 套件供應鏈攻擊 — package.json Linux Binary Dropper</title>
+<title>Packagist 8 套件供應鏈攻擊：package.json Linux Binary Dropper</title>
 <link rel="stylesheet" href="design.css">
 </head>
 <body>
+<nav class="home-nav" aria-label="主要導覽" style="margin:0;padding:8px clamp(20px,4vw,48px);background:#1a2744;text-align:left"><a href="index.html" style="display:inline-block;padding:10px 4px;color:#fff;font:600 14px/1.7 'Segoe UI','Microsoft JhengHei',sans-serif;text-decoration:underline;text-underline-offset:4px">← 回首頁</a></nav>
 
-<nav class="back-nav"><a href="index.html">All Reports</a></nav>
+
 
 <header class="report-header">
-  <div class="label">資安事件報告 · SecondBrain Investigation</div>
-  <span class="severity-badge medium">MEDIUM</span>
-  <h1>Packagist 8 套件供應鏈攻擊<br>跨生態系 package.json Linux Binary Dropper</h1>
+  <div class="label">資安事件報告 · SecondBrain 事件調查</div>
+  <span class="severity-badge medium">中</span>
+  <h1>Packagist 8 套件供應鏈攻擊<br>跨生態系 package.json Linux 二進位投遞程式</h1>
   <div class="meta">
     <span><strong>事件日期</strong>　2026-05-21</span>
     <span><strong>公告日期</strong>　2026-05-23</span>
@@ -36,7 +37,7 @@
     </div>
     <div class="kpi amber">
       <div class="kpi-value">/tmp/.sshd</div>
-      <div class="kpi-label">惡意進程路徑</div>
+      <div class="kpi-label">惡意處理程序路徑</div>
     </div>
     <div class="kpi amber">
       <div class="kpi-value">Linux</div>
@@ -44,7 +45,7 @@
     </div>
   </div>
 
-  <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+  <div class="section-header"><span class="icon">📋</span> 重點摘要</div>
   <p>2026 年 5 月 21 日前後，攻擊者在 Packagist 上 8 個 PHP 套件的 <code>package.json</code> 中植入惡意 <code>postinstall</code> 腳本，利用開發者執行 <code>npm install</code> 的時機下載並執行 Linux binary。此手法刻意規避針對 PHP 依賴的安全掃描，利用 PHP 套件混搭 JavaScript 建構工具的常見實務作為盲區。惡意 payload 的 GitHub 源帳號（parikhpreyash4）已在事件曝光後刪除，binary 完整行為尚未完整逆向分析，目前排除了資料外洩的直接證據，但長尾風險仍存在。</p>
 
   <div class="section-header"><span class="icon">✅</span> 事實核查矩陣</div>
@@ -54,10 +55,10 @@
       <tr><td>8 個套件確認受感染</td><td>✅ 已確認（Packagist 官方移除）</td><td>fyself.com / THN</td></tr>
       <tr><td>payload 從 GitHub Releases 下載（parikhpreyash4）</td><td>✅ 已確認（帳號已刪除）</td><td>fyself.com</td></tr>
       <tr><td>GitHub 上有 777 個同源 payload 引用</td><td>✅ 已確認（研究人員掃描）</td><td>fyself.com</td></tr>
-      <tr><td>惡意進程偽裝為 /tmp/.sshd</td><td>✅ 已確認</td><td>fyself.com</td></tr>
-      <tr><td>binary 後續完整行為（外洩目標、C2）</td><td>⚠️ 聲稱未驗證（帳號已刪除，逆向未完整）</td><td>—</td></tr>
-      <tr><td>攻擊者與 TeamPCP 關聯</td><td>❌ 無確認（不同基礎設施，不同手法）</td><td>—</td></tr>
-      <tr><td>Windows / macOS 環境受影響</td><td>❌ 無確認（payload 為 Linux binary）</td><td>—</td></tr>
+      <tr><td>惡意處理程序偽裝為 /tmp/.sshd</td><td>✅ 已確認</td><td>fyself.com</td></tr>
+      <tr><td>binary 後續完整行為（外洩目標、C2）</td><td>⚠️ 聲稱未驗證（帳號已刪除，逆向未完整）</td><td>未列來源</td></tr>
+      <tr><td>攻擊者與 TeamPCP 關聯</td><td>❌ 無確認（不同基礎設施，不同手法）</td><td>未列來源</td></tr>
+      <tr><td>Windows / macOS 環境受影響</td><td>❌ 無確認（payload 為 Linux binary）</td><td>未列來源</td></tr>
     </tbody>
   </table>
 
@@ -69,7 +70,7 @@
   </ul>
 
   <div class="section-header"><span class="icon">🎯</span> 攻擊者背景</div>
-  <p>攻擊者身份未知，唯一已知線索為 GitHub 帳號 <code>parikhpreyash4</code>，以 <code>systemd-network-helper-aa5c751f</code> 為 repository 名稱（偽裝為系統服務），在事件曝光後立即刪帳號。無法確認其國籍、組織關聯或動機。</p>
+  <p>攻擊者身分未知，唯一已知線索為 GitHub 帳號 <code>parikhpreyash4</code>，以 <code>systemd-network-helper-aa5c751f</code> 為 repository 名稱（偽裝為系統服務），在事件曝光後立即刪帳號。無法確認其國籍、組織關聯或動機。</p>
   <p>與 TeamPCP（Mini Shai-Hulud）的比較：兩者均使用 npm 生態作為攻擊向量，但 TeamPCP 使用 OIDC token 自我繁殖、具備 SLSA Level 3 attestation，技術成熟度遠高於本事件。本事件手法較簡單，可能為獨立機會性攻擊者。</p>
 
   <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
@@ -101,7 +102,7 @@
     <tbody>
       <tr><td>惡意 GitHub 帳號</td><td><code>parikhpreyash4</code>（已刪除）</td><td>payload 源帳號</td></tr>
       <tr><td>惡意 repo 名稱</td><td><code>systemd-network-helper-aa5c751f</code></td><td>偽裝系統服務名稱</td></tr>
-      <tr><td>可疑進程路徑</td><td><code>/tmp/.sshd</code></td><td>Linux 環境，非標準路徑，不應存在</td></tr>
+      <tr><td>可疑處理程序路徑</td><td><code>/tmp/.sshd</code></td><td>Linux 環境，非標準路徑，不應存在</td></tr>
       <tr><td>可疑 npm 腳本</td><td>package.json 中非預期的 postinstall 呼叫 curl</td><td>任何 PHP 套件含此模式應審查</td></tr>
     </tbody>
   </table>
@@ -111,14 +112,14 @@
     <li><strong>直接影響</strong>：已確認 8 個 Packagist 套件的受感染版本被下載的開發者 Linux 環境中執行了未知 binary</li>
     <li><strong>規模不確定性</strong>：777 個 GitHub 同源引用暗示攻擊可能涵蓋更多未被識別的套件</li>
     <li><strong>Payload 行為未知</strong>：/tmp/.sshd 的功能無法確認，不排除資料外洩或持久性 backdoor</li>
-    <li><strong>侷限</strong>：Linux binary，Windows / macOS 用戶不受影響</li>
+    <li><strong>侷限</strong>：Linux binary，Windows / macOS 使用者不受影響</li>
   </ul>
 
   <div class="section-header"><span class="icon">⚖️</span> 爭議與未確認事項</div>
   <ul>
     <li><strong>/tmp/.sshd binary 行為</strong>：payload 源已消失，完整逆向分析尚未公開</li>
     <li><strong>777 個 GitHub 引用</strong>：是同一攻擊者佈置的備用 payload，還是其他攻擊者複製使用？目前無法確認</li>
-    <li><strong>感染時間窗口</strong>：套件何時被植入惡意代碼、受感染版本存活多久，目前無精確紀錄</li>
+    <li><strong>感染時間窗口</strong>：套件何時被植入惡意程式碼、受感染版本存活多久，目前無精確紀錄</li>
   </ul>
 
   <div class="section-header"><span class="icon">🛡️</span> 防禦建議</div>
@@ -156,7 +157,7 @@
 
 </div>
 <footer class="report-footer">
-  Generated 2026-05-25 · SecondBrain Report System · suelife/reports
+  產製日期：2026-05-25 · SecondBrain 報告系統 · suelife/reports
 </footer>
 </body>
 </html>

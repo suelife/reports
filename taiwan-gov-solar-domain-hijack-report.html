@@ -7,13 +7,14 @@
 <link rel="stylesheet" href="design.css">
 </head>
 <body>
+<nav class="home-nav" aria-label="主要導覽" style="margin:0;padding:8px clamp(20px,4vw,48px);background:#1a2744;text-align:left"><a href="index.html" style="display:inline-block;padding:10px 4px;color:#fff;font:600 14px/1.7 'Segoe UI','Microsoft JhengHei',sans-serif;text-decoration:underline;text-underline-offset:4px">← 回首頁</a></nav>
 
 <!-- ═══════════════ HEADER ═══════════════ -->
-<nav class="back-nav"><a href="index.html">All Reports</a></nav>
+
 
 <header class="report-header">
-  <div class="label">資安事件報告 · SecondBrain Investigation</div>
-  <span class="severity-badge high">HIGH</span>
+  <div class="label">資安事件報告 · SecondBrain 事件調查</div>
+  <span class="severity-badge high">高</span>
   <h1>台灣政府網站「太陽光電單一服務窗口」<br>網域劫持暨 SEO 權重竊用事件</h1>
   <div class="meta">
     <span><strong>事件日期</strong>　2026-05-14（發現日）</span>
@@ -28,7 +29,7 @@
 
   <!-- ═══════════════ EXECUTIVE SUMMARY ═══════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+    <div class="section-header"><span class="icon">📋</span> 重點摘要</div>
     <div class="section-body">
       <div class="callout red">
         <strong>核心結論</strong>
@@ -64,17 +65,17 @@
     <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
     <div class="section-body">
       <ul class="timeline">
-        <li><span class="tl-dot green"></span><div class="tl-content"><div class="tl-date">～2015 — 2023</div><div class="tl-title">mrpv.org.tw 正式運作期</div><div class="tl-detail">
+        <li><span class="tl-dot green"></span><div class="tl-content"><div class="tl-date">～2015 至 2023</div><div class="tl-title">mrpv.org.tw 正式運作期</div><div class="tl-detail">
             「太陽光電單一服務窗口」由經濟部能源署主導設立，提供申設流程、補助說明、法規查詢。
             行政院、能源署、各縣市政府（雲林、臺南、高雄等）、台電、學校等大量 .gov.tw 頁面合法引用此網域。
           </div></div></li>
-        <li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">不明時間點（2023—2025 之間）</div><div class="tl-title">原管理單位停止維護，網域廢棄</div><div class="tl-detail">
+        <li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">不明時間點（2023 至 2025 之間）</div><div class="tl-title">原管理單位停止維護，網域廢棄</div><div class="tl-detail">
             能源政策整合或預算縮編後，mrpv.org.tw 停止更新。.org.tw 網域因未續約而釋出。
             部分子頁面（如 <code>/index.aspx</code>）仍可存取（可能為伺服器殘留快取），但 Google 搜尋結果已出現「系統忙碌中請稍後再試」警示。
           </div></div></li>
-        <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2024—2025（確切時間待查）</div><div class="tl-title">網域遭接管 — 援交廣告上線</div><div class="tl-detail">
+        <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2024 至 2025（確切時間待查）</div><div class="tl-title">網域遭接管：援交廣告上線</div><div class="tl-detail">
             第三方（目前不明）接管 mrpv.org.tw 根目錄，部署違法成人廣告網站，
-            標題改為「<strong>定點茶與外送茶首選品牌 | 太陽光電 — 真人實照保證</strong>」。
+            標題改為「<strong>定點茶與外送茶首選品牌 | 太陽光電：真人實照保證</strong>」。
             故意保留「太陽光電」關鍵字以繼承搜尋引擎 SEO 權重。
           </div></div></li>
         <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2026-05-14</div><div class="tl-title">本次調查發現並記錄</div><div class="tl-detail">
@@ -90,7 +91,7 @@
     <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
     <div class="section-body">
 
-      <h3>手法一：廢棄網域劫持（Expired Domain Hijacking）</h3>
+      <h3>手法一：過期網域劫持</h3>
       <p>
         這是一種以「接管高 DA（Domain Authority）廢棄網域」為核心的 SEO 攻擊策略，
         在黑帽 SEO 社群中有完整的工業化操作流程：
@@ -331,31 +332,31 @@
       <ul class="sources-list">
         <li>
           <span class="src-num">1</span>
-          <span>原官方網域（現已劫持）：<a href="https://www.mrpv.org.tw/" target="_blank">mrpv.org.tw</a> — 根目錄顯示援交廣告，標題「定點茶與外送茶首選品牌 | 太陽光電 — 真人實照保證」</span>
+          <span>原官方網域（現已劫持）：<a href="https://www.mrpv.org.tw/" target="_blank">mrpv.org.tw</a>，根目錄顯示援交廣告，標題「定點茶與外送茶首選品牌 | 太陽光電：真人實照保證」</span>
         </li>
         <li>
           <span class="src-num">2</span>
-          <span>Google 搜尋驗證：<code>"太陽光電單一服務窗口" site:gov.tw</code> — 能源署、雲林、高雄、台電等頁面仍含舊連結</span>
+          <span>Google 搜尋驗證：<code>"太陽光電單一服務窗口" site:gov.tw</code>，能源署、雲林、高雄、台電等頁面仍含舊連結</span>
         </li>
         <li>
           <span class="src-num">3</span>
-          <span>Operation Rewrite — Palo Alto Networks Unit 42：<a href="https://unit42.paloaltonetworks.com/operation-rewrite-seo-poisoning-campaign/" target="_blank">unit42.paloaltonetworks.com</a></span>
+          <span>Operation Rewrite，Palo Alto Networks Unit 42：<a href="https://unit42.paloaltonetworks.com/operation-rewrite-seo-poisoning-campaign/" target="_blank">unit42.paloaltonetworks.com</a></span>
         </li>
         <li>
           <span class="src-num">4</span>
-          <span>UAT-8099 — Cisco Talos：<a href="https://blog.talosintelligence.com/uat-8099-chinese-speaking-cybercrime-group-seo-fraud/" target="_blank">blog.talosintelligence.com</a></span>
+          <span>UAT-8099，Cisco Talos：<a href="https://blog.talosintelligence.com/uat-8099-chinese-speaking-cybercrime-group-seo-fraud/" target="_blank">blog.talosintelligence.com</a></span>
         </li>
         <li>
           <span class="src-num">5</span>
-          <span>BADIIS to the Bone — Elastic Security Labs：<a href="https://www.elastic.co/security-labs/badiis-to-the-bone-new-insights-to-global-seo-poisoning-campaign" target="_blank">elastic.co/security-labs</a></span>
+          <span>BADIIS to the Bone，Elastic Security Labs：<a href="https://www.elastic.co/security-labs/badiis-to-the-bone-new-insights-to-global-seo-poisoning-campaign" target="_blank">elastic.co/security-labs</a></span>
         </li>
         <li>
           <span class="src-num">6</span>
-          <span>China-Linked UAT-8099 Targets IIS (Jan 2026) — The Hacker News：<a href="https://thehackernews.com/2026/01/china-linked-uat-8099-targets-iis.html" target="_blank">thehackernews.com</a></span>
+          <span>China-Linked UAT-8099 Targets IIS (Jan 2026)，The Hacker News：<a href="https://thehackernews.com/2026/01/china-linked-uat-8099-targets-iis.html" target="_blank">thehackernews.com</a></span>
         </li>
         <li>
           <span class="src-num">7</span>
-          <span>XDA Developers — Anthropic's Claude subscriptions 相關報導（用於確認調查方法論）：<a href="https://www.xda-developers.com/anthropics-claude-subscriptions-no-longer-include-agent-sdk-and-claude-p-usage/" target="_blank">xda-developers.com</a></span>
+          <span>XDA Developers，Anthropic's Claude subscriptions 相關報導（用於確認調查方法論）：<a href="https://www.xda-developers.com/anthropics-claude-subscriptions-no-longer-include-agent-sdk-and-claude-p-usage/" target="_blank">xda-developers.com</a></span>
         </li>
       </ul>
     </div>
@@ -364,8 +365,8 @@
 </div>
 
 <div class="footer">
-  Generated by SecondBrain · Wind Kuo · 2026-05-14 ·
-  <a href="index.html">← All Reports</a>
+  由 SecondBrain 產製 · Wind Kuo · 2026-05-14 ·
+  <a href="index.html">← 所有報告</a>
 </div>
 
 </body>

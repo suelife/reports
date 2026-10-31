@@ -7,13 +7,14 @@
 <link rel="stylesheet" href="design.css">
 </head>
 <body>
+<nav class="home-nav" aria-label="主要導覽" style="margin:0;padding:8px clamp(20px,4vw,48px);background:#1a2744;text-align:left"><a href="index.html" style="display:inline-block;padding:10px 4px;color:#fff;font:600 14px/1.7 'Segoe UI','Microsoft JhengHei',sans-serif;text-decoration:underline;text-underline-offset:4px">← 回首頁</a></nav>
 
 <!-- ══ HEADER ═════════════════════════════════════════════ -->
-<nav class="back-nav"><a href="index.html">All Reports</a></nav>
+
 
 <header class="report-header">
-  <div class="label">資安事件報告 · SecondBrain Investigation</div>
-  <span class="severity-badge high">HIGH</span>
+  <div class="label">資安事件報告 · SecondBrain 事件調查</div>
+  <span class="severity-badge high">高</span>
   <h1>鴻海精密 × Nitrogen Ransomware<br>威斯康辛州廠資安事件</h1>
   <div class="meta">
     <span><strong>事件日期</strong>　2026-05-03</span>
@@ -28,7 +29,7 @@
 
   <!-- ══ EXECUTIVE SUMMARY ═══════════════════════════════ -->
   <div class="section">
-    <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+    <div class="section-header"><span class="icon">📋</span> 重點摘要</div>
     <div class="section-body">
       <div class="kpi-grid">
         <div class="kpi red">
@@ -37,7 +38,7 @@
         </div>
         <div class="kpi red">
           <div class="kpi-value">1,100 萬+ 筆</div>
-          <div class="kpi-label">外洩文件數</div>
+          <div class="kpi-label">外洩檔案數</div>
         </div>
         <div class="kpi amber">
           <div class="kpi-value">8 天</div>
@@ -45,7 +46,7 @@
         </div>
         <div class="kpi">
           <div class="kpi-value">719 個</div>
-          <div class="kpi-label">受影響用戶帳號</div>
+          <div class="kpi-label">受影響使用者帳號</div>
         </div>
         <div class="kpi">
           <div class="kpi-value">47 起</div>
@@ -69,7 +70,7 @@
     <div class="section-body">
       <div class="alert alert-amber">
         <div class="alert-icon">⚠️</div>
-        <div>以下內容依可信度分級。<strong>已確認</strong>項目有多方獨立來源支持；<strong>聲稱未驗證</strong>項目僅來自 Nitrogen 單方；<strong>鴻海否認</strong>項目為鴻海未予承認之內容。</div>
+        <div>以下內容依可信度分級。<strong>已確認</strong>項目有多方獨立來源佐證；<strong>聲稱未驗證</strong>項目僅來自 Nitrogen 單方；<strong>鴻海否認</strong>項目為鴻海未予承認之內容。</div>
       </div>
       <table class="verify-table">
         <thead>
@@ -97,7 +98,7 @@
           </tr>
           <tr>
             <td><span class="badge badge-claimed">⚠️ 聲稱未驗證</span></td>
-            <td>竊取 8TB 資料、逾 1,100 萬份文件，已貼出截圖</td>
+            <td>竊取 8TB 資料、逾 1,100 萬份檔案，已貼出截圖</td>
             <td>Nitrogen 暗網聲明（無第三方確認）</td>
           </tr>
           <tr>
@@ -167,7 +168,7 @@
           <div class="tl-content">
             <div class="tl-date">2026/05/11 11:23 UTC</div>
             <div class="tl-title">Nitrogen 暗網宣稱攻擊</div>
-            <div class="tl-detail">Nitrogen 在 NitroBlog leak site 貼文，宣稱竊取 8TB / 1,100 萬份文件，並附上截圖作為「證據」</div>
+            <div class="tl-detail">Nitrogen 在 NitroBlog leak site 貼文，宣稱竊取 8TB / 1,100 萬份檔案，並附上截圖作為「證據」</div>
           </div>
         </li>
         <li>
@@ -232,7 +233,7 @@
         <thead><tr><th>屬性</th><th>內容</th></tr></thead>
         <tbody>
           <tr><td><strong>活躍時間</strong></td><td>2023 年起（loader 階段）；2024 年 9 月起獨立勒索組織</td></tr>
-          <tr><td><strong>程式基礎</strong></td><td>基於洩露的 Conti 2 原始碼構建加密器</td></tr>
+          <tr><td><strong>程式基礎</strong></td><td>基於洩露的 Conti 2 原始碼建置加密器</td></tr>
           <tr><td><strong>成員背景</strong></td><td>疑似前 BlackCat/ALPHV 成員，東歐背景</td></tr>
           <tr><td><strong>C2 伺服器位置</strong></td><td>保加利亞、荷蘭</td></tr>
           <tr><td><strong>勒索手法</strong></td><td>雙重勒索（先竊資料 → 再加密 → 暗網施壓）</td></tr>
@@ -246,22 +247,22 @@
       <h3 style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">感染鏈（四階段）</h3>
       <div class="chain">
         <div class="chain-step">
-          <div class="step-num">Stage 1</div>
+          <div class="step-num">階段 1</div>
           <div class="step-name">惡意廣告</div>
           <div class="step-detail">Google / Bing 投放假廣告，冒充 WinSCP、AnyDesk、Slack 等 IT 工具</div>
         </div>
         <div class="chain-step">
-          <div class="step-num">Stage 2</div>
-          <div class="step-name">木馬安裝包</div>
+          <div class="step-num">階段 2</div>
+          <div class="step-name">木馬安裝套件</div>
           <div class="step-detail">使用者下載並執行帶有後門的「官方」安裝程式</div>
         </div>
         <div class="chain-step">
-          <div class="step-num">Stage 3</div>
-          <div class="step-name">DLL Sideloading</div>
+          <div class="step-num">階段 3</div>
+          <div class="step-name">DLL 側載</div>
           <div class="step-detail">惡意 DLL 替換合法系統檔案，繞過防毒偵測</div>
         </div>
         <div class="chain-step">
-          <div class="step-num">Stage 4</div>
+          <div class="step-num">階段 4</div>
           <div class="step-name">C2 植入</div>
           <div class="step-detail">記憶體內載入 Cobalt Strike / Sliver → AD 橫向移動 → 資料外傳 → 加密</div>
         </div>
@@ -327,7 +328,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
             <td>2020/11</td>
             <td>墨西哥 Ciudad Juárez 廠</td>
             <td>DoppelPaymer</td>
-            <td>竊取 100GB 文件、刪除 20–30TB 備份、加密生產資料；要求 1,804 BTC（約 3,400 萬美元）</td>
+            <td>竊取 100GB 檔案、刪除 20–30TB 備份、加密生產資料；要求 1,804 BTC（約 3,400 萬美元）</td>
             <td>鴻海聲稱未支付贖金</td>
           </tr>
           <tr>
@@ -362,7 +363,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
             <td>部署 DNS 過濾 / 廣告攔截；IT 採購軟體只允許從內部核可的軟體庫下載</td>
           </tr>
           <tr>
-            <td><strong>DLL Sideloading</strong></td>
+            <td><strong>DLL 側載</strong></td>
             <td>應用程式白名單（WDAC / AppLocker）；監控非預期 DLL 載入行為</td>
           </tr>
           <tr>
@@ -451,7 +452,7 @@ rsp+0x20  →  公鑰（Public Key）存放位置
         <div class="source-card">
           <div class="source-tag">Nitrogen 組織頁面</div>
           <a href="https://www.ransomware.live/group/nitrogen" target="_blank">
-            Group: Nitrogen — ransomware.live
+            Group: Nitrogen：ransomware.live
           </a>
           <div class="source-meta">ransomware.live（持續更新）</div>
         </div>

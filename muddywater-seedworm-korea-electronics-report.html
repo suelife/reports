@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>資安事件報告：MuddyWater（Seedworm）2026 Q1 全球間諜行動——韓國電子製造商入侵事件深度分析</title>
+<title>資安事件報告：MuddyWater（Seedworm）2026 Q1 全球間諜行動：韓國電子製造商入侵事件深度分析</title>
 <link rel="stylesheet" href="design.css">
 </head>
 <body>
+<nav class="home-nav" aria-label="主要導覽" style="margin:0;padding:8px clamp(20px,4vw,48px);background:#1a2744;text-align:left"><a href="index.html" style="display:inline-block;padding:10px 4px;color:#fff;font:600 14px/1.7 'Segoe UI','Microsoft JhengHei',sans-serif;text-decoration:underline;text-underline-offset:4px">← 回首頁</a></nav>
 
 <!-- HEADER -->
-<nav class="back-nav"><a href="index.html">All Reports</a></nav>
+
 
 <header class="report-header">
-  <div class="label">資安事件報告 · SecondBrain Investigation</div>
-  <span class="severity-badge high">HIGH</span>
+  <div class="label">資安事件報告 · SecondBrain 事件調查</div>
+  <span class="severity-badge high">高</span>
   <h1>MuddyWater（Seedworm）2026 Q1 全球間諜行動<br>韓國電子製造商入侵事件深度分析</h1>
   <div class="meta">
     <span><strong>事件日期</strong>　2026-Q1</span>
@@ -28,7 +29,7 @@
 
   <!-- EXECUTIVE SUMMARY -->
   <div class="section">
-    <div class="section-header"><span class="icon">📋</span> Executive Summary</div>
+    <div class="section-header"><span class="icon">📋</span> 重點摘要</div>
     <div class="section-body">
       <div class="alert alert-red">
         <strong>核心結論</strong>
@@ -80,7 +81,7 @@
     <div class="section-header"><span class="icon">⚙️</span> 攻擊鏈技術分析</div>
     <div class="section-body">
 
-      <h3>DLL 側載（DLL Sideloading）</h3>
+      <h3>DLL 側載</h3>
       <p>本次行動核心技術：濫用兩個合法簽章的執行檔進行 DLL 側載。</p>
       <table class="data-table">
         <thead><tr><th>合法執行檔</th><th>來源</th><th>惡意 DLL</th><th>載入惡意程式</th></tr></thead>
@@ -91,13 +92,13 @@
       </table>
       <div class="alert alert-red" style="margin-top:16px;">
         <strong>安全工具被武器化</strong>
-        SentinelOne 的二進位檔具有合法數位簽章，許多端點防護會自動信任同業簽章。攻擊者刻意選擇安全軟體元件來繞過安全工具——此模式已被 Storm-0249、Cephalus 勒索軟體等不同組織複製。
+        SentinelOne 的二進位檔具有合法數位簽章，許多端點防護會自動信任同業簽章。攻擊者刻意選擇安全軟體元件來繞過安全工具，此模式已被 Storm-0249、Cephalus 勒索軟體等不同組織複製。
       </div>
 
       <h3>ChromElevator 竊資軟體</h3>
       <p>公開可取得的後滲透工具，能繞過 Google Chrome v127+ 引入的 <strong>App-Bound Encryption（ABE）</strong> 防護：</p>
       <ul >
-        <li><strong>ABE 機制：</strong>Chrome 透過 Windows 特權服務驗證存取 cookie/密碼的程序是否為 Chrome 本體</li>
+        <li><strong>ABE 機制：</strong>Chrome 透過 Windows 特權服務驗證存取 cookie/密碼的處理程序是否為 Chrome 本體</li>
         <li><strong>繞過方式：</strong>透過 COM 介面與 Chrome 的 IElevator 服務通訊，在與瀏覽器相同資料夾下執行偽裝</li>
         <li><strong>竊取內容：</strong>瀏覽器密碼、Cookie、付款資料</li>
         <li><strong>相容性：</strong>Chrome 143（IElevator）、Chrome 144+（IElevator2）及未來版本</li>
@@ -117,22 +118,22 @@
     <div class="section-header"><span class="icon">📅</span> 事件時間線</div>
     <div class="section-body">
       <ul class="timeline">
-        <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2026-02-20（Day 1）—— 立足點建立</div><div class="tl-title">偵察、載荷下載、DLL 側載、持久化</div><div class="tl-detail">
+        <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2026-02-20（Day 1）：立足點建立</div><div class="tl-title">偵察、酬載下載、DLL 側載、持久化</div><div class="tl-detail">
             PowerShell 偵察（whoami/hostname/ipconfig/net user）→ WMI 列舉防毒 →
             從 <code>179.43.177[.]220:8080</code> 下載 <code>nm.ps1</code>、<code>a.dat</code>、<code>a.exe</code> →
             部署 fmapp.exe + sentinelmemoryscanner.exe DLL 側載 →
             Registry Run Key 持久化 → SAM/SECURITY/SYSTEM 登錄檔竊取 → 提權工具執行
           </div></div></li>
-        <li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">2026-02-21（Day 2）—— 持續監控</div><div class="tl-title">自動化 Beaconing</div><div class="tl-detail">約每 90 秒自動 beaconing，持續偵察與 ping 式探測。</div></div></li>
-        <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2026-02-22（Day 3）—— 深度滲透</div><div class="tl-title">第二階段載荷、密集偵察、資料外洩</div><div class="tl-detail">
+        <li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">2026-02-21（Day 2）：持續監控</div><div class="tl-title">自動化 Beaconing</div><div class="tl-detail">約每 90 秒自動 beaconing，持續偵察與 ping 式探測。</div></div></li>
+        <li><span class="tl-dot red"></span><div class="tl-content"><div class="tl-date">2026-02-22（Day 3）：深度滲透</div><div class="tl-title">第二階段酬載、密集偵察、資料外洩</div><div class="tl-detail">
             從 <code>timetrakr[.]cloud</code> 下載第二階段 PowerShell 模組 →
             截圖腳本 <code>sp.ps1</code> →
             密集 host/domain 偵察 →
             <strong>透過 sendit[.]sh 外洩資料</strong>
           </div></div></li>
-        <li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-02-23 ~ 24（Day 4–5）—— 維持存取</div><div class="tl-title">重複偵察與隧道維持</div><div class="tl-detail">定期 PowerShell 偵察、IP 確認、重新執行側載二進位檔維持 SOCKS5 隧道。</div></div></li>
-        <li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">2026-02-26（Day 7）—— 沉寂後重新活躍</div><div class="tl-title">36 小時沉寂後恢復活動</div><div class="tl-detail">憑證傾倒 → 新隨機目錄重新部署工具 → 對不同群組名稱執行 net group/localgroup。</div></div></li>
-        <li><span class="tl-dot green"></span><div class="tl-content"><div class="tl-date">2026-02-27（Day 8）—— 最後活動</div><div class="tl-title">最後一次側載重啟</div><div class="tl-detail">重新啟動 fmapp.exe，此後未再偵測到活動。</div></div></li>
+        <li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-02-23 ~ 24（Day 4–5）：維持存取</div><div class="tl-title">重複偵察與隧道維持</div><div class="tl-detail">定期 PowerShell 偵察、IP 確認、重新執行側載二進位檔維持 SOCKS5 隧道。</div></div></li>
+        <li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">2026-02-26（Day 7）：沉寂後重新活躍</div><div class="tl-title">36 小時沉寂後恢復活動</div><div class="tl-detail">憑證傾倒 → 新隨機目錄重新部署工具 → 對不同群組名稱執行 net group/localgroup。</div></div></li>
+        <li><span class="tl-dot green"></span><div class="tl-content"><div class="tl-date">2026-02-27（Day 8）：最後活動</div><div class="tl-title">最後一次側載重啟</div><div class="tl-detail">重新啟動 fmapp.exe，此後未再偵測到活動。</div></div></li>
       </ul>
     </div>
   </div>
@@ -144,7 +145,7 @@
 
       <h3>檔案雜湊（SHA-256）</h3>
       <table class="data-table">
-        <thead><tr><th>檔案</th><th>SHA-256</th></tr></thead>
+        <thead><tr><th>檔案</th><th>SHA-256 雜湊值</th></tr></thead>
         <tbody>
           <tr><td>fmapp.exe（合法）</td><td >e25892603c42e34bd7ba0d8ea73be600d898cadc290e3417a82c04d6281b743b</td></tr>
           <tr><td>fmapp.dll（惡意）</td><td >c6182fd01b14d84723e3c9d11bc0e16b34de6607ccb8334fc9bb97c1b44f0cde</td></tr>
@@ -162,15 +163,15 @@
       <table class="data-table">
         <thead><tr><th>類型</th><th>指標</th><th>用途</th></tr></thead>
         <tbody>
-          <tr><td><span class="badge badge-denied">IP</span></td><td><code>179.43.177[.]220:8080</code></td><td>主要載荷暫存伺服器</td></tr>
+          <tr><td><span class="badge badge-denied">IP</span></td><td><code>179.43.177[.]220:8080</code></td><td>主要酬載暫存伺服器</td></tr>
           <tr><td><span class="badge badge-denied">IP</span></td><td><code>178.128.233[.]36</code></td><td>C2 基礎設施</td></tr>
           <tr><td><span class="badge badge-denied">IP</span></td><td><code>172.67.156[.]47</code></td><td>C2 基礎設施</td></tr>
           <tr><td><span class="badge badge-denied">IP</span></td><td><code>104.21.48[.]205</code></td><td>C2 基礎設施</td></tr>
           <tr><td><span class="badge badge-denied">IP</span></td><td><code>37.187.78[.]41</code></td><td>C2 基礎設施</td></tr>
           <tr><td><span class="badge badge-denied">IP</span></td><td><code>34.117.59[.]81</code></td><td>C2 基礎設施</td></tr>
-          <tr><td><span class="badge badge-claimed">Domain</span></td><td><code>timetrakr[.]cloud</code></td><td>攻擊者所有的暫存域名</td></tr>
-          <tr><td><span class="badge badge-claimed">Domain</span></td><td><code>svc.wompworthy[.]com</code></td><td>C2 通訊</td></tr>
-          <tr><td><span class="badge badge-info">Service</span></td><td><code>sendit[.]sh</code></td><td>公開檔案傳輸服務（資料外洩管道）</td></tr>
+          <tr><td><span class="badge badge-claimed">網域</span></td><td><code>timetrakr[.]cloud</code></td><td>攻擊者所有的暫存域名</td></tr>
+          <tr><td><span class="badge badge-claimed">網域</span></td><td><code>svc.wompworthy[.]com</code></td><td>C2 通訊</td></tr>
+          <tr><td><span class="badge badge-info">服務</span></td><td><code>sendit[.]sh</code></td><td>公開檔案傳輸服務（資料外洩管道）</td></tr>
         </tbody>
       </table>
     </div>
@@ -181,13 +182,13 @@
     <div class="section-header"><span class="icon">🗺️</span> MITRE ATT&CK 對照</div>
     <div class="section-body">
       <table class="data-table">
-        <thead><tr><th>階段</th><th>技術 ID</th><th>名稱</th><th>本案證據</th></tr></thead>
+        <thead><tr><th>階段</th><th>技術編號</th><th>名稱</th><th>本案證據</th></tr></thead>
         <tbody>
           <tr><td><span class="badge badge-info">偵察</span></td><td>T1087.002</td><td>Domain Account Discovery</td><td><code>net user /domain</code>、<code>net group /domain</code></td></tr>
           <tr><td><span class="badge badge-info">偵察</span></td><td>T1082</td><td>System Information Discovery</td><td><code>hostname</code>、<code>ipconfig /all</code></td></tr>
           <tr><td><span class="badge badge-info">偵察</span></td><td>T1518.001</td><td>Security Software Discovery</td><td>WMI 列舉防毒軟體</td></tr>
           <tr><td><span class="badge badge-info">偵察</span></td><td>T1113</td><td>Screen Capture</td><td>PowerShell 螢幕截圖</td></tr>
-          <tr><td><span class="badge badge-claimed">執行</span></td><td>T1059.001</td><td>PowerShell</td><td>多階段偵察與載荷執行</td></tr>
+          <tr><td><span class="badge badge-claimed">執行</span></td><td>T1059.001</td><td>PowerShell</td><td>多階段偵察與酬載執行</td></tr>
           <tr><td><span class="badge badge-claimed">持久化</span></td><td>T1547.001</td><td>Registry Run Keys</td><td><code>HKCU\...\CurrentVersion\Run</code></td></tr>
           <tr><td><span class="badge badge-confirmed">防禦規避</span></td><td>T1574.002</td><td>DLL Side-Loading</td><td>fmapp.exe / sentinelmemoryscanner.exe 側載</td></tr>
           <tr><td><span class="badge badge-confirmed">防禦規避</span></td><td>T1036.005</td><td>Masquerading</td><td>使用合法簽章二進位檔</td></tr>
@@ -242,7 +243,7 @@
       <ul >
         <li><strong>偵測 DLL 側載：</strong>監控 <code>fmapp.exe</code> 和 <code>sentinelmemoryscanner.exe</code> 從非標準路徑（如 <code>AppData\Local\[隨機]\</code>）執行</li>
         <li><strong>阻斷已知 IOC：</strong>將上述 IP、Domain、檔案雜湊加入防火牆與 EDR 規則</li>
-        <li><strong>監控 node.exe 異常行為：</strong><code>node.exe</code> 作為 <code>cmd.exe</code> 或 <code>powershell.exe</code> 的父程序是高度異常的</li>
+        <li><strong>監控 node.exe 異常行為：</strong><code>node.exe</code> 作為 <code>cmd.exe</code> 或 <code>powershell.exe</code> 的父處理程序是高度異常的</li>
         <li><strong>封鎖公開檔案傳輸服務：</strong><code>sendit[.]sh</code> 等服務不應被企業端點存取</li>
       </ul>
 
@@ -269,28 +270,28 @@
     <div class="section-header"><span class="icon">📚</span> 資料來源</div>
     <div class="section-body">
       <ol class="sources-list">
-        <li><span class="src-num">1</span><a href="https://www.security.com/threat-intelligence/iran-seedworm-electronics" target="_blank">Symantec/Broadcom — Seedworm: Iran-Linked Hackers Breached Korean Electronics Maker</a>（原始報告）</li>
-        <li><span class="src-num">2</span><a href="https://www.ithome.com.tw/news/175794" target="_blank">iThome — 伊朗駭客MuddyWater攻擊韓國電子製造商</a></li>
-        <li><span class="src-num">3</span><a href="https://www.bleepingcomputer.com/news/security/iranian-hackers-targeted-major-south-korean-electronics-maker/" target="_blank">BleepingComputer — Iranian hackers targeted major South Korean electronics maker</a></li>
-        <li><span class="src-num">4</span><a href="https://www.technadu.com/iran-linked-muddywater-group-breached-organizations-in-9-countries-in-q1-2026-including-major-electronics-maker/627875/" target="_blank">TechNadu — Iran-Linked MuddyWater Breaches 9 Organizations</a></li>
-        <li><span class="src-num">5</span><a href="https://industrialcyber.co/threats-attacks/symantec-uncovers-iran-linked-seedworm-espionage-campaign-targeting-airport-government-manufacturing-sectors/" target="_blank">Industrial Cyber — Symantec uncovers Iran-linked Seedworm espionage campaign</a></li>
-        <li><span class="src-num">6</span><a href="https://gbhackers.com/seedworm-apt-abuses-signed-binaries/" target="_blank">GBHackers — Seedworm APT Abuses Signed Binaries for DLL Sideloading</a></li>
-        <li><span class="src-num">7</span><a href="https://cybersecuritynews.com/seedworm-apt-abuses-signed-fortemedia/" target="_blank">CybersecurityNews — Seedworm APT Abuses Signed Fortemedia and SentinelOne Binaries</a></li>
-        <li><span class="src-num">8</span><a href="https://www.scworld.com/news/cephalus-ransomware-abuses-sentinelone-executable-for-dll-sideloading" target="_blank">SC Media — Cephalus ransomware abuses SentinelOne executable</a></li>
-        <li><span class="src-num">9</span><a href="https://reliaquest.com/blog/threat-spotlight-storm-0249-precision-endpoint-exploitation/" target="_blank">ReliaQuest — Storm-0249 Moves to Precision EDR Exploitation</a></li>
-        <li><span class="src-num">10</span><a href="https://attack.mitre.org/groups/G0069/" target="_blank">MITRE ATT&CK — MuddyWater G0069</a></li>
-        <li><span class="src-num">11</span><a href="https://en.wikipedia.org/wiki/MuddyWater_(hacker_group)" target="_blank">Wikipedia — MuddyWater (hacker group)</a></li>
-        <li><span class="src-num">12</span><a href="https://securityboulevard.com/2026/05/iranian-hackers-targeted-major-south-korean-electronics-maker-in-espionage-campaign/" target="_blank">Security Boulevard — Iranian Hackers Targeted Major South Korean Electronics Maker</a></li>
-        <li><span class="src-num">13</span><a href="https://redcanary.com/blog/threat-intelligence/google-chrome-app-bound-encryption/" target="_blank">Red Canary — Stealers evolve to bypass Chrome's App-Bound Encryption</a></li>
-        <li><span class="src-num">14</span><a href="https://www.elastic.co/security-labs/katz-and-mouse-game" target="_blank">Elastic Security Labs — Katz and Mouse Game: MaaS Infostealers Adapt</a></li>
-        <li><span class="src-num">15</span><a href="https://www.group-ib.com/blog/muddywater-espionage/" target="_blank">Group-IB — Unmasking MuddyWater's New Malware Toolkit</a></li>
+        <li><span class="src-num">1</span><a href="https://www.security.com/threat-intelligence/iran-seedworm-electronics" target="_blank">Symantec/Broadcom：Seedworm: Iran-Linked Hackers Breached Korean Electronics Maker</a>（原始報告）</li>
+        <li><span class="src-num">2</span><a href="https://www.ithome.com.tw/news/175794" target="_blank">iThome：伊朗駭客MuddyWater攻擊韓國電子製造商</a></li>
+        <li><span class="src-num">3</span><a href="https://www.bleepingcomputer.com/news/security/iranian-hackers-targeted-major-south-korean-electronics-maker/" target="_blank">BleepingComputer：Iranian hackers targeted major South Korean electronics maker</a></li>
+        <li><span class="src-num">4</span><a href="https://www.technadu.com/iran-linked-muddywater-group-breached-organizations-in-9-countries-in-q1-2026-including-major-electronics-maker/627875/" target="_blank">TechNadu：Iran-Linked MuddyWater Breaches 9 Organizations</a></li>
+        <li><span class="src-num">5</span><a href="https://industrialcyber.co/threats-attacks/symantec-uncovers-iran-linked-seedworm-espionage-campaign-targeting-airport-government-manufacturing-sectors/" target="_blank">Industrial Cyber：Symantec uncovers Iran-linked Seedworm espionage campaign</a></li>
+        <li><span class="src-num">6</span><a href="https://gbhackers.com/seedworm-apt-abuses-signed-binaries/" target="_blank">GBHackers：Seedworm APT Abuses Signed Binaries for DLL Sideloading</a></li>
+        <li><span class="src-num">7</span><a href="https://cybersecuritynews.com/seedworm-apt-abuses-signed-fortemedia/" target="_blank">CybersecurityNews：Seedworm APT Abuses Signed Fortemedia and SentinelOne Binaries</a></li>
+        <li><span class="src-num">8</span><a href="https://www.scworld.com/news/cephalus-ransomware-abuses-sentinelone-executable-for-dll-sideloading" target="_blank">SC Media：Cephalus ransomware abuses SentinelOne executable</a></li>
+        <li><span class="src-num">9</span><a href="https://reliaquest.com/blog/threat-spotlight-storm-0249-precision-endpoint-exploitation/" target="_blank">ReliaQuest：Storm-0249 Moves to Precision EDR Exploitation</a></li>
+        <li><span class="src-num">10</span><a href="https://attack.mitre.org/groups/G0069/" target="_blank">MITRE ATT&CK：MuddyWater G0069</a></li>
+        <li><span class="src-num">11</span><a href="https://en.wikipedia.org/wiki/MuddyWater_(hacker_group)" target="_blank">Wikipedia：MuddyWater (hacker group)</a></li>
+        <li><span class="src-num">12</span><a href="https://securityboulevard.com/2026/05/iranian-hackers-targeted-major-south-korean-electronics-maker-in-espionage-campaign/" target="_blank">Security Boulevard：Iranian Hackers Targeted Major South Korean Electronics Maker</a></li>
+        <li><span class="src-num">13</span><a href="https://redcanary.com/blog/threat-intelligence/google-chrome-app-bound-encryption/" target="_blank">Red Canary：Stealers evolve to bypass Chrome's App-Bound Encryption</a></li>
+        <li><span class="src-num">14</span><a href="https://www.elastic.co/security-labs/katz-and-mouse-game" target="_blank">Elastic Security Labs：Katz and Mouse Game: MaaS Infostealers Adapt</a></li>
+        <li><span class="src-num">15</span><a href="https://www.group-ib.com/blog/muddywater-espionage/" target="_blank">Group-IB：Unmasking MuddyWater's New Malware Toolkit</a></li>
       </ol>
     </div>
   </div>
 
   <!-- FOOTER -->
   <div class="footer">
-    SecondBrain Threat Analysis · Generated 2026-05-15 · Wind Kuo
+    SecondBrain 威脅分析 · 產製日期：2026-05-15 · Wind Kuo
   </div>
 
 </div>
