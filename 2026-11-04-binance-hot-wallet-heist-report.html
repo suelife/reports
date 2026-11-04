@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>幣安 × TraderTraitor：熱錢包遭竊約 63 億美元事件研析</title>
+<style>
+/* ════ 以下為內嵌樣式，整段照抄，勿改成外部 link ════
+   第一部分：SecondBrain Report Design System v1（原 ~/reports/design.css 全文，2026-10-17 內嵌）
+   第二部分：無障礙補充層 v1.1（對比 ≥ 4.5:1、跟隨系統深色模式、顏色以外的文字標籤、寬表捲動、中文標籤不轉大寫、列印）
+   validate.py 以本模板 <style> 定義的 class 為準檢查漂移。 */
+
+/* ════════════════════════════════════════════════════
+   SecondBrain Report Design System v1
+   共用元件：badge、timeline、chain、alert、kpi、table
+   ════════════════════════════════════════════════════ */
+
+:root {
+  --navy: #1a2744;
+  --navy-light: #2c3e6b;
+  --red: #c0392b;
+  --amber: #d68910;
+  --green: #1e8449;
+  --gray-bg: #f4f6f9;
+  --border: #dce3ee;
+  --text: #222831;
+  --text-muted: #5a6578;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+  background: var(--gray-bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* ── Back Navigation ── */
+.back-nav {
+  background: var(--navy);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 48px;
+  display: flex;
+  align-items: center;
+}
+.back-nav a {
+  color: #8aa4d0;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s;
+}
+.back-nav a:hover { color: #fff; }
+.back-nav a::before { content: '‹'; font-size: 16px; line-height: 1; }
+@media (max-width: 600px) { .back-nav { padding: 10px 20px; } }
+
+/* ── Header ── */
+.report-header { background: var(--navy); color: #fff; padding: 40px 48px 32px; }
+.report-header .label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #8aa4d0; margin-bottom: 8px; }
+.report-header h1 { font-size: 26px; font-weight: 700; margin-bottom: 10px; line-height: 1.3; }
+.report-header .meta { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 16px; font-size: 13px; color: #9bb3d4; }
+.report-header .meta span strong { color: #fff; }
+.severity-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; margin-bottom: 14px; }
+.severity-badge.high { background: var(--red); color: #fff; }
+.severity-badge.medium { background: var(--amber); color: #fff; }
+.severity-badge.low { background: var(--green); color: #fff; }
+.severity-badge.info { background: var(--navy-light); color: #fff; }
+
+/* ── Layout ── */
+.container { max-width: 1000px; margin: 0 auto; padding: 32px 24px 60px; }
+
+/* ── Section ── */
+.section { background: #fff; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 24px; overflow: hidden; }
+.section-header { background: var(--navy); color: #fff; padding: 12px 24px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.section-body { padding: 24px; }
+
+/* ── KPI Cards ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.kpi { border: 1px solid var(--border); border-radius: 5px; padding: 14px 16px; text-align: center; }
+.kpi .kpi-value { font-size: 28px; font-weight: 800; color: var(--navy); line-height: 1; margin-bottom: 4px; }
+.kpi .kpi-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi.red .kpi-value { color: var(--red); }
+.kpi.amber .kpi-value { color: var(--amber); }
+.kpi.green .kpi-value { color: var(--green); }
+
+/* ── Badges ── */
+.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 3px; white-space: nowrap; }
+.badge-confirmed { background: #d4efdf; color: var(--green); }
+.badge-claimed   { background: #fef9e7; color: var(--amber); border: 1px solid #f0c040; }
+.badge-denied    { background: #fadbd8; color: var(--red); }
+.badge-info      { background: #eef2fa; color: var(--navy); }
+
+/* ── Tables ── */
+table.data-table { width: 100%; border-collapse: collapse; }
+table.data-table th { text-align: left; padding: 9px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; background: #f0f3f8; border-bottom: 2px solid var(--border); color: var(--navy); }
+table.data-table td { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #edf0f5; vertical-align: top; }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:hover td { background: #f9fbff; }
+
+/* ── Verify Table (badge column) ── */
+.verify-table { width: 100%; border-collapse: collapse; }
+.verify-table th { text-align: left; padding: 10px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: #f0f3f8; border-bottom: 2px solid var(--border); color: var(--navy); }
+.verify-table td { padding: 11px 14px; font-size: 14px; border-bottom: 1px solid #edf0f5; vertical-align: top; }
+.verify-table tr:last-child td { border-bottom: none; }
+
+/* ── Timeline ── */
+.timeline { list-style: none; position: relative; }
+.timeline::before { content: ''; position: absolute; left: 18px; top: 0; bottom: 0; width: 2px; background: #dce3ee; }
+.timeline li { display: flex; gap: 18px; padding: 0 0 24px; position: relative; }
+.timeline li:last-child { padding-bottom: 0; }
+.tl-dot { width: 14px; height: 14px; background: var(--navy); border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 2px var(--navy); flex-shrink: 0; margin-top: 4px; position: relative; z-index: 1; margin-left: 12px; }
+.tl-dot.red   { background: var(--red);   box-shadow: 0 0 0 2px var(--red); }
+.tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
+.tl-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+.tl-content { flex: 1; }
+.tl-date { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+.tl-title { font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.tl-detail { font-size: 13px; color: var(--text-muted); }
+
+/* ── Process Chain ── */
+.chain { display: flex; overflow-x: auto; }
+.chain-step { flex: 1; min-width: 130px; background: #f0f3f8; border: 1px solid var(--border); border-right: none; padding: 14px 12px; text-align: center; position: relative; }
+.chain-step:last-child { border-right: 1px solid var(--border); border-radius: 0 5px 5px 0; }
+.chain-step:first-child { border-radius: 5px 0 0 5px; }
+.chain-step::after { content: '›'; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--navy); z-index: 1; font-weight: 700; }
+.chain-step:last-child::after { display: none; }
+.chain-step .step-num { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.chain-step .step-name { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.chain-step .step-detail { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+/* ── Alert Boxes ── */
+.alert { display: flex; gap: 12px; padding: 14px 16px; border-radius: 5px; margin-bottom: 16px; font-size: 14px; line-height: 1.6; }
+.alert-red   { background: #fdf2f0; border-left: 4px solid var(--red); }
+.alert-amber { background: #fef9e7; border-left: 4px solid var(--amber); }
+.alert-green { background: #eafaf1; border-left: 4px solid var(--green); }
+.alert-navy  { background: #eef2fa; border-left: 4px solid var(--navy); }
+.alert-icon { font-size: 18px; flex-shrink: 0; padding-top: 1px; }
+.alert strong { display: block; margin-bottom: 2px; }
+
+/* ── Code Block ── */
+.code-block { background: #1a2744; color: #a8d8ea; padding: 16px 20px; border-radius: 5px; font-family: "Cascadia Code", Consolas, Monaco, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; margin: 12px 0; }
+.code-block .comment { color: #6b8cba; }
+.code-block .highlight { color: #f0c040; }
+
+/* ── Sources ── */
+.sources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.source-card { border: 1px solid var(--border); border-radius: 5px; padding: 14px 16px; }
+.source-card .source-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.source-card a { font-size: 14px; font-weight: 600; color: var(--navy); text-decoration: none; display: block; margin-bottom: 4px; line-height: 1.4; }
+.source-card a:hover { color: #3b5bdb; text-decoration: underline; }
+.source-card .source-meta { font-size: 12px; color: var(--text-muted); }
+
+/* ── Footer ── */
+.report-footer { border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; font-size: 12px; color: var(--text-muted); background: #fff; }
+
+/* ── Utilities ── */
+p { margin-bottom: 10px; }
+p:last-child { margin-bottom: 0; }
+code { background: #f0f3f8; padding: 1px 5px; border-radius: 3px; font-size: 13px; font-family: Consolas, monospace; }
+h3.sub { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .report-header { padding: 28px 20px 24px; }
+  .section-body { padding: 16px; }
+  .chain { flex-direction: column; }
+  .chain-step { border-right: 1px solid var(--border) !important; border-bottom: none; border-radius: 0 !important; }
+  .chain-step:first-child { border-radius: 5px 5px 0 0 !important; }
+  .chain-step:last-child { border-bottom: 1px solid var(--border) !important; border-radius: 0 0 5px 5px !important; }
+  .chain-step::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -14px; transform: translateX(-50%); }
+}
+@media print {
+  body { background: #fff; }
+  .section { break-inside: avoid; }
+}
+
+/* ── Legacy aliases (for older reports before schema-fields v1) ── */
+.callout { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 5px; margin-bottom: 16px; font-size: 14px; line-height: 1.6; background: #eef2fa; border-left: 4px solid var(--navy); }
+.callout strong { font-weight: 700; color: var(--navy); }
+.callout.red { background: #fdf2f0; border-left-color: var(--red); }
+.callout.amber { background: #fef9e7; border-left-color: var(--amber); }
+.callout.green { background: #eafaf1; border-left-color: var(--green); }
+.callout.navy { background: #eef2fa; border-left-color: var(--navy); }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.body-list { padding-left: 20px; margin-bottom: 12px; }
+.body-list li { margin-bottom: 6px; }
+.sources-list { list-style: none; padding: 0; margin: 0; }
+.sources-list li { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; }
+.sources-list li:last-child { border-bottom: none; }
+.sources-list .src-num { background: var(--navy); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.matrix { width: 100%; border-collapse: collapse; }
+.matrix th, .matrix td { padding: 9px 14px; font-size: 13px; border-bottom: 1px solid #edf0f5; vertical-align: top; }
+.matrix th { background: #f0f3f8; text-align: left; font-weight: 700; color: var(--navy); text-transform: uppercase; font-size: 12px; }
+.kill-chain { display: flex; overflow-x: auto; gap: 0; }
+.kill-chain-step { flex: 1; min-width: 130px; background: #f0f3f8; border: 1px solid var(--border); padding: 14px 12px; text-align: center; }
+.footer { border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; font-size: 12px; color: var(--text-muted); background: #fff; }
+
+/* ── 無障礙補充層 v1.1（模板內建，照抄保留）── */
+:root { --amber: #8a5a00; --green: #17703d; --red: #b03024; --text-muted: #4f5a6c; --surface: #fff; --head-bg: #f0f3f8; --row-hover: #f9fbff; }
+.report-header .label, .section-header, .kpi .kpi-label, table.data-table th, .verify-table th,
+.tl-date, h3.sub, .source-card .source-tag, .chain-step .step-num { text-transform: none; letter-spacing: normal; }
+.report-header .label { color: #c9d6ee; }
+.report-header .meta { color: #c9d6ee; }
+.badge-claimed { border-color: #b58100; }
+.kpi .kpi-value::before, .tl-content .tl-date::after { font-size: 12px; font-weight: 700; }
+.kpi.red::before, .kpi.amber::before, .kpi.green::before { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.kpi.red::before { content: "▲ 已確認損害"; color: var(--red); }
+.kpi.amber::before { content: "◆ 聲稱未證實"; color: var(--amber); }
+.kpi.green::before { content: "✓ 已緩解"; color: var(--green); }
+.kpi.amber { border-style: dashed; }
+.kpi.green { border-style: double; border-width: 3px; }
+li:has(> .tl-dot.red) .tl-date::after { content: "　▲ 損害"; color: var(--red); }
+li:has(> .tl-dot.amber) .tl-date::after { content: "　◆ 未證實"; color: var(--amber); }
+li:has(> .tl-dot.green) .tl-date::after { content: "　✓ 緩解"; color: var(--green); }
+.tl-dot.red { border-radius: 2px; }
+.tl-dot.amber { border-radius: 2px; transform: rotate(45deg); }
+div[role="region"] { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+div[role="region"]:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 2px; }
+div[role="region"] > table { min-width: 520px; }
+.section-body code { overflow-wrap: anywhere; }
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: dark; --navy: #1a2744; --navy-light: #3a4f85; --red: #ff8a80; --amber: #f2c14e; --green: #6fdc9a;
+    --gray-bg: #0f131c; --border: #2b3447; --text: #e6e9f0; --text-muted: #a9b3c4; --surface: #171c27; --head-bg: #1e2533; --row-hover: #1c2230; }
+  .section, .report-footer, .kpi, .source-card { background: var(--surface); }
+  .section-header, .back-nav, .report-header { background: #111a2e; }
+  table.data-table th, .verify-table th, code, .chain-step { background: var(--head-bg); color: var(--text); }
+  table.data-table td, .verify-table td { border-bottom-color: var(--border); }
+  table.data-table tr:hover td { background: var(--row-hover); }
+  .kpi .kpi-value, .tl-title, h3.sub, .source-card a, .chain-step .step-name, .alert strong { color: var(--text); }
+  .source-card a:hover { color: #9db4ff; }
+  .timeline::before { background: var(--border); }
+  .tl-dot { border-color: var(--surface); background: #8aa4d0; box-shadow: 0 0 0 2px #8aa4d0; }
+  .tl-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+  .tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
+  .tl-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+  .badge-confirmed { background: #12301f; color: var(--green); }
+  .badge-claimed { background: #33290f; color: var(--amber); border-color: #8a6a1c; }
+  .badge-denied { background: #3a1c1a; color: var(--red); }
+  .badge-info { background: #1e2740; color: #c9d6ee; }
+  .alert-red { background: #2a1817; } .alert-amber { background: #2b2412; } .alert-green { background: #12251a; } .alert-navy { background: #172038; border-left-color: #8aa4d0; }
+  .severity-badge.high { background: #b03024; } .severity-badge.medium { background: #8a5a00; } .severity-badge.low { background: #17703d; }
+}
+@media print {
+  .back-nav { display: none; }
+  .report-header { padding: 20px 24px; }
+  div[role="region"] { overflow: visible; }
+  div[role="region"] > table { min-width: 0; }
+  table.data-table td, .verify-table td { overflow-wrap: anywhere; }
+  thead { display: table-header-group; }
+  tr, .kpi, .source-card, .timeline li { break-inside: avoid; }
+  .section { break-inside: auto; }
+  .section-header { break-after: avoid; }
+}
+@page { size: A4; margin: 14mm 12mm; }
+</style>
+</head>
+<body>
+
+<nav class="back-nav"><a href="index.html">← 回報告列表</a></nav>
+
+<header class="report-header">
+  <div class="label">資安事件報告 · SecondBrain Investigation</div>
+  <span class="severity-badge high">HIGH</span>
+  <h1>幣安（Binance） × TraderTraitor（北韓）<br>熱錢包遭竊約 63 億美元事件研析</h1>
+  <div class="meta">
+    <span><strong>事件日期</strong>　2026-10-30</span>
+    <span><strong>公告日期</strong>　2026-10-30</span>
+    <span><strong>報告日期</strong>　2026-11-04</span>
+    <span><strong>受害者</strong>　幣安（Binance）</span>
+    <span><strong>攻擊組織</strong>　TraderTraitor（FBI 2026-10-31 公告歸因；北韓否認）</span>
+  </div>
+</header>
+
+<div class="container">
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">📋</span> Executive Summary</div>
+  <div class="section-body">
+<div class="alert alert-navy"><div class="alert-icon" aria-hidden="true">◆</div><div><strong>一句話重點：</strong> 2026 年 10 月 30 日台北時間清晨，幣安的熱錢包被駭，損失約 63 億美元；攻擊者先駭進工程師的電腦，再讓幣安自己的系統替他簽出提款。</div></div>
+<div class="alert alert-navy"><div class="alert-icon" aria-hidden="true">◆</div><div><strong>結論：</strong> 本案不是漏洞，而是社交工程（假求職面試、竄改的安裝程式）加上內部工具權限過大，讓攻擊者在正常提款流程之外發起交易。</div></div>
+<div class="alert alert-amber"><div class="alert-icon" aria-hidden="true">!</div><div><strong>這跟我們有沒有關係：</strong> 任何讓工程師電腦能碰到正式環境部署權杖的組織，都值得用本案檢查自己的流程，詳見「🛡️ 防禦建議」。技術背景可略過，直接跳「⚠️ 衝擊評估」與「🛡️ 防禦建議」。</div></div>
+<div class="kpi-grid">
+  <div class="kpi red"><div class="kpi-value">約 63.4 億 美元</div><div class="kpi-label">受影響資產</div></div>
+  <div class="kpi green"><div class="kpi-value">約 28.5 億 美元</div><div class="kpi-label">凍結金額</div></div>
+  <div class="kpi red"><div class="kpi-value">約 32.5 億 美元</div><div class="kpi-label">攻擊者控制資產</div></div>
+  <div class="kpi"><div class="kpi-value">10 至 11 條</div><div class="kpi-label">受攻擊鏈數</div></div>
+  <div class="kpi green"><div class="kpi-value">約 95 %</div><div class="kpi-label">補足比例</div></div>
+</div>
+<p>狀態符號說明：✓ 已證實（官方原文或多個獨立來源一致）｜? 未證實（單一來源或未公開）｜! 矛盾（來源之間說法不一）｜ⓘ 轉述（引用媒體轉述，非一手原文）</p>
+<p>時間說明：一律為台北時間（UTC+8）。美國來源 11/1 以前為 EDT（UTC−4），換算方式為加 12 小時；11/1 夏令時間結束後為 EST（UTC−5），加 13 小時。原始時間欄註明原時區。</p>
+<p>KPI 註記：受影響資產採幣安初步報告數字；凍結金額採幣安初步報告與 Elliptic；攻擊者控制資產為 Elliptic 11/1 最終版；鏈數與補足比例來源之間有矛盾（! 矛盾），細節見事實核查矩陣。</p>
+<p><strong>是哪一起事件：</strong> 只有一起。2026-10-29 20:05 UTC（台北 10/30 04:05）起，幣安多條鏈上的熱錢包遭轉出。週報 B1 提到的「Elliptic 64.3 億、幣安約 63 億、凍結 28.4 億」都是指這一起，素材查無同期另一起幣安入侵事件。✓ 已證實（<a href="https://www.binance.com/en/support/announcement/detail/d3306d9dca5243548c813b605e1d1751" target="_blank" rel="noopener">幣安 Update #2</a>、<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）</p>
+<ul>
+<li>相關但不同的事件：Chainalysis 自身也在 10/30 遭入侵，官方稱與幣安案無關，頁面有「Friday Oct 30, 2026 Update」（<a href="https://www.chainalysis.com/blog/security-incident-october-30/" target="_blank" rel="noopener">Chainalysis 公告</a>）。部分贓款與 2026 年 9 月 Bitget 遭駭款項混在一起洗，屬不同事件（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis</a>）。</li>
+<li>日期註記：週報寫「2026/10/30」以台北時間計算是對的；美國與 UTC 來源都寫 10/29。</li>
+</ul>
+<p><strong>規模：</strong> Elliptic 稱這是「by far the largest crypto heist of all time」，約為 2025 年 2 月 Bybit 案（14.6 億美元）的 4 倍以上（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）。</p>
+<p><strong>來源之間的主要矛盾（細節見 ✅ 事實核查矩陣）：</strong> 損失 58 億至 64.3 億美元；凍結 23 億至 30 億美元；受攻擊鏈數 10 或 11 條；TRM 11/3 寫「沒有政府歸因」，但 FBI 10/31 已公告。</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">✅</span> 事實核查矩陣</div>
+  <div class="section-body">
+<div role="region" tabindex="0" aria-label="事實核查矩陣">
+<table class="verify-table">
+<thead><tr><th>項目</th><th>說法</th><th>狀態</th><th>來源（發布日）</th></tr></thead>
+<tbody>
+<tr><td>損失金額</td><td>「可能 58 億美元」，為 Arkham 追蹤地址的持有總額，非確認的竊取金額</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.bleepingcomputer.com/news/security/binance-probes-potential-58-billion-crypto-theft-hack/" target="_blank" rel="noopener">BleepingComputer</a>（10/30 台北）</td></tr>
+<tr><td>損失金額</td><td>約 63 億美元</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/c5a8729a97ac486d963784d96c5642d7" target="_blank" rel="noopener">幣安首次公告</a>（10/30 台北）</td></tr>
+<tr><td>損失金額</td><td>約 63.4 億美元受影響</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>（11/3）</td></tr>
+<tr><td>損失金額</td><td>約 63.6 億美元（10 條鏈）</td><td><span class="badge badge-info">! 矛盾</span></td><td>TRM，ⓘ 經 <a href="https://decrypt.co/382224/trm-and-chainalysis-tie-6-4b-binance-hack-to-north-koreas-tradertraitor" target="_blank" rel="noopener">Decrypt</a>（10/30）轉述；TRM 11/3 版寫約 64 億</td></tr>
+<tr><td>損失金額</td><td>約 64 億美元</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis</a>（更新 11/4 台北）</td></tr>
+<tr><td>損失金額</td><td>64.3 億美元</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>（最終版 11/1 16:00 台北）</td></tr>
+<tr><td>凍結金額</td><td>Tether 與 Circle 逾 23 億美元（早期）</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.bleepingcomputer.com/news/security/binance-probes-potential-58-billion-crypto-theft-hack/" target="_blank" rel="noopener">BleepingComputer</a>（10/30 台北）</td></tr>
+<tr><td>凍結金額</td><td>近 27 億美元（數小時內）</td><td><span class="badge badge-info">! 矛盾</span></td><td>TRM，ⓘ 經 <a href="https://decrypt.co/382224/trm-and-chainalysis-tie-6-4b-binance-hack-to-north-koreas-tradertraitor" target="_blank" rel="noopener">Decrypt</a>（10/30）轉述</td></tr>
+<tr><td>凍結金額</td><td>約 28 億美元（11/3 11:30 EST，台北 11/4 00:30）</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis</a></td></tr>
+<tr><td>凍結金額</td><td>約 28.5 億美元，「subject to reconciliation and market price volatility」</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>（11/3）；<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>（28.5 億，44%）</td></tr>
+<tr><td>凍結金額</td><td>約 30 億美元</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/c5a8729a97ac486d963784d96c5642d7" target="_blank" rel="noopener">幣安首次公告</a>（10/30 台北）</td></tr>
+<tr><td>受攻擊鏈數</td><td>11 條</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></td></tr>
+<tr><td>受攻擊鏈數</td><td>10 條</td><td><span class="badge badge-info">! 矛盾</span></td><td>TRM，ⓘ 經 <a href="https://decrypt.co/382224/trm-and-chainalysis-tie-6-4b-binance-hack-to-north-koreas-tradertraitor" target="_blank" rel="noopener">Decrypt</a>（10/30）轉述</td></tr>
+<tr><td>受攻擊鏈數</td><td>幣安稱攻擊「橫跨多個網路」，並點名 XRP、Solana、Optimism、Bitcoin、Ethereum 五條鏈（點名數量，非總數，不與 10、11 條並列為矛盾）</td><td><span class="badge badge-confirmed">✓ 已證實</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>（11/3）</td></tr>
+<tr><td>攻擊持續時間</td><td>主要流出集中在約 20 至 30 分鐘內（TRM 10/30 說法、Elliptic）；最後一筆在 23:56 UTC（台北 10/30 07:56），全程約 4 小時（Elliptic、幣安報告）。兩者一講主要流出、一講全程，不算矛盾</td><td><span class="badge badge-confirmed">✓ 已證實</span></td><td>TRM 經 <a href="https://decrypt.co/382224/trm-and-chainalysis-tie-6-4b-binance-hack-to-north-koreas-tradertraitor" target="_blank" rel="noopener">Decrypt</a>、<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></td></tr>
+<tr><td>私鑰外洩</td><td>未見私鑰外洩</td><td><span class="badge badge-confirmed">✓ 已證實（官方說法）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/c5a8729a97ac486d963784d96c5642d7" target="_blank" rel="noopener">幣安首次公告</a>、<a href="https://www.binance.com/en/support/announcement/detail/d3306d9dca5243548c813b605e1d1751" target="_blank" rel="noopener">幣安 Update #2</a></td></tr>
+<tr><td>補足比例</td><td>Update #4（台北 11/1 12:08）寫 95%</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Update #4</a></td></tr>
+<tr><td>補足比例</td><td>初步報告寫「As of 31 October 2026, 98% … replenished」，時間點早於寫 95% 的 Update #4，前後倒置</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>（11/3）</td></tr>
+<tr><td>政府歸因</td><td>FBI 10/31 公告北韓 TraderTraitor 為主嫌</td><td><span class="badge badge-confirmed">✓ 已證實</span></td><td><a href="https://www.fbi.gov/investigate/cyber/alerts/2026/north-korea-responsible-for-6-billion-binance-attack" target="_blank" rel="noopener">FBI</a>（10/31 台北）</td></tr>
+<tr><td>政府歸因</td><td>TRM 11/3 文章 FAQ 第 6 題仍寫「no government has attributed the theft」（可能沿用舊文字）</td><td><span class="badge badge-info">! 矛盾</span></td><td><a href="https://www.trmlabs.com/resources/blog/binance-hack-update-north-korea-launders-proceeds-through-self-minted-tokens-and-chained-bridges" target="_blank" rel="noopener">TRM</a>（11/3 台北）</td></tr>
+<tr><td>規模定位</td><td>史上最大加密貨幣竊案，約為 Bybit 案的 4 倍以上</td><td><span class="badge badge-confirmed">✓ 已證實（單一分析商評估）</span></td><td><a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></td></tr>
+</tbody>
+</table>
+</div>
+<p>金額差異主要來自計價時點與計算口徑不同（素材整理判斷）。週報 B1 寫凍結 28.4 億，Elliptic 原文是 28.5 億；週報「可能北韓、官方未歸因」的寫法在 FBI 10/31 公告後已過時。</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">📅</span> 事件時間線</div>
+  <div class="section-body">
+<p>時間一律為台北時間（UTC+8），原始時區另列。時間點標記：▲ 損害、◆ 未證實、✓ 緩解，未標記為一般事件。</p>
+<ul class="timeline">
+<li>
+  <span class="tl-dot amber"></span>
+  <div class="tl-content">
+    <div class="tl-date">2026-06（日期未公開）（台北）</div>
+    <div class="tl-title">供應鏈攻擊：錢包 DevOps 工程師 A 為安裝熱門 AI 寫程式工具，在搜尋引擎搜尋後下載被竄改的 Homebrew 安裝程式；資安團隊偵測到異常，更換裝置並輪替所有相關憑證，但 A 與錢包基礎設施團隊同事的角色已曝光（「惡意 Google 廣告」的說法出自 The Verge，ⓘ 轉述）</div>
+    <div class="tl-detail">原始時間：未公開<br><span class="badge badge-confirmed">✓ 已證實（官方說法）</span> <span class="badge badge-claimed">? 未證實確切日期</span><br>來源：<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>、<a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">LinkedIn 全文</a>、<a href="https://www.theverge.com/news/1025576/binance-cyrpto-theft-explained" target="_blank" rel="noopener">The Verge</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot amber"></span>
+  <div class="tl-content">
+    <div class="tl-date">2026-09（日期未公開）（台北）</div>
+    <div class="tl-title">社交工程：軟體工程師 B 在合法求職平台被冒充「專案總監」的人接觸，經 HR 第一輪面試、自稱虛構公司 CEO 的第二輪面試後，被要求把含惡意程式庫的「作業」下載到工作電腦；惡意程式在安裝過程執行，把合法開發工具元件換成惡意版本，執行指令並連線攻擊者控制的外部伺服器；這支零時差惡意程式當時未被端點防護偵測（被替換的元件是 pyenv，出自 The Hacker News，ⓘ 轉述；原文只寫合法開發工具元件）</div>
+    <div class="tl-detail">原始時間：未公開<br><span class="badge badge-confirmed">✓ 已證實（官方說法）</span> <span class="badge badge-claimed">? 未證實確切日期</span><br>來源：<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>、<a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">LinkedIn 全文</a>、<a href="https://thehackernews.com/2026/11/binance-reveals-how-fake-job-interviews.html" target="_blank" rel="noopener">The Hacker News</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">2026-10-20（台北）</div>
+    <div class="tl-title">攻擊者利用已遭入侵的 B 的電腦，以內部 AI 工具為跳板，取得錢包 DevOps 工程師 A 與錢包軟體工程師 C 的電腦控制權；隨後發現 A 的電腦上有容器部署權杖</div>
+    <div class="tl-detail">原始時間：同日（時區未標）<br><span class="badge badge-confirmed">✓ 已證實（官方說法）</span><br>來源：<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>、<a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">LinkedIn 全文</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">10/29 白天至 10/30（台北）</div>
+    <div class="tl-title">攻擊者新錢包從 Tornado Cash 收到 3 筆 0.1 ETH</div>
+    <div class="tl-detail">原始時間：10/28 至 10/29（UTC）<br><span class="badge badge-confirmed">✓ 已證實（鏈上）</span><br>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">10/29 23:59（台北）</div>
+    <div class="tl-title">部署 sweeper 合約（約 4 小時前曾在另一錢包演練）</div>
+    <div class="tl-detail">原始時間：10/29 15:59（UTC）<br><span class="badge badge-confirmed">✓ 已證實（鏈上）</span><br>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot amber"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 01:15 至 03:56（台北）</div>
+    <div class="tl-title">攻擊者登入工程師 C 的電腦，使用從工程師 A 竊得的憑證部署容器，並觸發惡意腳本發動攻擊</div>
+    <div class="tl-detail">原始時間：10/29 17:15 至 19:56（? 時區未標，推測 UTC）<br><span class="badge badge-confirmed">✓ 已證實（官方說法）</span> <span class="badge badge-claimed">? 時區未標，推測 UTC</span><br>來源：<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>、<a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">LinkedIn 全文</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot red"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 04:05 至 04:09（台北）</div>
+    <div class="tl-title">五個熱錢包轉出 2.3346 億 XRP；之後 30 分鐘內 Solana、NEAR、Base、Optimism、Bitcoin、Tron、Ethereum、Arbitrum、Avalanche 熱錢包被提空</div>
+    <div class="tl-detail">原始時間：10/29 20:05 至 20:09（UTC）；16:05（EDT）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>、<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.binance.com/en/support/announcement/detail/d3306d9dca5243548c813b605e1d1751" target="_blank" rel="noopener">幣安 Update #2</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot red"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 04:20（台北）</div>
+    <div class="tl-title">Ethereum 上送出含 50 筆 EIP-7702 授權的交易，把「Binance 14」錢包委派給攻擊合約；Chainalysis 稱資金約此時開始流出</div>
+    <div class="tl-detail">原始時間：10/29 20:20（UTC）；16:20（EDT）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot red"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 04:24（台北）</div>
+    <div class="tl-title">單筆交易轉走 25.3 億美元（占以太坊損失三分之二）</div>
+    <div class="tl-detail">原始時間：10/29 20:24（UTC）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot green"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 約 05:01（台北）</div>
+    <div class="tl-title">Tether 凍結攻擊者主錢包 11.8 億 USDT（入帳後 37 分鐘），17 分鐘內再凍結 4 個地址；之後 3 分鐘 Circle 凍結 8.23 億 USDC</div>
+    <div class="tl-detail">原始時間：約 10/29 21:01（UTC）<br><span class="badge badge-confirmed">✓ 已證實</span> <span class="badge badge-info">時間由「20:24 加 37 分」推算</span><br>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot green"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 05:14（台北）</div>
+    <div class="tl-title">Chainalysis 表示凍結已開始</div>
+    <div class="tl-detail">原始時間：10/29 17:14（EDT）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 06:45（台北）</div>
+    <div class="tl-title">BleepingComputer 首報「可能 58 億」，幣安發言人當時只稱「調查中」</div>
+    <div class="tl-detail">原始時間：10/29 18:45（EDT）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.bleepingcomputer.com/news/security/binance-probes-potential-58-billion-crypto-theft-hack/" target="_blank" rel="noopener">BleepingComputer</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot red"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 07:00 至 07:56（台北）</div>
+    <div class="tl-title">第二波：Avalanche、Polygon 錢包被提領；23:56 UTC 為最後一筆未授權轉出，掃走 Binance 14 的新入金</div>
+    <div class="tl-detail">原始時間：10/29 23:00 至 23:56（UTC）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot green"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 08:10（台北）</div>
+    <div class="tl-title">EIP-7702 委派碼清除</div>
+    <div class="tl-detail">原始時間：10/30 00:10（UTC）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot green"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 10:23（台北）</div>
+    <div class="tl-title">幣安首次公告：可能是 DevOps 工程師筆電遭入侵、未見私鑰外洩、影響約 63 億、已凍結約 30 億、暫停提款</div>
+    <div class="tl-detail">原始時間：10/29 22:23（EDT，頁面顯示）；10/30 02:23（UTC）<br><span class="badge badge-confirmed">✓ 已證實（官方）</span><br>來源：<a href="https://www.binance.com/en/support/announcement/detail/c5a8729a97ac486d963784d96c5642d7" target="_blank" rel="noopener">幣安首次公告</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 12:30（台北）</div>
+    <div class="tl-title">Chainalysis 公開歸因 TraderTraitor</div>
+    <div class="tl-detail">原始時間：10/30 00:30（EDT）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 14:36（台北）</div>
+    <div class="tl-title">以太坊上的代幣拋售停止</div>
+    <div class="tl-detail">原始時間：10/30 06:36（UTC）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">10/30 19:38 至 20:29（台北）</div>
+    <div class="tl-title">AVAX 全數換成 USDC，經 Circle CCTP 跨到以太坊換成 7,242.8 ETH</div>
+    <div class="tl-detail">原始時間：10/30 11:38 至 12:29（UTC）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">10/31 00:31（台北）</div>
+    <div class="tl-title">共同執行長 Richard Teng 發布影片：不是一人所為、攻擊工具具自毀機制、EIP-7702 委派未經正常核准流程</div>
+    <div class="tl-detail">原始時間：10/30 12:31（EDT）<br><span class="badge badge-info">ⓘ 轉述（Elliptic</span> <span class="badge badge-info">CoinDesk 原文本次未重開）</span><br>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot green"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/31 03:33（台北）</div>
+    <div class="tl-title">幣安 Update #2：發現「其他入侵點」；已提撥逾 63.4 億（其中 50 億為同幣種）、補足約 80%；目標約 34 小時內恢復提款</div>
+    <div class="tl-detail">原始時間：10/30 15:33（EDT）；19:33（UTC）<br><span class="badge badge-confirmed">✓ 已證實（官方）</span><br>來源：<a href="https://www.binance.com/en/support/announcement/detail/d3306d9dca5243548c813b605e1d1751" target="_blank" rel="noopener">幣安 Update #2</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">10/31 08:00（台北）</div>
+    <div class="tl-title">儲備證明快照</div>
+    <div class="tl-detail">原始時間：10/31 00:00（UTC）<br><span class="badge badge-confirmed">✓ 已證實（官方）</span><br>來源：<a href="https://www.binance.com/en/support/announcement/detail/1fdf1f61559c401da0435895ffcccb62" target="_blank" rel="noopener">幣安 Update #3</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot green"></span>
+  <div class="tl-content">
+    <div class="tl-date">10/31 22:24（台北）</div>
+    <div class="tl-title">幣安 Recovery Update #3：補足 90%；維持原訂「週日 2026-11-01」恢復提款</div>
+    <div class="tl-detail">原始時間：10/31 10:24（EDT）；14:24（UTC）<br><span class="badge badge-confirmed">✓ 已證實（官方）</span><br>來源：<a href="https://www.binance.com/en/support/announcement/detail/1fdf1f61559c401da0435895ffcccb62" target="_blank" rel="noopener">幣安 Update #3</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">10/31 22:44（台北）</div>
+    <div class="tl-title">FBI 公告歸因北韓 TraderTraitor</div>
+    <div class="tl-detail">原始時間：10/31 10:44（EDT）；14:44（UTC）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.fbi.gov/investigate/cyber/alerts/2026/north-korea-responsible-for-6-billion-binance-attack" target="_blank" rel="noopener">FBI</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot green"></span>
+  <div class="tl-content">
+    <div class="tl-date">11/1 12:08（台北）</div>
+    <div class="tl-title">幣安 Recovery Update #4：11/1 06:00 至 09:00 UTC（台北 14:00 至 17:00）分階段恢復提款；補足約 95%</div>
+    <div class="tl-detail">原始時間：11/1 00:08（EDT）；04:08（UTC）<br><span class="badge badge-confirmed">✓ 已證實（官方）</span><br>來源：<a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Update #4</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot green"></span>
+  <div class="tl-content">
+    <div class="tl-date">11/1 14:00（台北）</div>
+    <div class="tl-title">開始恢復提款，先從 BTC 網路</div>
+    <div class="tl-detail">原始時間：11/1 06:00（UTC）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">11/3 00:52（台北）</div>
+    <div class="tl-title">The Block 報導：完成 10 種資產零知識儲備證明；11/3 起恢復更多網路；11/4 再快照，需 40 至 50 小時</div>
+    <div class="tl-detail">原始時間：11/2 11:52（EST）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.theblock.co/news/business/2026-11-02-binance-zero-knowledge-proof-of-reserves-snapshot-hack-recovery-432321" target="_blank" rel="noopener">The Block</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">11/3（台北）</div>
+    <div class="tl-title">北韓金與正透過朝中社否認，稱「嚴重政治挑釁」</div>
+    <div class="tl-detail">原始時間：11/3（時區未標）<br><span class="badge badge-info">ⓘ 轉述（韓聯社，經 CNBC）</span><br>來源：<a href="https://www.cnbc.com/2026/11/03/north-korea-binance-elliptic-chainalysis.html" target="_blank" rel="noopener">CNBC</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">11/3（台北）</div>
+    <div class="tl-title">幣安發布初步調查報告「29 October 2026 Binance Security Incident: Initial Findings and Response Update」</div>
+    <div class="tl-detail">原始時間：11/3（部落格標示日期）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></div>
+  </div>
+</li>
+<li>
+  <span class="tl-dot "></span>
+  <div class="tl-content">
+    <div class="tl-date">11/3 23:52（台北）</div>
+    <div class="tl-title">CNBC 最早發布時間：Teng 受訪談假求職面試手法</div>
+    <div class="tl-detail">原始時間：11/3 15:52（UTC）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.cnbc.com/2026/11/03/binance-co-ceo-teng-says-hackers-used-fake-job-interviews-to-steal-6point3-billion-in-crypto.html" target="_blank" rel="noopener">CNBC</a></div>
+  </div>
+</li>
+</ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">🎯</span> 攻擊者背景</div>
+  <div class="section-body">
+<div role="region" tabindex="0" aria-label="方表">
+<table class="data-table">
+<thead><tr><th>方</th><th>說法</th><th>狀態</th><th>來源（發布日）</th></tr></thead>
+<tbody>
+<tr><td>FBI</td><td>10/31（台北 22:44）公告北韓 TraderTraitor 為主嫌；與 USSS、IRS-CI 觀察到贓款主要換成 ETH，預期經 DeFi 與即時兌換服務洗錢；呼籲 THORNode、RPC 節點、即時兌換、DeFi 等封鎖相關地址</td><td><span class="badge badge-confirmed">✓ 已證實（官方歸因）</span></td><td><a href="https://www.fbi.gov/investigate/cyber/alerts/2026/north-korea-responsible-for-6-billion-binance-attack" target="_blank" rel="noopener">FBI</a>（10/31）</td></tr>
+<tr><td>幣安</td><td>初步報告引用 FBI 歸因北韓</td><td><span class="badge badge-confirmed">✓ 已證實</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>（11/3）</td></tr>
+<tr><td>Chainalysis</td><td>10/30 12:30（台北）歸因 TraderTraitor，最強證據是即時看到贓款與 Bitget 贓款混合</td><td><span class="badge badge-confirmed">✓ 已證實</span></td><td><a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis</a>（10/30）</td></tr>
+<tr><td>TRM</td><td>「高度信心」歸因 TraderTraitor，依鏈上與鏈下情資；手法與 Bybit、2026 年 4 月 KelpDAO 案相似。但 11/3 文章 FAQ 仍寫沒有政府歸因</td><td><span class="badge badge-confirmed">✓ 已證實</span> <span class="badge badge-info">! 矛盾（措辭）</span></td><td><a href="https://www.trmlabs.com/resources/blog/binance-hack-update-north-korea-launders-proceeds-through-self-minted-tokens-and-chained-bridges" target="_blank" rel="noopener">TRM</a>（11/3）</td></tr>
+<tr><td>Elliptic</td><td>先評估「可能」，FBI 公告後改為確認；另指出與 BigONE、WOO X、AFX 案共用服務</td><td><span class="badge badge-confirmed">✓ 已證實</span></td><td><a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>（10/30 首發）</td></tr>
+<tr><td>Pangolin Intelligence（新加坡）</td><td>向 CNN 表示相信是北韓所為</td><td><span class="badge badge-claimed">? 未證實（單一來源，ⓘ 經 Decrypt 轉述）</span></td><td><a href="https://decrypt.co/382224/trm-and-chainalysis-tie-6-4b-binance-hack-to-north-koreas-tradertraitor" target="_blank" rel="noopener">Decrypt</a>（10/30）</td></tr>
+<tr><td>北韓</td><td>11/3 透過朝中社否認</td><td><span class="badge badge-info">ⓘ 轉述（韓聯社，經 CNBC）</span></td><td><a href="https://www.cnbc.com/2026/11/03/north-korea-binance-elliptic-chainalysis.html" target="_blank" rel="noopener">CNBC</a>（11/3）</td></tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>幣安初步報告：2026 年幣安資安團隊共偵測並阻擋 57 起疑似北韓相關的網路威脅（「Throughout 2026, Binance's security team detected and prevented 57 suspected North Korea-linked cyber threat cases.」）。✓ 已證實（官方說法）（<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>、<a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">LinkedIn 全文</a>）</li>
+<li>命名註記：官方與主要分析商用的名稱是 TraderTraitor（一般歸為 Lazarus 旗下）；素材中的來源都沒有直接寫「Lazarus」，本報告不以該名稱當結論。</li>
+<li>調查進度：幣安與執法單位合作；完整技術事後報告與獨立專家審查仍待公布（11/3 為初步報告）。ⓘ 轉述（<a href="https://thehackernews.com/2026/11/binance-reveals-how-fake-job-interviews.html" target="_blank" rel="noopener">The Hacker News</a>）</li>
+</ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">⚙️</span> 攻擊鏈技術分析</div>
+  <div class="section-body">
+<h3 class="sub">幣安說法的演變 ! 矛盾（幣安自行修正）</h3>
+<ol>
+<li>10/30 首次公告：「可能涉及一名 DevOps 工程師筆電遭入侵，讓攻擊者進入服務容器並送出未授權提款交易」，未見私鑰外洩。（<a href="https://www.binance.com/en/support/announcement/detail/c5a8729a97ac486d963784d96c5642d7" target="_blank" rel="noopener">幣安首次公告</a>）</li>
+<li>10/31 Update #2：「後續調查發現其他入侵點」，仍未見私鑰外洩。（<a href="https://www.binance.com/en/support/announcement/detail/d3306d9dca5243548c813b605e1d1751" target="_blank" rel="noopener">幣安 Update #2</a>）</li>
+<li>11/3 初步報告：多階段、歷時數月的入侵。（<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>）</li>
+</ol>
+<h3 class="sub">入侵路徑</h3>
+<div class="alert alert-navy"><div class="alert-icon" aria-hidden="true">◆</div><div>以下各階段出自幣安初步報告原文（官方網頁擋爬蟲，以幣安在 LinkedIn 發布的同文全文對照）。只有「pyenv」（出自 The Hacker News）與「Google 廣告」（出自 The Verge）兩個細節是媒體轉述，標 ⓘ。</div></div>
+<div class="chain">
+<div class="chain-step"><div class="step-num">1</div><div class="step-name">6 月</div><div class="step-detail">工程師 A 在搜尋引擎找 AI 寫程式工具，裝到竄改版 Homebrew，角色曝光</div></div>
+<div class="chain-step"><div class="step-num">2</div><div class="step-name">9 月</div><div class="step-detail">工程師 B 經假求職面試，在工作電腦執行含惡意程式的「作業」</div></div>
+<div class="chain-step"><div class="step-num">3</div><div class="step-name">10/20</div><div class="step-detail">以內部 AI 工具為跳板，控制工程師 A 與 C 的電腦，並發現 A 電腦上的容器部署權杖</div></div>
+<div class="chain-step"><div class="step-num">4</div><div class="step-name">10/29 17:15 至 19:56（時區未標，推測 UTC）</div><div class="step-detail">登入 C 的電腦，用 A 的憑證部署容器並觸發惡意腳本發動攻擊</div></div>
+</div>
+<p>✓ 已證實（官方說法）（<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>、<a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">LinkedIn 全文</a>）；pyenv 細節 ⓘ 轉述（<a href="https://thehackernews.com/2026/11/binance-reveals-how-fake-job-interviews.html" target="_blank" rel="noopener">The Hacker News</a>）；Google 廣告細節 ⓘ 轉述（<a href="https://www.theverge.com/news/1025576/binance-cyrpto-theft-explained" target="_blank" rel="noopener">The Verge</a>）</p>
+<ul>
+<li>內部 AI 工具是什麼、有哪些權限，報告沒有說明（The Verge、cryptowatchdesk 都指出這點）。? 未證實</li>
+<li>名詞解釋：「容器部署權杖」是讓人或程式有權在正式環境啟動服務的憑證；「簽章服務」是替交易所錢包簽署轉帳的內部系統；EIP-7702 是以太坊讓一般錢包把執行權委派給智慧合約的機制。</li>
+</ul>
+<h3 class="sub">鏈上手法 ✓ 已證實（Elliptic、Chainalysis、TRM 一致）</h3>
+<ul>
+<li>攻擊者沒有偷私鑰，而是讓幣安自己的系統代簽。</li>
+<li>以太坊上透過 EIP-7702 把 Binance 14 委派給 sweeper 合約，3 分半後提空 167,464 ETH 與 63 種代幣，含 16 億 USDT。委派一直有效，攻擊者之後再用 Binance 14 的擁有者權限，從另一個錢包拉出 8.23 億 USDC；委派碼到 10/30 00:10 UTC（台北 08:10）才清除（<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>）。</li>
+<li>其他鏈是一般的簽章轉帳，TRM 據此判斷簽章基礎設施遭入侵。</li>
+<li>來源：<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis</a>、TRM 經 <a href="https://decrypt.co/382224/trm-and-chainalysis-tie-6-4b-binance-hack-to-north-koreas-tradertraitor" target="_blank" rel="noopener">Decrypt</a></li>
+<li>Elliptic 比較：手法類似 2025 年 Bybit 案（Safe{Wallet} 開發者電腦被入侵）。</li>
+</ul>
+<h3 class="sub">鏈上資金流向</h3>
+<ul>
+<li><strong>前置資金：</strong> 來自 Tornado Cash（混幣服務）。✓ 已證實（Elliptic、Chainalysis、TRM 一致）</li>
+<li><strong>換幣：</strong> 凍結生效前約 7.86 億穩定幣換成 ETH、TRX；4.34 億 USDT 經 Uniswap、1inch、做市商 RFQ 換成 160,451 ETH（折價 12% 至 26%）（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）。Chainalysis 稱 3.25 億穩定幣在近 20 分鐘內換成 2.85 億美元的 ETH（<a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis</a>）。✓ 已證實</li>
+<li><strong>DeFi：</strong> 在 Aave 存入 5,990 萬 USDT、借出 19,762 ETH，之後 Aave 凍結該市場。（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）</li>
+<li><strong>Tron：</strong> 2.34 億 USDT 在 SunSwap 換成 6.38 億 TRX，拆到 5 個新地址，再分散給數十個新錢包（1,113 筆、中位間隔 90 秒，疑似自動化），經至少 6 座跨鏈橋轉成 ETH；Elliptic 對到約 1.22 億橋接輸出。（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）<ul><li>SomaXBT 稱 Tron 上洗了約 2.42 億：? 未證實（單一來源，ⓘ 經 <a href="https://www.theblock.co/news/business/2026-11-02-binance-zero-knowledge-proof-of-reserves-snapshot-hack-recovery-432321" target="_blank" rel="noopener">The Block</a> 轉述）</li><li>Chainalysis 稱逾 5 億經 Tron 中轉後開始轉往 Solana：ⓘ 經 <a href="https://www.cnbc.com/2026/11/03/north-korea-binance-elliptic-chainalysis.html" target="_blank" rel="noopener">CNBC</a> 轉述</li></ul></li>
+<li><strong>TRM 11/3 觀察到的新手法：</strong> 在 Tron 自行發行代幣與流動性池（自鑄自賣）、用借貸收據代幣轉移價值、串接多座跨鏈橋；截至 11/2 07:30 UTC（台北 15:30）沒有新動作。（<a href="https://www.trmlabs.com/resources/blog/binance-hack-update-north-korea-launders-proceeds-through-self-minted-tokens-and-chained-bridges" target="_blank" rel="noopener">TRM</a>）</li>
+<li><strong>BTC：</strong> 18,270 BTC 經剝離鏈拆成 19 個地址（多數各 1,000 BTC），截至 11/1 未送進任何服務；XRP、SOL、NEAR（約 4.39 億）未動。（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）</li>
+<li><strong>與 Bitget 案混合：</strong> Elliptic、Chainalysis 確認部分贓款與 2026 年 9 月 Bitget 案資金一起洗（ZachXBT 首報）。✓ 已證實</li>
+</ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">🔍</span> 入侵指標（IOC）</div>
+  <div class="section-body">
+<p>素材沒有列出具體地址或雜湊值，以下只指向官方與分析商公布的清單：</p>
+<ul>
+<li>FBI 公告附有相關錢包地址，並呼籲各服務封鎖。✓ 已證實（<a href="https://www.fbi.gov/investigate/cyber/alerts/2026/north-korea-responsible-for-6-billion-binance-attack" target="_blank" rel="noopener">FBI</a>）</li>
+<li>Elliptic 免費黑名單超過 8,000 個地址。✓ 已證實（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）</li>
+<li>鏈上特徵：以太坊上的「Binance 14」錢包遭 EIP-7702 委派給 sweeper 合約；BTC 拆至 19 個地址。（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）</li>
+</ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">⚠️</span> 衝擊評估</div>
+  <div class="section-body">
+<h3 class="sub">損失細目</h3>
+<div role="region" tabindex="0" aria-label="項目表">
+<table class="data-table">
+<thead><tr><th>項目</th><th>金額</th><th>來源</th></tr></thead>
+<tbody>
+<tr><td>以太坊</td><td>38 億美元（186 種代幣，含 19 億 USDT、8.23 億 USDC）</td><td><a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></td></tr>
+<tr><td>Bitcoin</td><td>18,270 BTC（14.8 億美元）</td><td><a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></td></tr>
+<tr><td>XRP</td><td>2.3346 億 XRP</td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></td></tr>
+<tr><td>Solana</td><td>約 970,500 SOL</td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></td></tr>
+<tr><td>Optimism</td><td>4,420 萬 OP</td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></td></tr>
+<tr><td>Tron</td><td>6.127 億 USDT</td><td><a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></td></tr>
+<tr><td>穩定幣合計</td><td>34.6 億美元；USDT（ETH）、BTC、USDC、USDT（Tron）占 74%</td><td><a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></td></tr>
+<tr><td>未計入</td><td>停止提款後轉出的 1.69 億美元（疑為幣安自行搬移） ? 未證實</td><td><a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></td></tr>
+</tbody>
+</table>
+</div>
+<h3 class="sub">凍結與剩餘資金</h3>
+<ul>
+<li><strong>凍結：</strong> Tether（約 11.8 億 USDT、另 4 個地址、代幣化黃金）、Circle（8.23 億 USDC）、Ripple（RLUSD）、World Liberty Financial、Paxos、First Digital、幣安（WBETH）；Arbitrum 安全委員會緊急搬移資產；Optimism 治理 10/31 搬走 4,400 萬 OP（約 500 萬美元），與被盜的 4,420 萬 OP 幾乎相同。凍結資金 94% 是穩定幣；BTC、XRP、SOL、NEAR 未被凍結。✓ 已證實（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>）</li>
+<li><strong>剩餘資金：</strong> 三個數字都有出處，差異主要來自時間點與幣價。✓ 已證實<ul><li>約 32.5 億美元：Elliptic 最終版（11/1 08:00 UTC），攻擊者控制的不可凍結資產分散在 800 多個地址（約 58.4 萬 ETH、18,327 BTC、2.33 億 XRP）（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）</li><li>約 32.4 億美元：CNBC（11/3）引 Elliptic 11/2 清晨報告；前 4 天用了約 12,000 個錢包、超過 40,000 筆交易（<a href="https://www.cnbc.com/2026/11/03/north-korea-binance-elliptic-chainalysis.html" target="_blank" rel="noopener">CNBC</a>）</li><li>約 24 億美元（逾 42 萬 ETH 與 18,270 BTC）：10/30 數字，TRM 經 Decrypt 轉述；TRM 11/3 文章本身沒有這個數字（<a href="https://decrypt.co/382224/trm-and-chainalysis-tie-6-4b-binance-hack-to-north-koreas-tradertraitor" target="_blank" rel="noopener">Decrypt</a>）</li></ul></li>
+</ul>
+<h3 class="sub">幣安官方回應與處置</h3>
+<div role="region" tabindex="0" aria-label="台北時間表">
+<table class="data-table">
+<thead><tr><th>台北時間</th><th>處置</th><th>狀態</th><th>來源</th></tr></thead>
+<tbody>
+<tr><td>10/30 10:23</td><td>暫停提款、撤銷受影響地址授權、找執法單位與鏈上分析夥伴；SAFU（使用者保護基金）加公司資金全額補足；入金不受影響</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/c5a8729a97ac486d963784d96c5642d7" target="_blank" rel="noopener">幣安首次公告</a></td></tr>
+<tr><td>10/31 03:33</td><td>Update #2：提撥逾 63.4 億、補足約 80%；四項優先：恢復提款、儲備證明、追回凍結資金、發布事後報告</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/d3306d9dca5243548c813b605e1d1751" target="_blank" rel="noopener">幣安 Update #2</a></td></tr>
+<tr><td>10/31 22:24</td><td>Update #3：補足 90%；維持 11/1 恢復提款</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/1fdf1f61559c401da0435895ffcccb62" target="_blank" rel="noopener">幣安 Update #3</a></td></tr>
+<tr><td>11/1 12:08</td><td>Update #4：補足 95%；10 種主要資產 100% 準備；11/1 起分階段恢復提款</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Update #4</a></td></tr>
+<tr><td>11/3 00:52</td><td>完成 10 種資產零知識儲備證明；Teng、何一在 X 發文；11/4 再快照</td><td><span class="badge badge-confirmed">✓ 已證實（報導）</span> <span class="badge badge-info">X 貼文 ⓘ 未開到</span></td><td><a href="https://www.theblock.co/news/business/2026-11-02-binance-zero-knowledge-proof-of-reserves-snapshot-hack-recovery-432321" target="_blank" rel="noopener">The Block</a></td></tr>
+<tr><td>11/3</td><td>初步報告：截至 10/31 已補足 98%（與 Update #4 的 95% 時間點倒置，! 矛盾）</td><td><span class="badge badge-confirmed">✓ 已證實（原文）</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></td></tr>
+<tr><td>11/3</td><td>在新環境重建錢包系統、重建內部 AI 工具與權限、換機、註銷相關憑證與權杖、全員裝置掃描、加強 AI 行為異常偵測；將請獨立專家審查</td><td><span class="badge badge-info">ⓘ 轉述</span></td><td><a href="https://thehackernews.com/2026/11/binance-reveals-how-fake-job-interviews.html" target="_blank" rel="noopener">The Hacker News</a>、<a href="https://www.cnbc.com/2026/11/03/binance-co-ceo-teng-says-hackers-used-fake-job-interviews-to-steal-6point3-billion-in-crypto.html" target="_blank" rel="noopener">CNBC</a></td></tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>趙長鵬（CZ）10/29（美國時間）在 X 表示看起來是駭客攻擊，他已不管理交易所，預期使用者資金會全額補足。ⓘ 轉述（<a href="https://www.bleepingcomputer.com/news/security/binance-probes-potential-58-billion-crypto-theft-hack/" target="_blank" rel="noopener">BleepingComputer</a>；CZ 原貼文本次未開）</li>
+</ul>
+<h3 class="sub">評為 HIGH 的理由</h3>
+<p>Elliptic 稱為史上最大加密貨幣竊案，約為 2025 年 2 月 Bybit 案（14.6 億美元）的 4 倍以上（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）；入侵橫跨數月、多名工程師與多條鏈，且已有 FBI 官方歸因國家級組織。</p>
+<h3 class="sub">節制與範圍</h3>
+<p>本案目標是加密貨幣交易所的錢包簽章系統，一般組織不會直接遭受同樣損失；值得借鏡的是社交工程與內部工具權限的部分。</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">⚖️</span> 爭議與未確認事項</div>
+  <div class="section-body">
+<ol>
+<li>! 矛盾　損失金額 58 億至 64.3 億、凍結 23 億至 30 億、受攻擊鏈數 10 或 11 條（見 ✅ 事實核查矩陣）。幣安報告點名的五條鏈不是總數，不列入矛盾。</li>
+<li>✓ 已證實　攻擊持續時間：主要流出約 20 至 30 分鐘（TRM、Elliptic），全程約 4 小時，最後一筆在 23:56 UTC（台北 10/30 07:56）（Elliptic、<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>）。兩者講的是不同範圍，不算矛盾。</li>
+<li>! 矛盾　入侵路徑由幣安自行修正兩次：「一台 DevOps 筆電」到「其他入侵點」到「6 月起多階段」。</li>
+<li>! 矛盾　補足比例：Update #4（台北 11/1 12:08）寫 95%；初步報告（11/3）寫「As of 31 October 2026, 98% … replenished」，時間點早於 Update #4，前後倒置（<a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Update #4</a>、<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>）。</li>
+<li>! 矛盾　TRM 11/3 文章 FAQ 第 6 題寫「no government has attributed the theft」，與 FBI 10/31 公告不符（<a href="https://www.trmlabs.com/resources/blog/binance-hack-update-north-korea-launders-proceeds-through-self-minted-tokens-and-chained-bridges" target="_blank" rel="noopener">TRM</a>）。</li>
+<li>✓ 已證實　Elliptic 轉述 Teng「希望週日 10/31 前恢復提款」，但 10/31 是週六；幣安 Update #3 寫明原訂時程是「週日 2026-11-01」，Elliptic 日期應有誤（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.binance.com/en/support/announcement/detail/1fdf1f61559c401da0435895ffcccb62" target="_blank" rel="noopener">幣安 Update #3</a>）。</li>
+<li>? 未證實　SomaXBT 的 2.42 億、Pangolin 歸因（皆單一來源）。</li>
+<li>? 未證實　內部 AI 工具身分與權限、6 月與 9 月入侵的確切日期（均未公開）。</li>
+<li>✓ 已證實（官方說法）　幣安初步報告網頁擋爬蟲，原文內容由幣安在 LinkedIn 發布的同文全文，以及 PANews、Blockchain.News 轉載佐證（<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>、<a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">LinkedIn 全文</a>）。</li>
+</ol>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">🛡️</span> 防禦建議</div>
+  <div class="section-body">
+<p>以下為一般性建議，依本案手法整理，不涉及任何特定組織的系統細節。</p>
+<ol>
+<li><strong>先查最便宜的一步：</strong> 清點哪些工程師電腦上存有可部署到正式環境的權杖或憑證。本案關鍵一步就是攻擊者從一台電腦拿到另一台電腦上的容器部署權杖。</li>
+<li><strong>安裝來源要固定：</strong> 開發工具（例如套件管理器）只從官方網址或公司內部鏡像安裝，不從搜尋結果或廣告點進去。本案起點是被竄改的 Homebrew 安裝程式。</li>
+<li><strong>把求職面試當攻擊管道看待：</strong> 提醒同仁不要在公司電腦上執行面試「作業」程式庫；需要時改用隔離的虛擬機。</li>
+<li><strong>內部 AI 工具要最小權限：</strong> 盤點內部 AI 工具能控制哪些機器、碰到哪些系統，並對其行為建立異常偵測（幣安事後也把這列為改善項目）。</li>
+<li><strong>敏感交易不能繞過正常流程：</strong> 錢包或付款類簽章服務應只接受走正式核准流程的請求，並對「流程外發起的交易」告警。本案交易正是在正常提款流程之外發起。</li>
+<li><strong>委派與授權要能即時撤銷：</strong> 本案 EIP-7702 委派從 20:20 UTC 一直有效到隔天 00:10 UTC，期間攻擊者持續掃走新入金；高權限授權應能快速清點與撤銷。</li>
+<li><strong>事件溝通保留修正空間：</strong> 幣安初版說法兩度修正；對外說明時把「已確認」與「調查中」分開寫，可避免日後自我矛盾。</li>
+</ol>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">📚</span> 資料來源</div>
+  <div class="section-body">
+<p>發布日為台北時間。</p>
+<div class="sources-grid">
+<div class="source-card">
+  <div class="source-tag">官方文件</div>
+  <a href="https://www.binance.com/en/support/announcement/detail/c5a8729a97ac486d963784d96c5642d7" target="_blank" rel="noopener">幣安首次公告</a>
+  <div class="source-meta">幣安 · 2026-10-30（10:23）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">官方文件</div>
+  <a href="https://www.binance.com/en/support/announcement/detail/d3306d9dca5243548c813b605e1d1751" target="_blank" rel="noopener">幣安 Update #2</a>
+  <div class="source-meta">幣安 · 2026-10-31（03:33）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">官方文件</div>
+  <a href="https://www.binance.com/en/support/announcement/detail/1fdf1f61559c401da0435895ffcccb62" target="_blank" rel="noopener">幣安 Recovery Update #3</a>
+  <div class="source-meta">幣安 · 2026-10-31（22:24）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">官方文件</div>
+  <a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Recovery Update #4</a>
+  <div class="source-meta">幣安 · 2026-11-01（12:08）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">官方文件</div>
+  <a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步調查報告</a>
+  <div class="source-meta">幣安 · 2026-11-03</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">官方文件</div>
+  <a href="https://www.fbi.gov/investigate/cyber/alerts/2026/north-korea-responsible-for-6-billion-binance-attack" target="_blank" rel="noopener">FBI</a>
+  <div class="source-meta">FBI · 2026-10-31（22:44）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">威脅情報</div>
+  <a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>
+  <div class="source-meta">Elliptic · 2026-10-30（16:00 首發；最終版 2026-11-01 16:00）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">威脅情報</div>
+  <a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis：幣安案最新發現</a>
+  <div class="source-meta">Chainalysis · 2026-10-30（17:34 首發；最後更新 2026-11-04 03:44）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">官方文件</div>
+  <a href="https://www.chainalysis.com/blog/security-incident-october-30/" target="_blank" rel="noopener">Chainalysis：自身安全事件</a>
+  <div class="source-meta">Chainalysis · 2026-10-30</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">威脅情報</div>
+  <a href="https://www.trmlabs.com/resources/blog/binance-hack-update-north-korea-launders-proceeds-through-self-minted-tokens-and-chained-bridges" target="_blank" rel="noopener">TRM</a>
+  <div class="source-meta">TRM · 2026-11-03（21:30）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">事件報導</div>
+  <a href="https://www.bleepingcomputer.com/news/security/binance-probes-potential-58-billion-crypto-theft-hack/" target="_blank" rel="noopener">BleepingComputer</a>
+  <div class="source-meta">BleepingComputer · 2026-10-30（06:45）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">事件報導</div>
+  <a href="https://decrypt.co/382224/trm-and-chainalysis-tie-6-4b-binance-hack-to-north-koreas-tradertraitor" target="_blank" rel="noopener">Decrypt</a>
+  <div class="source-meta">Decrypt · 2026-10-30（metadata 未帶時區）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">事件報導</div>
+  <a href="https://thehackernews.com/2026/11/binance-reveals-how-fake-job-interviews.html" target="_blank" rel="noopener">The Hacker News</a>
+  <div class="source-meta">The Hacker News · 2026-11-03（頁面標示，台北為 11/3 至 11/4）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">事件報導</div>
+  <a href="https://www.cnbc.com/2026/11/03/binance-co-ceo-teng-says-hackers-used-fake-job-interviews-to-steal-6point3-billion-in-crypto.html" target="_blank" rel="noopener">CNBC：假求職面試</a>
+  <div class="source-meta">CNBC · 2026-11-03（23:52）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">事件報導</div>
+  <a href="https://www.cnbc.com/2026/11/03/north-korea-binance-elliptic-chainalysis.html" target="_blank" rel="noopener">CNBC：北韓否認</a>
+  <div class="source-meta">CNBC · 2026-11-03</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">事件報導</div>
+  <a href="https://www.nbcnews.com/business/markets/binance-hack-fake-job-interview-heist-rcna607238" target="_blank" rel="noopener">NBC</a>
+  <div class="source-meta">NBC · 2026-11-03（23:56）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">事件報導</div>
+  <a href="https://www.theverge.com/news/1025576/binance-cyrpto-theft-explained" target="_blank" rel="noopener">The Verge</a>
+  <div class="source-meta">The Verge · 2026-11-04（06:04）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">事件報導</div>
+  <a href="https://www.theblock.co/news/business/2026-11-02-binance-zero-knowledge-proof-of-reserves-snapshot-hack-recovery-432321" target="_blank" rel="noopener">The Block</a>
+  <div class="source-meta">The Block · 2026-11-03（00:52）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">官方文件</div>
+  <a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">幣安初步報告 LinkedIn 全文</a>
+  <div class="source-meta">幣安 · 2026-11-03（22:33）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">社群</div>
+  <a href="https://cryptowatchdesk.com/news/post-mortem-binance-hack-fake-job-interview-internal-ai-tool-eip-7702-6-34-billion" target="_blank" rel="noopener">cryptowatchdesk</a>
+  <div class="source-meta">cryptowatchdesk · 2026-11-03（23:37）</div>
+</div>
+</div>
+  </div>
+</section>
+
+</div>
+
+<footer class="report-footer">
+  Generated 2026-11-04 · SecondBrain Report System · suelife/reports
+</footer>
+
+</body>
+</html>
