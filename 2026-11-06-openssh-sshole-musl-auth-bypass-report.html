@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenSSH *sshole（CVE-2026-123158）：musl 超長密碼可登入無密碼帳號事件研析</title>
+<style>
+/* ════ 以下為內嵌樣式，整段照抄，勿改成外部 link ════
+   第一部分：SecondBrain Report Design System v1（原 ~/reports/design.css 全文，2026-10-17 內嵌）
+   第二部分：無障礙補充層 v1.1（對比 ≥ 4.5:1、跟隨系統深色模式、顏色以外的文字標籤、寬表捲動、中文標籤不轉大寫、列印）
+   validate.py 以本模板 <style> 定義的 class 為準檢查漂移。 */
+
+/* ════════════════════════════════════════════════════
+   SecondBrain Report Design System v1
+   共用元件：badge、timeline、chain、alert、kpi、table
+   ════════════════════════════════════════════════════ */
+
+:root {
+  --navy: #1a2744;
+  --navy-light: #2c3e6b;
+  --red: #c0392b;
+  --amber: #d68910;
+  --green: #1e8449;
+  --gray-bg: #f4f6f9;
+  --border: #dce3ee;
+  --text: #222831;
+  --text-muted: #5a6578;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+  background: var(--gray-bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* ── Back Navigation ── */
+.back-nav {
+  background: var(--navy);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 48px;
+  display: flex;
+  align-items: center;
+}
+.back-nav a {
+  color: #8aa4d0;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s;
+}
+.back-nav a:hover { color: #fff; }
+.back-nav a::before { content: '‹'; font-size: 16px; line-height: 1; }
+@media (max-width: 600px) { .back-nav { padding: 10px 20px; } }
+
+/* ── Header ── */
+.report-header { background: var(--navy); color: #fff; padding: 40px 48px 32px; }
+.report-header .label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #8aa4d0; margin-bottom: 8px; }
+.report-header h1 { font-size: 26px; font-weight: 700; margin-bottom: 10px; line-height: 1.3; }
+.report-header .meta { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 16px; font-size: 13px; color: #9bb3d4; }
+.report-header .meta span strong { color: #fff; }
+.severity-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; margin-bottom: 14px; }
+.severity-badge.high { background: var(--red); color: #fff; }
+.severity-badge.medium { background: var(--amber); color: #fff; }
+.severity-badge.low { background: var(--green); color: #fff; }
+.severity-badge.info { background: var(--navy-light); color: #fff; }
+
+/* ── Layout ── */
+.container { max-width: 1000px; margin: 0 auto; padding: 32px 24px 60px; }
+
+/* ── Section ── */
+.section { background: #fff; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 24px; overflow: hidden; }
+.section-header { background: var(--navy); color: #fff; padding: 12px 24px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.section-body { padding: 24px; }
+
+/* ── KPI Cards ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.kpi { border: 1px solid var(--border); border-radius: 5px; padding: 14px 16px; text-align: center; }
+.kpi .kpi-value { font-size: 28px; font-weight: 800; color: var(--navy); line-height: 1; margin-bottom: 4px; }
+.kpi .kpi-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi.red .kpi-value { color: var(--red); }
+.kpi.amber .kpi-value { color: var(--amber); }
+.kpi.green .kpi-value { color: var(--green); }
+
+/* ── Badges ── */
+.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 3px; white-space: nowrap; }
+.badge-confirmed { background: #d4efdf; color: var(--green); }
+.badge-claimed   { background: #fef9e7; color: var(--amber); border: 1px solid #f0c040; }
+.badge-denied    { background: #fadbd8; color: var(--red); }
+.badge-info      { background: #eef2fa; color: var(--navy); }
+
+/* ── Tables ── */
+table.data-table { width: 100%; border-collapse: collapse; }
+table.data-table th { text-align: left; padding: 9px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; background: #f0f3f8; border-bottom: 2px solid var(--border); color: var(--navy); }
+table.data-table td { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #edf0f5; vertical-align: top; }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table tr:hover td { background: #f9fbff; }
+
+/* ── Verify Table (badge column) ── */
+.verify-table { width: 100%; border-collapse: collapse; }
+.verify-table th { text-align: left; padding: 10px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: #f0f3f8; border-bottom: 2px solid var(--border); color: var(--navy); }
+.verify-table td { padding: 11px 14px; font-size: 14px; border-bottom: 1px solid #edf0f5; vertical-align: top; }
+.verify-table tr:last-child td { border-bottom: none; }
+
+/* ── Timeline ── */
+.timeline { list-style: none; position: relative; }
+.timeline::before { content: ''; position: absolute; left: 18px; top: 0; bottom: 0; width: 2px; background: #dce3ee; }
+.timeline li { display: flex; gap: 18px; padding: 0 0 24px; position: relative; }
+.timeline li:last-child { padding-bottom: 0; }
+.tl-dot { width: 14px; height: 14px; background: var(--navy); border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 2px var(--navy); flex-shrink: 0; margin-top: 4px; position: relative; z-index: 1; margin-left: 12px; }
+.tl-dot.red   { background: var(--red);   box-shadow: 0 0 0 2px var(--red); }
+.tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
+.tl-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+.tl-content { flex: 1; }
+.tl-date { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+.tl-title { font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.tl-detail { font-size: 13px; color: var(--text-muted); }
+
+/* ── Process Chain ── */
+.chain { display: flex; overflow-x: auto; }
+.chain-step { flex: 1; min-width: 130px; background: #f0f3f8; border: 1px solid var(--border); border-right: none; padding: 14px 12px; text-align: center; position: relative; }
+.chain-step:last-child { border-right: 1px solid var(--border); border-radius: 0 5px 5px 0; }
+.chain-step:first-child { border-radius: 5px 0 0 5px; }
+.chain-step::after { content: '›'; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--navy); z-index: 1; font-weight: 700; }
+.chain-step:last-child::after { display: none; }
+.chain-step .step-num { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.chain-step .step-name { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.chain-step .step-detail { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+/* ── Alert Boxes ── */
+.alert { display: flex; gap: 12px; padding: 14px 16px; border-radius: 5px; margin-bottom: 16px; font-size: 14px; line-height: 1.6; }
+.alert-red   { background: #fdf2f0; border-left: 4px solid var(--red); }
+.alert-amber { background: #fef9e7; border-left: 4px solid var(--amber); }
+.alert-green { background: #eafaf1; border-left: 4px solid var(--green); }
+.alert-navy  { background: #eef2fa; border-left: 4px solid var(--navy); }
+.alert-icon { font-size: 18px; flex-shrink: 0; padding-top: 1px; }
+.alert strong { display: block; margin-bottom: 2px; }
+
+/* ── Code Block ── */
+.code-block { background: #1a2744; color: #a8d8ea; padding: 16px 20px; border-radius: 5px; font-family: "Cascadia Code", Consolas, Monaco, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; margin: 12px 0; }
+.code-block .comment { color: #6b8cba; }
+.code-block .highlight { color: #f0c040; }
+
+/* ── Sources ── */
+.sources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.source-card { border: 1px solid var(--border); border-radius: 5px; padding: 14px 16px; }
+.source-card .source-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.source-card a { font-size: 14px; font-weight: 600; color: var(--navy); text-decoration: none; display: block; margin-bottom: 4px; line-height: 1.4; }
+.source-card a:hover { color: #3b5bdb; text-decoration: underline; }
+.source-card .source-meta { font-size: 12px; color: var(--text-muted); }
+
+/* ── Footer ── */
+.report-footer { border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; font-size: 12px; color: var(--text-muted); background: #fff; }
+
+/* ── Utilities ── */
+p { margin-bottom: 10px; }
+p:last-child { margin-bottom: 0; }
+code { background: #f0f3f8; padding: 1px 5px; border-radius: 3px; font-size: 13px; font-family: Consolas, monospace; }
+h3.sub { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .report-header { padding: 28px 20px 24px; }
+  .section-body { padding: 16px; }
+  .chain { flex-direction: column; }
+  .chain-step { border-right: 1px solid var(--border) !important; border-bottom: none; border-radius: 0 !important; }
+  .chain-step:first-child { border-radius: 5px 5px 0 0 !important; }
+  .chain-step:last-child { border-bottom: 1px solid var(--border) !important; border-radius: 0 0 5px 5px !important; }
+  .chain-step::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -14px; transform: translateX(-50%); }
+}
+@media print {
+  body { background: #fff; }
+  .section { break-inside: avoid; }
+}
+
+/* ── Legacy aliases (for older reports before schema-fields v1) ── */
+.callout { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 5px; margin-bottom: 16px; font-size: 14px; line-height: 1.6; background: #eef2fa; border-left: 4px solid var(--navy); }
+.callout strong { font-weight: 700; color: var(--navy); }
+.callout.red { background: #fdf2f0; border-left-color: var(--red); }
+.callout.amber { background: #fef9e7; border-left-color: var(--amber); }
+.callout.green { background: #eafaf1; border-left-color: var(--green); }
+.callout.navy { background: #eef2fa; border-left-color: var(--navy); }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.body-list { padding-left: 20px; margin-bottom: 12px; }
+.body-list li { margin-bottom: 6px; }
+.sources-list { list-style: none; padding: 0; margin: 0; }
+.sources-list li { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; }
+.sources-list li:last-child { border-bottom: none; }
+.sources-list .src-num { background: var(--navy); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.matrix { width: 100%; border-collapse: collapse; }
+.matrix th, .matrix td { padding: 9px 14px; font-size: 13px; border-bottom: 1px solid #edf0f5; vertical-align: top; }
+.matrix th { background: #f0f3f8; text-align: left; font-weight: 700; color: var(--navy); text-transform: uppercase; font-size: 12px; }
+.kill-chain { display: flex; overflow-x: auto; gap: 0; }
+.kill-chain-step { flex: 1; min-width: 130px; background: #f0f3f8; border: 1px solid var(--border); padding: 14px 12px; text-align: center; }
+.footer { border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; font-size: 12px; color: var(--text-muted); background: #fff; }
+
+/* ── 無障礙補充層 v1.1（模板內建，照抄保留）── */
+:root { --amber: #8a5a00; --green: #17703d; --red: #b03024; --text-muted: #4f5a6c; --surface: #fff; --head-bg: #f0f3f8; --row-hover: #f9fbff; }
+.report-header .label, .section-header, .kpi .kpi-label, table.data-table th, .verify-table th,
+.tl-date, h3.sub, .source-card .source-tag, .chain-step .step-num { text-transform: none; letter-spacing: normal; }
+.report-header .label { color: #c9d6ee; }
+.report-header .meta { color: #c9d6ee; }
+.badge-claimed { border-color: #b58100; }
+.kpi .kpi-value::before, .tl-content .tl-date::after { font-size: 12px; font-weight: 700; }
+.kpi.red::before, .kpi.amber::before, .kpi.green::before { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.kpi.red::before { content: "▲ 已確認損害"; color: var(--red); }
+.kpi.amber::before { content: "◆ 聲稱未證實"; color: var(--amber); }
+.kpi.green::before { content: "✓ 已緩解"; color: var(--green); }
+.kpi.amber { border-style: dashed; }
+.kpi.green { border-style: double; border-width: 3px; }
+li:has(> .tl-dot.red) .tl-date::after { content: "　▲ 損害"; color: var(--red); }
+li:has(> .tl-dot.amber) .tl-date::after { content: "　◆ 未證實"; color: var(--amber); }
+li:has(> .tl-dot.green) .tl-date::after { content: "　✓ 緩解"; color: var(--green); }
+.tl-dot.red { border-radius: 2px; }
+.tl-dot.amber { border-radius: 2px; transform: rotate(45deg); }
+div[role="region"] { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+div[role="region"]:focus-visible { outline: 2px solid #3b5bdb; outline-offset: 2px; }
+div[role="region"] > table { min-width: 520px; }
+.section-body code { overflow-wrap: anywhere; }
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: dark; --navy: #1a2744; --navy-light: #3a4f85; --red: #ff8a80; --amber: #f2c14e; --green: #6fdc9a;
+    --gray-bg: #0f131c; --border: #2b3447; --text: #e6e9f0; --text-muted: #a9b3c4; --surface: #171c27; --head-bg: #1e2533; --row-hover: #1c2230; }
+  .section, .report-footer, .kpi, .source-card { background: var(--surface); }
+  .section-header, .back-nav, .report-header { background: #111a2e; }
+  table.data-table th, .verify-table th, code, .chain-step { background: var(--head-bg); color: var(--text); }
+  table.data-table td, .verify-table td { border-bottom-color: var(--border); }
+  table.data-table tr:hover td { background: var(--row-hover); }
+  .kpi .kpi-value, .tl-title, h3.sub, .source-card a, .chain-step .step-name, .alert strong { color: var(--text); }
+  .source-card a:hover { color: #9db4ff; }
+  .timeline::before { background: var(--border); }
+  .tl-dot { border-color: var(--surface); background: #8aa4d0; box-shadow: 0 0 0 2px #8aa4d0; }
+  .tl-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+  .tl-dot.amber { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
+  .tl-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+  .badge-confirmed { background: #12301f; color: var(--green); }
+  .badge-claimed { background: #33290f; color: var(--amber); border-color: #8a6a1c; }
+  .badge-denied { background: #3a1c1a; color: var(--red); }
+  .badge-info { background: #1e2740; color: #c9d6ee; }
+  .alert-red { background: #2a1817; } .alert-amber { background: #2b2412; } .alert-green { background: #12251a; } .alert-navy { background: #172038; border-left-color: #8aa4d0; }
+  .severity-badge.high { background: #b03024; } .severity-badge.medium { background: #8a5a00; } .severity-badge.low { background: #17703d; }
+}
+@media print {
+  .back-nav { display: none; }
+  .report-header { padding: 20px 24px; }
+  div[role="region"] { overflow: visible; }
+  div[role="region"] > table { min-width: 0; }
+  table.data-table td, .verify-table td { overflow-wrap: anywhere; }
+  thead { display: table-header-group; }
+  tr, .kpi, .source-card, .timeline li { break-inside: avoid; }
+  .section { break-inside: auto; }
+  .section-header { break-after: avoid; }
+}
+@page { size: A4; margin: 14mm 12mm; }
+</style>
+</head>
+<body>
+<nav class="back-nav"><a href="index.html">← 回報告列表</a></nav>
+<header class="report-header">
+  <div class="label">資安事件報告 · SecondBrain Investigation</div>
+  <span class="severity-badge high">HIGH</span>
+  <h1>OpenSSH *sshole（CVE-2026-123158）<br>musl 上超長密碼可登入「無密碼／僅金鑰」帳號</h1>
+  <div class="meta">
+    <span><strong>公告日期</strong>　2026-11-05（台北）</span>
+    <span><strong>報告日期</strong>　2026-11-06</span>
+    <span><strong>受影響元件</strong>　OpenSSH sshd（musl libc、未啟用 PAM）</span>
+    <span><strong>發現者</strong>　Özgün Kültekin（Wakefield）</span>
+    <span><strong>撰寫人</strong>　grok</span>
+  </div>
+</header>
+<div class="container">
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">📋</span> Executive Summary</div>
+  <div class="section-body">
+<div class="alert alert-navy"><div class="alert-icon" aria-hidden="true">◆</div><div><strong>一句話重點：</strong> 在使用 musl libc、且 sshd 未走 PAM 的 Linux（典型為 Alpine）上，若仍開啟密碼登入，攻擊者只要對 <code>/etc/shadow</code> 密碼欄為 <code>*</code> 的帳號送出約 257 至 1024 bytes 的超長密碼，即可一次登入成功；不需知道任何真實密碼。</div></div>
+<div class="alert alert-navy"><div class="alert-icon" aria-hidden="true">◆</div><div><strong>結論：</strong> OpenSSH 評為 Critical 並於 2026-11-05 釋出 10.6p2 緩解；MITRE 已登錄 CVE-2026-123158（CVSS 3.1 基礎分 8.1 High）。Alpine 已對 3.16 至 edge 各分支回移植。glibc 發行版（Debian／Ubuntu／Fedora）與啟用 PAM 的 sshd 不受影響。公開來源未確認在野利用。</div></div>
+<div class="alert alert-amber"><div class="alert-icon" aria-hidden="true">!</div><div><strong>這跟我們有沒有關係：</strong> 一般 Debian／Ubuntu 伺服器（glibc＋預設 PAM）通常不在範圍內。需盤點：Alpine 容器／主機若有跑 sshd、OpenWrt／Buildroot／Yocto 自建 OpenSSH、雲端 tiny-cloud 映像的 <code>alpine</code> 帳號（搭配 passwordless doas 可升 root）。詳見「偵測與緩解」與「台灣相關性」。</div></div>
+<div class="kpi-grid">
+  <div class="kpi red"><div class="kpi-value">8.1 High</div><div class="kpi-label">CVSS 3.1（MITRE）</div></div>
+  <div class="kpi red"><div class="kpi-value">Critical</div><div class="kpi-label">OpenSSH 釋出說明嚴重度</div></div>
+  <div class="kpi"><div class="kpi-value">257／1024</div><div class="kpi-label">觸發密碼長度（bytes，Alpine）</div></div>
+  <div class="kpi green"><div class="kpi-value">10.6p2</div><div class="kpi-label">OpenSSH 修補版</div></div>
+  <div class="kpi green"><div class="kpi-value">否</div><div class="kpi-label">公開確認在野利用（截至報告日）</div></div>
+</div>
+<p>狀態符號說明：✓ 已確認（官方原文）｜◐ 部分確認（官方僅部分敘述或來源有落差）｜? 未確認（查無一手來源）｜ⓘ 媒體說法（二手轉述）</p>
+<p>時間說明：一律為台北時間（UTC+8）。原始來源為 UTC 者加 8 小時並註明原始時間。</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">✅</span> 事實核查矩陣</div>
+  <div class="section-body">
+<div role="region" tabindex="0" aria-label="事實核查矩陣">
+<table class="verify-table">
+<thead><tr><th>聲明</th><th>狀態</th><th>佐證來源</th></tr></thead>
+<tbody>
+<tr><td>通稱 *sshole；由 Özgün Kültekin（Wakefield）發現並向 OpenSSH 回報</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://www.openssh.org/txt/release-10.6p2" target="_blank" rel="noopener">OpenSSH 10.6p2</a>、<a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine 公告</a></td></tr>
+<tr><td>CVE 編號為 CVE-2026-123158；CVSS 3.1 基礎分 8.1 High，向量 <code>CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H</code>；CWE-394</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://www.cve.org/CVERecord?id=CVE-2026-123158" target="_blank" rel="noopener">CVE.org／MITRE 紀錄</a>（2026-11-05 發布）</td></tr>
+<tr><td>Alpine 公告撰寫當下尚無 CVE 編號</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine 公告</a>（文末註記）；CVE 於同日稍晚由 MITRE 發布</td></tr>
+<tr><td>OpenSSH 將其標為 Critical security workaround；根因認為在 sshd 之外，但可經 sshd 利用，故在 sshd 避開</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://www.openssh.org/txt/release-10.6p2" target="_blank" rel="noopener">OpenSSH 10.6p2</a></td></tr>
+<tr><td>修補版：Portable OpenSSH 10.6p2（2026-11-05）；修補 commit <code>4353fdc4</code>（改檢查最短密碼雜湊長度，避免把 musl 錯誤回傳 <code>*</code> 當成匹配）</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://www.openssh.org/txt/release-10.6p2" target="_blank" rel="noopener">OpenSSH 10.6p2</a>、<a href="https://github.com/openssh/openssh-portable/commit/4353fdc43ef646c43a8dda7025cc1a898caf1482" target="_blank" rel="noopener">openssh-portable commit</a>、<a href="https://www.openwall.com/lists/oss-security/2026/11/05/3" target="_blank" rel="noopener">oss-security</a></td></tr>
+<tr><td>機制：無 PAM 時 sshd 以 <code>crypt()</code> 比對；對無可用 salt 的欄位（如 <code>*</code>）會借用其他帳號的 salt（源自 CVE-2016-6210 時序修補）。musl 的 <code>crypt()</code> 在密碼超過 256 bytes 時失敗並回傳字串 <code>*</code>，與 shadow 中的 <code>*</code> 相同，比對成功</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine 公告</a>、ⓘ <a href="https://www.bleepingcomputer.com/news/security/openssh-flaw-lets-attackers-log-into-password-disabled-linux-accounts/" target="_blank" rel="noopener">BleepingComputer</a></td></tr>
+<tr><td>觸發密碼長度約 257／1024 bytes（超過 256 bytes）；一次連線即可，無需重試</td><td><span class="badge badge-claimed">◐ 部分確認</span></td><td>✓ Alpine／BleepingComputer 寫 257／1024；MITRE CVE 文案寫「between 256 and 1024 characters」。實務採 Alpine「超過 256 bytes」口徑</td></tr>
+<tr><td>利用條件須同時成立：musl；sshd 未用 PAM（或 <code>UsePAM no</code>）；<code>PasswordAuthentication yes</code>（預設）；至少一個帳號密碼欄為 <code>*</code>；至少一個本機帳號有 <code>$5$</code>／<code>$6$</code> 真實雜湊</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine 公告</a></td></tr>
+<tr><td>高風險平台：Alpine（含 openssh-server 預設無 PAM）、OpenWrt／Buildroot／Yocto 等 musl 環境若跑 OpenSSH；Alpine tiny-cloud 映像的 <code>alpine</code> 帳號＋passwordless doas 可升 root</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine 公告</a>、ⓘ <a href="https://www.bleepingcomputer.com/news/security/openssh-flaw-lets-attackers-log-into-password-disabled-linux-accounts/" target="_blank" rel="noopener">BleepingComputer</a></td></tr>
+<tr><td>不受影響：glibc（Debian／Ubuntu／Fedora 等）、啟用 PAM 的 sshd（Alpine 的 openssh-server-pam 且 UsePAM yes）、Dropbear、非 Linux、<code>PasswordAuthentication no</code>、密碼欄為 <code>!</code> 的鎖定帳號、機器上完全沒有 <code>$</code> 式雜湊、多數未跑 sshd 的容器</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine 公告</a>、ⓘ BleepingComputer／Orca 彙整</td></tr>
+<tr><td>預設 <code>PermitRootLogin prohibit-password</code> 可擋直接以密碼登入 root；若其他 <code>*</code> 帳號可經 doas／sudo 升權，仍可能取得 root</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine 公告</a></td></tr>
+<tr><td>Alpine 修補套件（需升級後重啟 sshd；只升套件不重啟無效）</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td>edge 10.6_p2-r0；3.24 10.3_p1-r2；3.23 10.2_p1-r1；3.22 10.0_p1-r11；3.21 9.9_p2-r1；並回移植至 3.16。來源：<a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine 公告</a></td></tr>
+<tr><td>暫時緩解：設定 <code>PasswordAuthentication no</code> 並重啟 sshd（先確認金鑰登入可用）</td><td><span class="badge badge-confirmed">✓ 已確認</span></td><td><a href="https://www.openssh.org/txt/release-10.6p2" target="_blank" rel="noopener">OpenSSH</a>、<a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine</a>、<a href="https://www.openwall.com/lists/oss-security/2026/11/05/3" target="_blank" rel="noopener">oss-security</a></td></tr>
+<tr><td>在野利用</td><td><span class="badge badge-claimed">? 未確認</span></td><td>OpenSSH／Alpine 公告未提及；ⓘ Orca 等彙整稱暫無野外利用報告。MITRE 參考列有公開 repro／lab 倉庫，屬研究用途，不等同在野攻擊</td></tr>
+<tr><td>發現過程使用 AI 代理大量測試（約 17,600 次異常登入）</td><td><span class="badge badge-info">ⓘ 媒體說法</span></td><td><a href="https://www.bleepingcomputer.com/news/security/openssh-flaw-lets-attackers-log-into-password-disabled-linux-accounts/" target="_blank" rel="noopener">BleepingComputer</a>、ⓘ iTnews；OpenSSH 釋出說明亦提及近期大量 AI 輔助回報</td></tr>
+</tbody></table></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">📅</span> 事件時間線</div>
+  <div class="section-body">
+<p>時間一律為台北時間（UTC+8）。標記：✓ 緩解、◆ 未確認，未標記為一般事件。</p>
+<ul class="timeline">
+<li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">約 2012 起（背景）</div><div class="tl-title">musl <code>crypt()</code> 失敗時回傳字串 <code>*</code>（非 POSIX 要求的 NULL）</div><div class="tl-detail">ⓘ Upwind／研究彙整；Alpine「How could this happen?」說明與之一致</div></div></li>
+<li><span class="tl-dot amber"></span><div class="tl-content"><div class="tl-date">約 2016（背景）</div><div class="tl-title">OpenSSH 為修 CVE-2016-6210（使用者名稱列舉）對無可用雜湊帳號仍執行 <code>crypt()</code> 並借用其他帳號 salt</div><div class="tl-detail">ⓘ BleepingComputer；與 Alpine 對「借用 salt」的說明相符</div></div></li>
+<li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-11-05（台北）</div><div class="tl-title">✓ OpenSSH 釋出 Portable 10.6p2 Critical workaround；Alpine 發布安全公告並提供各分支修補套件</div><div class="tl-detail"><span class="badge badge-confirmed">✓ 已確認</span> 來源：<a href="https://www.openssh.org/txt/release-10.6p2" target="_blank" rel="noopener">OpenSSH 10.6p2</a>、<a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine</a>。官方頁以日期標示，確切時刻未統一公開。</div></div></li>
+<li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-11-05（台北）</div><div class="tl-title">oss-security 討論串標題「sshole」：password authentication bypass: OpenSSH + musl libc</div><div class="tl-detail">來源：<a href="https://www.openwall.com/lists/oss-security/2026/11/05/3" target="_blank" rel="noopener">oss-security</a></div></div></li>
+<li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-11-05 23:46（台北）</div><div class="tl-title">MITRE 發布 CVE-2026-123158</div><div class="tl-detail">原始時間：2026-11-05 15:46:26 UTC。來源：<a href="https://www.cve.org/CVERecord?id=CVE-2026-123158" target="_blank" rel="noopener">CVE 紀錄</a></div></div></li>
+<li><span class="tl-dot"></span><div class="tl-content"><div class="tl-date">2026-11-06（台北）</div><div class="tl-title">本報告發布；公開來源未確認在野利用</div></div></li>
+</ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">🔬</span> 技術細節</div>
+  <div class="section-body">
+<p><strong>預期行為：</strong> 帳號在 <code>/etc/shadow</code> 密碼欄放 <code>*</code> 表示「不接受任何密碼」（常見於僅金鑰登入、或 Alpine 預設 root）。鎖定帳號則用 <code>!</code>。</p>
+<p><strong>破口組合：</strong> 無 PAM 的 sshd 自行呼叫 C 函式庫 <code>crypt()</code>。對欄位太短、沒有 salt 的帳號，sshd 會借用另一個有真實雜湊帳號的 salt（避免時序洩漏使用者名稱）。musl 在密碼過長時讓 <code>crypt()</code> 失敗並回傳字面 <code>*</code>；存放欄位也是 <code>*</code>，字串相等即登入成功。有真實雜湊的帳號本身不會被這條路徑繞過。</p>
+<p><strong>為何要有「另一個真實雜湊」：</strong> Alpine 說明一台機器上只要有一個 <code>$5$</code>／<code>$6$</code> 密碼，就足以讓所有 <code>*</code> 帳號變得可被這條路徑登入。</p>
+<p><strong>修復思路：</strong> OpenSSH 10.6p2 在 sshd 端拒絕把「過短、不可能是真實雜湊」的存放欄位當成匹配成功（commit <code>4353fdc4</code>）。OpenSSH 團隊認為根因在 musl／組態組合，但仍以 Critical 速度出 workaround。</p>
+<p><strong>CVSS 解讀：</strong> AC:H 反映需同時滿足 musl、無 PAM、開密碼登入、有 <code>*</code> 帳號與真實雜湊等多條件；一旦成立則遠端、無須權限與使用者互動即可取得帳號存取（C／I／A 皆 High）。</p>
+<p>本報告不提供利用步驟或 PoC。</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">⚠️</span> 影響範圍</div>
+  <div class="section-body">
+<div role="region" tabindex="0" aria-label="影響與修補">
+<table class="data-table">
+<thead><tr><th>環境</th><th>預設受影響？</th><th>修補／狀態</th></tr></thead>
+<tbody>
+<tr><td>Alpine openssh-server（無 PAM）3.16／3.24／edge</td><td>▲ 條件成立時是</td><td>見上表各分支固定版；升級後必須 <code>rc-service sshd restart</code></td></tr>
+<tr><td>Alpine openssh-server-pam 且 UsePAM yes</td><td>△ 否</td><td>Alpine 明列不受影響</td></tr>
+<tr><td>Alpine tiny-cloud（AWS／Azure 等）<code>alpine</code>＋passwordless doas</td><td>▲ 出現真實雜湊後變高風險</td><td>3.21.10／3.22.8／3.23.8／3.24.4 起映像含修補；舊實例仍須升級或關密碼登入</td></tr>
+<tr><td>OpenWrt／Buildroot／Yocto（musl＋OpenSSH、無 PAM）</td><td>▲ 可能</td><td>依各建置是否跑 OpenSSH／是否開密碼登入；許多路由器預設用 Dropbear（不受影響）。OpenWrt 官方個別公告時程未於本報告逐一核對</td></tr>
+<tr><td>Debian／Ubuntu／Fedora（glibc，通常啟用 PAM）</td><td>△ 否</td><td>官方與媒體一致：不受此路徑影響</td></tr>
+<tr><td>僅跑容器、容器內未啟動 sshd</td><td>△ 否</td><td>Alpine 明列</td></tr>
+<tr><td>Dropbear SSH</td><td>△ 否</td><td>ⓘ 多家彙整；非 OpenSSH</td></tr>
+</tbody></table></div>
+<p>▲＝條件成立時受影響；△＝不受此漏洞路徑影響。條件請對照事實核查矩陣的五點清單。</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">🛡️</span> 偵測與緩解</div>
+  <div class="section-body">
+<p><strong>1. 先判斷自己是不是 musl＋OpenSSH：</strong></p>
+<pre><code># 是否 musl
+ldd --version 2&gt;&amp;1 | head -1
+# 或
+apk --version 2&gt;/dev/null
+
+# 有效 sshd 設定（密碼登入／PAM）
+sshd -T 2&gt;/dev/null | grep -iE 'passwordauthentication|usepam'
+
+# openssh 版本
+sshd -V 2&gt;&amp;1 | head -1
+apk info openssh 2&gt;/dev/null</code></pre>
+<p><strong>2. Alpine 升級並重啟（只升級不夠）：</strong></p>
+<pre><code>apk upgrade -U -a
+rc-service sshd restart
+# 確認有效設定
+sshd -T | grep -i passwordauthentication</code></pre>
+<p><strong>3. 無法立即升級時的暫時緩解</strong>（先確認金鑰登入可用，並保留現有工作階段）：</p>
+<pre><code>mkdir -p /etc/ssh/sshd_config.d
+echo 'PasswordAuthentication no' &gt; /etc/ssh/sshd_config.d/00-no-passwords.conf
+# Alpine 3.19 以前可能忽略 drop-in，請同時改 /etc/ssh/sshd_config
+sshd -t &amp;&amp; rc-service sshd restart
+sshd -T | grep -i passwordauthentication
+# 預期：passwordauthentication no</code></pre>
+<p><strong>4. 帳號面加固：</strong> 不用的帳號改為 <code>!</code> 鎖定；tiny-cloud 環境檢視並移除 <code>alpine</code> 的 passwordless doas；雲端映像若經 cloud-init 已寫入 <code>PasswordAuthentication no</code> 則不在條件內（Alpine 明列）。</p>
+<p><strong>5. 是否可能已遭利用：</strong> 檢查日誌是否出現「不應接受密碼的帳號」卻有 <code>Accepted password for</code>：</p>
+<pre><code>grep "Accepted password" /var/log/messages
+grep -E '^(alpine|root):' /etc/shadow</code></pre>
+<p>若 shadow 為 <code>*</code> 但日誌顯示密碼登入成功，應視為可能遭利用：檢視 doas／sudo、新增使用者、authorized_keys 與近期檔案；無法排除則以重建主機為原則（Alpine 建議）。</p>
+<p><strong>6. Debian／Ubuntu 主機：</strong> 一般無需為此 CVE 緊急升 OpenSSH；仍建議維持金鑰登入、關閉密碼登入作為基線 hardening，但那是通案而非本洞必修項。</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">🇹🇼</span> 台灣相關性</div>
+  <div class="section-body">
+<ul>
+<li><strong>主流伺服器多半安全：</strong> 台灣企業與政府常見的 Debian／Ubuntu／RHEL 系為 glibc，且多啟用 PAM，不落在此利用條件。</li>
+<li><strong>要盤點的是「輕量／嵌入式／容器」：</strong> 內部 Alpine 基礎映像若啟用 sshd、維運用 Alpine 跳板、OpenWrt 家用／分部路由器若改裝 OpenSSH、工控或自研韌體（Buildroot／Yocto）若連結 musl＋OpenSSH。</li>
+<li><strong>雲端：</strong> 若曾用 Alpine 官方 tiny-cloud AMI／VHD，且之後設定過主控台密碼或 user-data 寫入雜湊密碼，<code>alpine</code>＋doas 組合風險升高；應確認映像點修版或已關密碼登入。</li>
+<li><strong>資安產品與邊界設備：</strong> 許多網路設備用 Dropbear 而非 OpenSSH；不能假設「有 SSH 就中招」，要以實際二進位與 libc 為準。</li>
+<li><strong>優先順序建議：</strong> ① 對外暴露 SSH 的 Alpine／musl 主機 ② 雲端 tiny-cloud 實例 ③ 內網跳板與 CI runner 上的 Alpine sshd ④ OpenWrt／自建韌體清冊。</li>
+</ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">🧭</span> 結構性觀察</div>
+  <div class="section-body">
+<ul>
+<li><strong>錯誤碼與「停用」記號撞車：</strong> musl 用 <code>*</code> 表示 crypt 失敗，Unix 傳統又用 <code>*</code> 表示無密碼；兩個各自合理的選擇疊在一起才爆。</li>
+<li><strong>時序防護的附帶成本：</strong> CVE-2016-6210 的修法讓「本來不該雜湊」的帳號也走 crypt，擴大了與 musl 行為互動的攻擊面。</li>
+<li><strong>「升套件 ≠ 生效」：</strong> Alpine 特別強調必須重啟 sshd；資安通報若只寫「請更新」而漏重啟，線上仍跑舊 daemon。</li>
+<li><strong>AI 輔助發現加速公開：</strong> OpenSSH 釋出說明坦言近期大量 AI／AI 輔助回報，並改為更頻繁發版；本洞亦據媒體稱以 AI 代理大量 fuzz 登入路徑發現。</li>
+</ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><span class="icon" aria-hidden="true">📚</span> 資料來源</div>
+  <div class="section-body">
+<p>發布日為台北時間。未能開啟或僅二手佐證的來源已註明。</p>
+<div class="sources-grid">
+<div class="source-card"><div class="source-tag">官方文件</div><a href="https://www.openssh.org/txt/release-10.6p2" target="_blank" rel="noopener">OpenSSH 10.6p2 Release Notes</a><div class="source-meta">OpenBSD／OpenSSH · 2026-11-05</div></div>
+<div class="source-card"><div class="source-tag">官方文件</div><a href="https://www.openssh.org/releasenotes.html#10.6p2" target="_blank" rel="noopener">OpenSSH Release Notes（錨點）</a><div class="source-meta">OpenSSH · 2026-11-05</div></div>
+<div class="source-card"><div class="source-tag">官方文件</div><a href="https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/" target="_blank" rel="noopener">Alpine：openssh-server password authentication bypass</a><div class="source-meta">Alpine Linux · 2026-11-05</div></div>
+<div class="source-card"><div class="source-tag">官方文件</div><a href="https://www.cve.org/CVERecord?id=CVE-2026-123158" target="_blank" rel="noopener">CVE-2026-123158</a><div class="source-meta">MITRE／CVE.org · 2026-11-05 23:46（台北）</div></div>
+<div class="source-card"><div class="source-tag">原始碼</div><a href="https://github.com/openssh/openssh-portable/commit/4353fdc43ef646c43a8dda7025cc1a898caf1482" target="_blank" rel="noopener">openssh-portable 4353fdc4</a><div class="source-meta">GitHub · 修補 commit</div></div>
+<div class="source-card"><div class="source-tag">官方文件</div><a href="https://www.openwall.com/lists/oss-security/2026/11/05/3" target="_blank" rel="noopener">oss-security：sshole</a><div class="source-meta">Openwall · 2026-11-05</div></div>
+<div class="source-card"><div class="source-tag">二手報導</div><a href="https://www.bleepingcomputer.com/news/security/openssh-flaw-lets-attackers-log-into-password-disabled-linux-accounts/" target="_blank" rel="noopener">BleepingComputer</a><div class="source-meta">2026-11-05</div></div>
+<div class="source-card"><div class="source-tag">二手彙整</div><a href="https://orca.security/resources/research/sshole-openssh-authentication-bypass-gives-attackers-root-on-alpine-linux/" target="_blank" rel="noopener">Orca Research</a><div class="source-meta">修補版與暴露面彙整</div></div>
+<div class="source-card"><div class="source-tag">二手彙整</div><a href="https://www.upwind.io/blog/sshole-alpine-musl-openssh-accepts-any-257-character-password" target="_blank" rel="noopener">Upwind</a><div class="source-meta">條件與遙測觀察</div></div>
+</div>
+  </div>
+</section>
+</div>
+<footer class="report-footer">
+  Generated 2026-11-06 · SecondBrain 事件調查 · suelife/reports
+</footer>
+</body>
+</html>
