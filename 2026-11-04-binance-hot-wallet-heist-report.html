@@ -290,18 +290,19 @@ div[role="region"] > table { min-width: 520px; }
   <div class="kpi green"><div class="kpi-value">約 28.5 億 美元</div><div class="kpi-label">凍結金額</div></div>
   <div class="kpi red"><div class="kpi-value">約 32.5 億 美元</div><div class="kpi-label">攻擊者控制資產</div></div>
   <div class="kpi"><div class="kpi-value">10 至 11 條</div><div class="kpi-label">受攻擊鏈數</div></div>
-  <div class="kpi green"><div class="kpi-value">約 95 %</div><div class="kpi-label">補足比例</div></div>
+  <div class="kpi green"><div class="kpi-value">約 98 %</div><div class="kpi-label">補足比例</div></div>
 </div>
 <p>狀態符號說明：✓ 已證實（官方原文或多個獨立來源一致）｜? 未證實（單一來源或未公開）｜! 說法不一（來源之間對不起來）｜ⓘ 轉述（引用媒體轉述，非一手原文）</p>
 <p>時間說明：一律為台北時間（UTC+8）。美國來源 11/1 以前為 EDT（UTC−4），換算方式為加 12 小時；11/1 夏令時間結束後為 EST（UTC−5），加 13 小時。原始時間欄註明原時區。</p>
-<p>KPI 註記：受影響資產採幣安初步報告數字；凍結金額採幣安初步報告與 Elliptic；攻擊者控制資產為 Elliptic 11/1 最終版；鏈數與補足比例來源之間說法不一（! 說法不一），細節見事實核查矩陣。</p>
+<p>KPI 註記：受影響資產採幣安初步報告數字；凍結金額採幣安初步報告與 Elliptic；攻擊者控制資產為 Elliptic 11/1 最終版；鏈數來源之間說法不一（! 說法不一）。補足比例採 Recovery Update 最新數字約 98%（Update #7，台北 11/4 23:23）；同系列先前為 90%（10/31 Update #3）→約 95%（11/1 Update #4），但 11/3 初步報告寫「As of 31 October 2026, 98%」，與同日 Update #3 的 90% 衝突（! 說法不一），細節見事實核查矩陣。</p>
+<div class="alert alert-amber"><div class="alert-icon" aria-hidden="true">!</div><div><strong>勘誤（2026-11-06）：</strong> 補齊補足比例時間線。Recovery Update 寫 90%（10/31 #3）→約 95%（11/1 #4）→約 98%（11/4 #7）；11/3 初步報告卻把 98% 寫成截至 10/31，與同日 #3 及隔天 #4 衝突。詳見 ✅ 事實核查矩陣與 ⚖️ 第 4 點。</div></div>
 <p><strong>是哪一起事件：</strong> 只有一起。2026-10-29 20:05 UTC（台北 10/30 04:05）起，幣安多條鏈上的熱錢包遭轉出。週報 B1 提到的「Elliptic 64.3 億、幣安約 63 億、凍結 28.4 億」都是指這一起，素材查無同期另一起幣安入侵事件。✓ 已證實（<a href="https://www.binance.com/en/support/announcement/detail/d3306d9dca5243548c813b605e1d1751" target="_blank" rel="noopener">幣安 Update #2</a>、<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）</p>
 <ul>
 <li>相關但不同的事件：Chainalysis 自身也在 10/30 遭入侵，官方稱與幣安案無關，頁面有「Friday Oct 30, 2026 Update」（<a href="https://www.chainalysis.com/blog/security-incident-october-30/" target="_blank" rel="noopener">Chainalysis 公告</a>）。部分贓款與 2026 年 9 月 Bitget 遭駭款項混在一起洗，屬不同事件（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.chainalysis.com/blog/binance-exploit-latest-findings-and-response/" target="_blank" rel="noopener">Chainalysis</a>）。</li>
 <li>日期註記：週報寫「2026/10/30」以台北時間計算是對的；美國與 UTC 來源都寫 10/29。</li>
 </ul>
 <p><strong>規模：</strong> Elliptic 稱這是「by far the largest crypto heist of all time」，約為 2025 年 2 月 Bybit 案（14.6 億美元）的 4 倍以上（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>）。</p>
-<p><strong>來源之間的主要說法不一（細節見 ✅ 事實核查矩陣）：</strong> 損失 58 億至 64.3 億美元；凍結 23 億至 30 億美元；受攻擊鏈數 10 或 11 條；TRM 11/3 寫「沒有政府歸因」，但 FBI 10/31 已公告。</p>
+<p><strong>來源之間的主要說法不一（細節見 ✅ 事實核查矩陣）：</strong> 損失 58 億至 64.3 億美元；凍結 23 億至 30 億美元；受攻擊鏈數 10 或 11 條；補足比例 Recovery Update 與初步報告時間點衝突（見 ✅）；TRM 11/3 寫「沒有政府歸因」，但 FBI 10/31 已公告。</p>
   </div>
 </section>
 
@@ -328,8 +329,10 @@ div[role="region"] > table { min-width: 520px; }
 <tr><td>受攻擊鏈數</td><td>幣安稱攻擊「橫跨多個網路」，並點名 XRP、Solana、Optimism、Bitcoin、Ethereum 五條鏈（點名數量，非總數，不與 10、11 條並列為說法不一）</td><td><span class="badge badge-confirmed">✓ 已證實</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>（11/3）</td></tr>
 <tr><td>攻擊持續時間</td><td>主要流出集中在約 20 至 30 分鐘內（TRM 10/30 說法、Elliptic）；最後一筆在 23:56 UTC（台北 10/30 07:56），全程約 4 小時（Elliptic、幣安報告）。兩者一講主要流出、一講全程，不算說法不一</td><td><span class="badge badge-confirmed">✓ 已證實</span></td><td>TRM 經 <a href="https://decrypt.co/382224/trm-and-chainalysis-tie-6-4b-binance-hack-to-north-koreas-tradertraitor" target="_blank" rel="noopener">Decrypt</a>、<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></td></tr>
 <tr><td>私鑰外洩</td><td>未見私鑰外洩</td><td><span class="badge badge-confirmed">✓ 已證實（官方說法）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/c5a8729a97ac486d963784d96c5642d7" target="_blank" rel="noopener">幣安首次公告</a>、<a href="https://www.binance.com/en/support/announcement/detail/d3306d9dca5243548c813b605e1d1751" target="_blank" rel="noopener">幣安 Update #2</a></td></tr>
-<tr><td>補足比例</td><td>Update #4（台北 11/1 12:08）寫 95%</td><td><span class="badge badge-info">! 說法不一</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Update #4</a></td></tr>
-<tr><td>補足比例</td><td>初步報告寫「As of 31 October 2026, 98% … replenished」，時間點早於寫 95% 的 Update #4，前後倒置</td><td><span class="badge badge-info">! 說法不一</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>（11/3）</td></tr>
+<tr><td>補足比例</td><td>Update #3（台北 10/31 22:24）寫 90%（由約 80% 上升）</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/1fdf1f61559c401da0435895ffcccb62" target="_blank" rel="noopener">幣安 Update #3</a>；獨立報導：Reuters（經 Investing.com）、The Verge（10/31）</td></tr>
+<tr><td>補足比例</td><td>Update #4（台北 11/1 12:08）寫約 95%</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Update #4</a>；獨立報導：TokenPost、NewsBTC（11/1）</td></tr>
+<tr><td>補足比例</td><td>Update #7（台北 11/4 23:23）寫約 98%；Recovery Update 系列首次寫約 98%</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/c6ba9aa726974fc6b9332a2c8f63b405" target="_blank" rel="noopener">幣安 Update #7</a>；獨立報導：CryptoTimes、Exchange.news（11/4）</td></tr>
+<tr><td>補足比例</td><td>初步報告（11/3）寫「As of 31 October 2026, 98% … replenished」，把 98% 回溯到 10/31；與同日 Update #3 的 90%、隔天 Update #4 的約 95% 衝突；Recovery Update 系列至 11/4 Update #7 才寫約 98%</td><td><span class="badge badge-info">! 說法不一</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>（11/3）；<a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">LinkedIn 全文</a></td></tr>
 <tr><td>政府歸因</td><td>FBI 10/31 公告北韓 TraderTraitor 為主嫌</td><td><span class="badge badge-confirmed">✓ 已證實</span></td><td><a href="https://www.fbi.gov/investigate/cyber/alerts/2026/north-korea-responsible-for-6-billion-binance-attack" target="_blank" rel="noopener">FBI</a>（10/31 台北）</td></tr>
 <tr><td>政府歸因</td><td>TRM 11/3 文章 FAQ 第 6 題仍寫「no government has attributed the theft」（可能沿用舊文字）</td><td><span class="badge badge-info">! 說法不一</span></td><td><a href="https://www.trmlabs.com/resources/blog/binance-hack-update-north-korea-launders-proceeds-through-self-minted-tokens-and-chained-bridges" target="_blank" rel="noopener">TRM</a>（11/3 台北）</td></tr>
 <tr><td>規模定位</td><td>史上最大加密貨幣竊案，約為 Bybit 案的 4 倍以上</td><td><span class="badge badge-confirmed">✓ 已證實（單一分析商評估）</span></td><td><a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a></td></tr>
@@ -577,6 +580,14 @@ div[role="region"] > table { min-width: 520px; }
     <div class="tl-detail">原始時間：11/3 15:52（UTC）<br><span class="badge badge-confirmed">✓ 已證實</span><br>來源：<a href="https://www.cnbc.com/2026/11/03/binance-co-ceo-teng-says-hackers-used-fake-job-interviews-to-steal-6point3-billion-in-crypto.html" target="_blank" rel="noopener">CNBC</a></div>
   </div>
 </li>
+<li>
+  <span class="tl-dot green"></span>
+  <div class="tl-content">
+    <div class="tl-date">11/4 23:23（台北）</div>
+    <div class="tl-title">幣安 Recovery Update #7：補足約 98%；新儲備證明快照涵蓋 44 種代幣（由 10 種擴大）</div>
+    <div class="tl-detail">原始時間：11/4 15:23（UTC）<br><span class="badge badge-confirmed">✓ 已證實（官方）</span><br>來源：<a href="https://www.binance.com/en/support/announcement/detail/c6ba9aa726974fc6b9332a2c8f63b405" target="_blank" rel="noopener">幣安 Update #7</a></div>
+  </div>
+</li>
 </ul>
   </div>
 </section>
@@ -693,10 +704,11 @@ div[role="region"] > table { min-width: 520px; }
 <tr><td>10/30 10:23</td><td>暫停提款、撤銷受影響地址授權、找執法單位與鏈上分析夥伴；SAFU（使用者保護基金）加公司資金全額補足；入金不受影響</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/c5a8729a97ac486d963784d96c5642d7" target="_blank" rel="noopener">幣安首次公告</a></td></tr>
 <tr><td>10/31 03:33</td><td>Update #2：提撥逾 63.4 億、補足約 80%；四項優先：恢復提款、儲備證明、追回凍結資金、發布事後報告</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/d3306d9dca5243548c813b605e1d1751" target="_blank" rel="noopener">幣安 Update #2</a></td></tr>
 <tr><td>10/31 22:24</td><td>Update #3：補足 90%；維持 11/1 恢復提款</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/1fdf1f61559c401da0435895ffcccb62" target="_blank" rel="noopener">幣安 Update #3</a></td></tr>
-<tr><td>11/1 12:08</td><td>Update #4：補足 95%；10 種主要資產 100% 準備；11/1 起分階段恢復提款</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Update #4</a></td></tr>
+<tr><td>11/1 12:08</td><td>Update #4：補足約 95%；10 種主要資產 100% 準備；11/1 起分階段恢復提款</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Update #4</a></td></tr>
 <tr><td>11/3 00:52</td><td>完成 10 種資產零知識儲備證明；Teng、何一在 X 發文；11/4 再快照</td><td><span class="badge badge-confirmed">✓ 已證實（報導）</span> <span class="badge badge-info">X 貼文 ⓘ 未開到</span></td><td><a href="https://www.theblock.co/news/business/2026-11-02-binance-zero-knowledge-proof-of-reserves-snapshot-hack-recovery-432321" target="_blank" rel="noopener">The Block</a></td></tr>
-<tr><td>11/3</td><td>初步報告：截至 10/31 已補足 98%（與 Update #4 的 95% 時間點倒置，! 說法不一）</td><td><span class="badge badge-confirmed">✓ 已證實（原文）</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a></td></tr>
+<tr><td>11/3</td><td>初步報告：截至 10/31 已補足 98%（與同日 Update #3 的 90%、隔天 Update #4 的約 95% 衝突；Recovery Update 系列至 11/4 Update #7 才寫約 98%，! 說法不一）</td><td><span class="badge badge-confirmed">✓ 已證實（原文）</span></td><td><a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>、<a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">LinkedIn 全文</a></td></tr>
 <tr><td>11/3</td><td>在新環境重建錢包系統、重建內部 AI 工具與權限、換機、註銷相關憑證與權杖、全員裝置掃描、加強 AI 行為異常偵測；將請獨立專家審查</td><td><span class="badge badge-info">ⓘ 轉述</span></td><td><a href="https://thehackernews.com/2026/11/binance-reveals-how-fake-job-interviews.html" target="_blank" rel="noopener">The Hacker News</a>、<a href="https://www.cnbc.com/2026/11/03/binance-co-ceo-teng-says-hackers-used-fake-job-interviews-to-steal-6point3-billion-in-crypto.html" target="_blank" rel="noopener">CNBC</a></td></tr>
+<tr><td>11/4 23:23</td><td>Update #7：補足約 98%；新儲備證明快照涵蓋 44 種代幣（由 10 種擴大）</td><td><span class="badge badge-confirmed">✓ 已證實（官方）</span></td><td><a href="https://www.binance.com/en/support/announcement/detail/c6ba9aa726974fc6b9332a2c8f63b405" target="_blank" rel="noopener">幣安 Update #7</a></td></tr>
 </tbody>
 </table>
 </div>
@@ -717,7 +729,7 @@ div[role="region"] > table { min-width: 520px; }
 <li>! 說法不一　損失金額 58 億至 64.3 億、凍結 23 億至 30 億、受攻擊鏈數 10 或 11 條（見 ✅ 事實核查矩陣）。幣安報告點名的五條鏈不是總數，不列入說法不一。</li>
 <li>✓ 已證實　攻擊持續時間：主要流出約 20 至 30 分鐘（TRM、Elliptic），全程約 4 小時，最後一筆在 23:56 UTC（台北 10/30 07:56）（Elliptic、<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>）。兩者講的是不同範圍，不算說法不一。</li>
 <li>! 說法不一　入侵路徑由幣安自行修正兩次：「一台 DevOps 筆電」到「其他入侵點」到「6 月起多階段」。</li>
-<li>! 說法不一　補足比例：Update #4（台北 11/1 12:08）寫 95%；初步報告（11/3）寫「As of 31 October 2026, 98% … replenished」，時間點早於 Update #4，前後倒置（<a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Update #4</a>、<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>）。</li>
+<li>! 說法不一　補足比例：Update #3（10/31）寫 90%；Update #4（11/1）寫約 95%；Update #7（11/4 台北 23:23）才寫約 98%。但 11/3 初步報告寫「As of 31 October 2026, 98% … replenished」，把 98% 回溯到 10/31，與同日 Update #3 及隔天 Update #4 衝突（<a href="https://www.binance.com/en/support/announcement/detail/1fdf1f61559c401da0435895ffcccb62" target="_blank" rel="noopener">幣安 Update #3</a>、<a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Update #4</a>、<a href="https://www.binance.com/en/support/announcement/detail/c6ba9aa726974fc6b9332a2c8f63b405" target="_blank" rel="noopener">幣安 Update #7</a>、<a href="https://www.binance.com/en/blog/community/3229153443759566763" target="_blank" rel="noopener">幣安初步報告</a>、<a href="https://www.linkedin.com/pulse/29-october-binance-security-incident-initial-findings-response-modgf" target="_blank" rel="noopener">LinkedIn 全文</a>）。</li>
 <li>! 說法不一　TRM 11/3 文章 FAQ 第 6 題寫「no government has attributed the theft」，與 FBI 10/31 公告不符（<a href="https://www.trmlabs.com/resources/blog/binance-hack-update-north-korea-launders-proceeds-through-self-minted-tokens-and-chained-bridges" target="_blank" rel="noopener">TRM</a>）。</li>
 <li>✓ 已證實　Elliptic 轉述 Teng「希望週日 10/31 前恢復提款」，但 10/31 是週六；幣安 Update #3 寫明原訂時程是「週日 2026-11-01」，Elliptic 日期應有誤（<a href="https://www.elliptic.co/insights/binance-largest-hack-in-history/" target="_blank" rel="noopener">Elliptic</a>、<a href="https://www.binance.com/en/support/announcement/detail/1fdf1f61559c401da0435895ffcccb62" target="_blank" rel="noopener">幣安 Update #3</a>）。</li>
 <li>? 未證實　SomaXBT 的 2.42 億、Pangolin 歸因（皆單一來源）。</li>
@@ -767,6 +779,11 @@ div[role="region"] > table { min-width: 520px; }
   <div class="source-tag">官方文件</div>
   <a href="https://www.binance.com/en/support/announcement/detail/73911fb819b240f88b88256bdd318eda" target="_blank" rel="noopener">幣安 Recovery Update #4</a>
   <div class="source-meta">幣安 · 2026-11-01（12:08）</div>
+</div>
+<div class="source-card">
+  <div class="source-tag">官方文件</div>
+  <a href="https://www.binance.com/en/support/announcement/detail/c6ba9aa726974fc6b9332a2c8f63b405" target="_blank" rel="noopener">幣安 Recovery Update #7</a>
+  <div class="source-meta">幣安 · 2026-11-04（23:23）</div>
 </div>
 <div class="source-card">
   <div class="source-tag">官方文件</div>
