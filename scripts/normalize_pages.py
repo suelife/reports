@@ -21,6 +21,31 @@ SITE_BAR = ('<nav class="site-bar" aria-label="主要導覽"><div class="site-ba
 LINK = '<link rel="stylesheet" href="design.css">'
 
 
+COMMENT_SPLIT = re.compile(r"(<!--.*?-->)", re.S)
+# Any <style> element: any case, any attributes, end tag may carry whitespace
+# (</style >), unclosed blocks run to the end of the chunk.
+STYLE_EL = re.compile(r"<style\b[^>]*>.*?(?:</style\s*>|\Z)", re.S | re.I)
+
+
+def strip_styles(head: str):
+    """Remove every <style> element from head, leaving HTML comments alone.
+
+    The incident template carries a header comment that mentions "<style>" in
+    prose; cutting from that text would swallow the comment end and turn the
+    whole page into a comment. A broken paste that lost its "<!--" (old Outlook
+    report) is still removed because the first real <style> runs to </style>.
+    """
+    out, labeled = [], False
+    for part in COMMENT_SPLIT.split(head):
+        if part.startswith("<!--"):
+            out.append(part)
+            continue
+        for m in STYLE_EL.finditer(part):
+            labeled = labeled or "已確認損害" in m.group(0)
+        out.append(STYLE_EL.sub("", part))
+    return "".join(out), labeled
+
+
 def kind(name: str) -> str:
     return "weekly" if re.search(r"weekly-.*digest\.html$", name) else "incident"
 
@@ -31,17 +56,7 @@ def normalize(name: str, s: str) -> str:
     if head_end == -1:
         return s
     head, rest = s[:head_end], s[head_end:]
-    labeled = False
-    # Embedded Design System blocks. A broken template paste can leave an
-    # unclosed <style> that swallows a second <head>; removing from the first
-    # <style> to the last </style> in <head> clears both.
-    if "<style" in head:
-        first = head.find("<style")
-        last = head.rfind("</style>")
-        if last > first:
-            block = head[first:last + len("</style>")]
-            labeled = "已確認損害" in block
-            head = head[:first] + head[last + len("</style>"):]
+    head, labeled = strip_styles(head)
     if 'href="design.css"' not in head:
         head = head.rstrip() + "\n" + LINK + "\n"
     s = head + rest
