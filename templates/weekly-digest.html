@@ -5,8 +5,9 @@
   Skeleton for suelife/reports weekly digests (YYYY-MM-DD-weekly-ai-digest.html / -security-digest.html).
   1. Keep the head link to design.css, the body classes and the site-bar exactly as above. No <style> block.
   2. 「本週三句重點」只寫這一份的主題：AI 週報三句都來自 AI 卡片，資安週報三句都來自資安卡片，不共用同一組三句。
-  3. 等級一律符號加文字：▲ 需行動、● 關注、○ 參考。
-  4. Before commit run: python3 scripts/normalize_pages.py  (idempotent; fixes missing link, classes, nav)
+  3. 「本週趨勢」「其他值得留意」也只放本主題；AI 週報不放資安項目，資安週報不放 AI 項目。
+  4. 等級一律符號加文字：▲ 需行動、● 關注、○ 參考。
+  5. Before commit run: python3 scripts/normalize_pages.py  (idempotent; fixes missing link, classes, nav)
 -->
 <div class="eyebrow">情報簡報・{{YYYY}} 第 {{NN}} 週（{{MM/DD}} 至 {{MM/DD}}，台北時間）・來源：已審稿週報與其引用的公開來源</div>
 <h1>{{AI 或 資安}} 情報簡報 {{YYYY/MM/DD}} 至 {{MM/DD}}</h1>
