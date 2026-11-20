@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{AI 或 資安}} 情報簡報 {{YYYY/MM/DD}} 至 {{MM/DD}}</title><link rel="stylesheet" href="design.css"></head><body class="weekly-digest report-page">
+<nav class="site-bar" aria-label="主要導覽"><div class="site-bar-inner"><a class="site-home" href="index.html">回首頁</a><span class="site-brand">SECONDBRAIN / REPORTS</span></div></nav><div class="wrap">
+<!--
+  Skeleton for suelife/reports weekly digests (YYYY-MM-DD-weekly-ai-digest.html / -security-digest.html).
+  1. Keep the head link to design.css, the body classes and the site-bar exactly as above. No <style> block.
+  2. 「本週三句重點」只寫這一份的主題：AI 週報三句都來自 AI 卡片，資安週報三句都來自資安卡片，不共用同一組三句。
+  3. 等級一律符號加文字：▲ 需行動、● 關注、○ 參考。
+  4. Before commit run: python3 scripts/normalize_pages.py  (idempotent; fixes missing link, classes, nav)
+-->
+<div class="eyebrow">情報簡報・{{YYYY}} 第 {{NN}} 週（{{MM/DD}} 至 {{MM/DD}}，台北時間）・來源：已審稿週報與其引用的公開來源</div>
+<h1>{{AI 或 資安}} 情報簡報 {{YYYY/MM/DD}} 至 {{MM/DD}}</h1>
+<section><h2>本週三句重點</h2><div class="card"><ol class="plain"><li>{{本主題第 1 句}}</li><li>{{本主題第 2 句}}</li><li>{{本主題第 3 句}}</li></ol></div></section>
+<section id="overview"><h2>總覽</h2><p class="caption">等級以符號加文字標示：▲ 需行動、● 關注、○ 參考。點按鈕可篩選。</p>
+<div class="filters" role="group" aria-label="依等級篩選"><button data-f="all" aria-pressed="true">全部</button><button data-f="act" aria-pressed="false">▲ 需行動</button><button data-f="watch" aria-pressed="false">● 關注</button><button data-f="ref" aria-pressed="false">○ 參考</button></div>
+<div class="tbl-wrap"><table class="ov"><thead><tr><th>類別</th><th>標題</th><th>日期</th><th>等級</th></tr></thead><tbody>
+<tr data-lv="act"><td>{{類別}}</td><td><a href="#i1">{{標題}}</a></td><td>{{日期}}</td><td><span class="lv act">▲ 需行動</span></td></tr>
+</tbody></table></div></section>
+<section id="cards"><h2>逐則情報卡<span class="sub">{{N}} 則，點標題可收合</span></h2><div class="cards">
+<details class="card" open id="i1" data-lv="act"><summary><header><span class="badge">1</span><h3>{{標題}}</h3><span class="lv act">▲ 需行動</span></header></summary><div class="bod"><p class="meta">日期：{{日期}}（台北時間）</p><p class="lead">{{內容}}</p><div class="src"><a href="{{URL}}" target="_blank" rel="noopener"><small>來源</small>{{網域}}</a></div></div></details>
+</div></section>
+<section id="other"><h2>其他值得留意</h2><div class="card"><ul class="plain"><li>{{項目}}</li></ul></div></section>
+<section id="trend"><h2>本週趨勢</h2><div class="card"><ul class="plain"><li>{{趨勢}}</li></ul></div></section>
+<section id="actions"><h2>本週行動清單（一般性建議）</h2><div class="card"><ol class="plain"><li>{{行動}}</li></ol></div></section>
+<p class="foot">方法：內容取自已通過審稿的 {{期間}} 週報定稿，未新增事實。標示「宣稱」「自家數字」者未經獨立驗證。</p>
+</div><script>(function(){var b=document.querySelectorAll('.filters button');b.forEach(function(x){x.addEventListener('click',function(){b.forEach(function(y){y.setAttribute('aria-pressed',y===x?'true':'false')});var f=x.dataset.f;document.querySelectorAll('[data-lv]').forEach(function(e){e.hidden=!(f==='all'||e.dataset.lv===f)})})})})();</script></body></html>
